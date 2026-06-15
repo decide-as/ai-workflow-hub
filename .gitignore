@@ -43,3 +43,4 @@ release/
 
 # Vite
 .vite/
+.pytest_cache/
