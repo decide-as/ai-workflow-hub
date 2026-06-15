@@ -15,11 +15,11 @@
     <a href="https://github.com/decide-as/ai-workflow-hub"><strong>Explore »</strong></a>
   </p>
 
-![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-discovery-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-ideation-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.1.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
+![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.1.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
 
 </div>
 
-> **Discovery** — Exploring the problem space — not yet building.
+> **MVP** — Minimum viable product — usable but minimal.
 
 
 <details>
