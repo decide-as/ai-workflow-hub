@@ -23,7 +23,7 @@ claude
 
 Then describe your receipts and trip purpose. Claude will extract, categorise, and format the report.
 
-## Splitting into its own repo
+
 
 ```bash
 cp -r workflows/travel-expense-report /path/to/new/repo
