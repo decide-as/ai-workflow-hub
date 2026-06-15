@@ -1,0 +1,71 @@
+# Identity
+name: gdpr-compliance-checker
+display_name: Gdpr-Compliance-Checker
+version: 0.1.0
+description: >
+  Reviews product features and data flows against GDPR obligations and produces remediation plans
+summary: Reviews product features and data flows against GDPR obligations and produces remediation plans
+author:
+  name: 
+  github: decide-as
+license: All Rights Reserved
+repository: https://github.com/decide-as/gdpr-compliance-checker
+
+# Classification
+visibility: personal
+category: tool
+archetype: python-tool
+tags: []
+domain: 
+
+
+# Technical
+language: python
+language_version: ">=3.11"
+runtime: venv
+ai_providers: [none]
+entry_point: src/gdpr_compliance_checker/main.py
+install_command: pip install -e ".[dev,test]"
+run_command: 
+test_command: pytest tests/
+
+
+# Framework options
+
+
+# Capabilities
+has_api_keys: false
+has_cron: false
+has_cli: false
+has_tests: true
+has_lib: false
+has_ui: false
+has_database: false
+
+
+# Distribution
+pypi_package: false
+docker_image: false
+registry_status: draft
+
+# Maturity
+stage: ideation
+phase: discovery
+
+# Permissions
+allow_git_push: false
+allow_auto_merge: false
+
+
+# Quality
+quality_gate: basic
+coverage_target: 60
+world_class: true
+project_criticality: standard
+branching_complexity: simple
+scoring_profile: solo_dev
+
+# Template provenance
+template_name: python-tool
+template_version: "96e9c72cc330"
+

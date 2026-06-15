@@ -1,0 +1,120 @@
+{
+  "model": "sonnet",
+  "effortLevel": "medium",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git tag -l*)",
+      "Bash(git tag --list*)",
+      "Bash(git show*)",
+      "Bash(git cherry*)",
+      "Bash(git rev-parse*)",
+      "Bash(git config --get*)",
+      "Bash(git symbolic-ref*)",
+      "Bash(git check-ignore*)",
+      "Bash(git ls-files*)",
+      "Bash(cd *)",
+      "Bash(ls*)",
+      "Bash(which*)",
+      "Bash(cat*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(wc*)",
+      "Bash(date*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git mv*)",
+      "Bash(git stash*)",
+      "Bash(git checkout*)",
+      "Bash(git fetch*)",
+      "Bash(git rebase*)",
+      "Bash(git pull*)",
+      "Bash(git remote*)",
+      "Bash(git worktree*)",
+      "Bash(git merge*)",
+      "Bash(rm -f /tmp/*)",
+      "Bash(mkdir*)",
+      "Bash(cp*)",
+      "Bash(diff *)",
+      "Bash(sleep *)",
+      "Bash(timeout *)",
+      "Bash(test *)",
+      "Bash(echo*)",
+      "Bash(sort*)",
+      "Bash(mktemp*)",
+      "Bash(pwd)",
+      "Bash(make *)",
+      "Bash(make)",
+      "Bash(bash *.claude/scripts/*)",
+      "Bash(bash .claude/scripts/*)",
+      "Bash(gh api repos/*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh pr status*)",
+      "Bash(gh pr diff*)",
+      "Bash(gh run list*)",
+      "Bash(gh run view*)",
+      "Bash(gh run watch*)",
+      "Bash(gh release view*)",
+      "Bash(gh release list*)",
+      "Bash(python3*)",
+      "Bash(python *)",
+      "Bash(.venv/bin/python*)",
+      "Bash(conda *)",
+      "Bash(eval *conda*)",
+      "Bash(pytest*)",
+      "Bash(.venv/bin/pytest*)",
+      "Bash(ruff*)",
+      "Bash(.venv/bin/ruff*)",
+      "Bash(mypy*)",
+      "Bash(pip *)",
+      "Bash(pip3*)",
+      "Bash(.venv/bin/pip*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/guard-master-edits.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/post-edit-format.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/post-edit-lint.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/post-edit-validate-yaml.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/post-edit-validate-json.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

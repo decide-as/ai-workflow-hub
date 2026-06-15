@@ -1,0 +1,9 @@
+# Task-Prioritiser environment variables
+# Copy this file to .env and fill in the values
+
+# Tool configuration
+PIP_DISABLE_PIP_VERSION_CHECK=1
+
+
+
+

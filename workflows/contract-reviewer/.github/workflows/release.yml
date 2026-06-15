@@ -1,0 +1,214 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Sync to latest master
+        run: |
+          # Queued runs check out their triggering SHA, which may be behind
+          # master if a prior run pushed a REL commit. Pull to get the true
+          # current state so we don't re-process consumed fragments or fail
+          # to push due to non-fast-forward.
+          git pull origin master --ff-only
+
+      - name: Identify triggering PR branch
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The squash-merge commit is the latest non-REL commit on master.
+          # After the ff-only pull, HEAD is current master. Walk back to find
+          # the merge commit (skip any REL commits from prior release runs).
+          MERGE_SHA=""
+          for i in 0 1 2 3 4; do
+            MSG=$(git log -1 --format='%s' "HEAD~$i")
+            if ! echo "$MSG" | grep -q '^REL '; then
+              MERGE_SHA="HEAD~$i"
+              break
+            fi
+          done
+          if [ -z "$MERGE_SHA" ]; then
+            echo "[--] Could not find non-REL merge commit — skipping branch detection."
+            echo "branch_name=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract PR number from commit message (format: "... (#N)")
+          PR_NUMBER=$(git log -1 --format='%s' "$MERGE_SHA" | grep -oE '\(#([0-9]+)\)$' | tr -d '(#)')
+          if [ -z "$PR_NUMBER" ]; then
+            echo "[--] No PR number in merge commit — will collect all fragments."
+            echo "branch_name=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Get branch name from the PR
+          BRANCH=$(gh pr view "$PR_NUMBER" --json headRefName --jq '.headRefName' 2>/dev/null || true)
+          if [ -n "$BRANCH" ]; then
+            echo "[ok] Triggering PR #$PR_NUMBER from branch: $BRANCH"
+            echo "branch_name=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "[--] Could not resolve branch for PR #$PR_NUMBER — will collect all fragments."
+            echo "branch_name=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for changelog fragments
+        id: check
+        run: |
+          BRANCH="${{ steps.branch.outputs.branch_name }}"
+          if [ -n "$BRANCH" ] && [ "$BRANCH" != "develop" ] && [ "$BRANCH" != "staging" ]; then
+            # Feature branch: check for this branch's specific fragment
+            SAFE_NAME="${BRANCH//\//-}"
+            if [ -f "changelog.d/${SAFE_NAME}.md" ]; then
+              echo "fragment_count=1" >> "$GITHUB_OUTPUT"
+              echo "[--] Found fragment for branch: changelog.d/${SAFE_NAME}.md"
+            else
+              echo "fragment_count=0" >> "$GITHUB_OUTPUT"
+              echo "[--] No fragment for branch '$BRANCH' — skipping release."
+            fi
+          else
+            # Fallback: count all fragments
+            count=$(find changelog.d -maxdepth 1 -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l | tr -d ' ')
+            echo "fragment_count=$count" >> "$GITHUB_OUTPUT"
+            if [ "$count" -eq 0 ]; then
+              echo "[--] No changelog fragments found — skipping release."
+            else
+              echo "[--] Found $count fragment(s) to process (no branch filter)."
+            fi
+          fi
+
+      - name: Set up Python
+        if: steps.check.outputs.fragment_count != '0'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install PyYAML
+        if: steps.check.outputs.fragment_count != '0'
+        run: pip install pyyaml
+
+      - name: Generate release lineage
+        if: steps.check.outputs.fragment_count != '0'
+        run: |
+          bash .claude/scripts/generate-release-lineage.sh "pending" --output /tmp/release-lineage.yaml
+          echo "[ok] Pre-finalize lineage snapshot captured"
+
+      - name: Run finalize-release
+        if: steps.check.outputs.fragment_count != '0'
+        id: finalize
+        run: |
+          VERSION_FILE=$(mktemp)
+          PHASE_FILE=$(mktemp)
+          BRANCH="${{ steps.branch.outputs.branch_name }}"
+          BRANCH_ARGS=""
+          # Only pass --branch for feature branches, not environment branches
+          # (promotion PRs from develop/staging should collect all fragments)
+          if [ -n "$BRANCH" ] && [ "$BRANCH" != "develop" ] && [ "$BRANCH" != "staging" ]; then
+            BRANCH_ARGS="--branch $BRANCH"
+          fi
+          bash .claude/scripts/finalize-release.sh --auto-bump $BRANCH_ARGS --version-file "$VERSION_FILE" --phase-file "$PHASE_FILE"
+          VERSION=$(cat "$VERSION_FILE")
+          PHASE=$(cat "$PHASE_FILE")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "phase=$PHASE" >> "$GITHUB_OUTPUT"
+          echo "[ok] Finalized release: v$VERSION"
+          if [ -n "$PHASE" ]; then
+            echo "[ok] Phase transition detected: $PHASE"
+          fi
+
+      - name: Update lineage with final version
+        if: steps.check.outputs.fragment_count != '0'
+        run: |
+          VERSION="${{ steps.finalize.outputs.version }}"
+          # Patch the pending version in the lineage manifest
+          sed -i "s/^version: \"pending\"/version: \"$VERSION\"/" /tmp/release-lineage.yaml
+          sed -i "s/^tag: \"vpending\"/tag: \"v$VERSION\"/" /tmp/release-lineage.yaml
+          echo "[ok] Lineage manifest updated to v$VERSION"
+
+      - name: Commit and tag
+        if: steps.check.outputs.fragment_count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md project-meta.yaml pyproject.toml README.md
+          git add changelog.d/
+          git commit -m "REL Bump version to ${{ steps.finalize.outputs.version }}"
+          git tag -a "v${{ steps.finalize.outputs.version }}" -m "Version ${{ steps.finalize.outputs.version }} release"
+          PHASE="${{ steps.finalize.outputs.phase }}"
+          if [ -n "$PHASE" ]; then
+            if ! git tag -l "phase/$PHASE" | grep -q .; then
+              git tag -a "phase/$PHASE" -m "Phase transition to $PHASE (v${{ steps.finalize.outputs.version }})"
+              echo "[ok] Created phase tag: phase/$PHASE"
+            else
+              echo "[--] Phase tag phase/$PHASE already exists — skipping"
+            fi
+          fi
+          git push origin master --tags
+
+      - name: Extract release notes
+        if: steps.check.outputs.fragment_count != '0'
+        id: notes
+        run: |
+          VERSION="${{ steps.finalize.outputs.version }}"
+          # Extract this version's changelog entry (between its heading and the next).
+          # Uses awk to handle the edge case where this is the only version entry
+          # (no subsequent ## [ heading to terminate the sed range).
+          awk "/^## \[$VERSION\]/{found=1; next} /^## \[/{if(found) exit} found" CHANGELOG.md > /tmp/release_notes.md
+          echo "[ok] Extracted release notes for v$VERSION"
+
+      - name: Create GitHub release
+        if: steps.check.outputs.fragment_count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.finalize.outputs.version }}"
+          timeout 60 gh release create "v$VERSION" \
+            --title "Release v$VERSION" \
+            --notes-file /tmp/release_notes.md \
+            /tmp/release-lineage.yaml#release-lineage.yaml
+
+      - name: Comment on merged PR
+        if: steps.check.outputs.fragment_count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.finalize.outputs.version }}"
+          REPO="${{ github.repository }}"
+          # Extract PR number from the squash-merge commit (same logic as branch detection).
+          # HEAD is the REL commit we just pushed; walk back past REL commits.
+          PR_NUMBER=""
+          for i in 0 1 2 3 4; do
+            MSG=$(git log -1 --format='%s' "HEAD~$i")
+            if ! echo "$MSG" | grep -q '^REL '; then
+              PR_NUMBER=$(echo "$MSG" | grep -oE '\(#([0-9]+)\)$' | tr -d '(#)')
+              break
+            fi
+          done
+          if [ -z "$PR_NUMBER" ]; then
+            echo "[--] Could not extract PR number from merge commit — skipping comment."
+            exit 0
+          fi
+          printf '### Released as `v%s`\n\n**Tag:** [`v%s`](https://github.com/%s/releases/tag/v%s)\n**Release:** [View release](https://github.com/%s/releases/tag/v%s)\n' \
+            "$VERSION" "$VERSION" "$REPO" "$VERSION" "$REPO" "$VERSION" > /tmp/pr_comment.md
+          timeout 60 gh pr comment "$PR_NUMBER" --body-file /tmp/pr_comment.md
+          echo "[ok] Commented on PR #$PR_NUMBER with release v$VERSION"
