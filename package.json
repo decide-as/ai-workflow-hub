@@ -2,14 +2,48 @@
   "name": "ai-workflow-hub",
   "version": "0.1.0",
   "description": "Desktop app for managing and launching AI workflow sessions",
-  "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
-    "start": "node scripts/main.js",
-    "test": "node --test tests/",
-    "lint": "eslint scripts/"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite dev",
+    "test": "vitest run",
+    "lint": "eslint src/ cli/ clustering/ shared/ --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "ai-hub": "tsx cli/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@electron-toolkit/tsconfig": "^2.0.0",
+    "@electron-toolkit/utils": "^4.0.0",
+    "chokidar": "^3.6.0",
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.477.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "uuid": "^10.0.0"
+  },
   "devDependencies": {
-    "eslint": "^9.0"
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.17.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "^31.7.7",
+    "electron-vite": "^2.3.0",
+    "eslint": "^9.15.0",
+    "playwright": "^1.60.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "bin": {
+    "ai-hub": "./bin/ai-hub"
   }
 }

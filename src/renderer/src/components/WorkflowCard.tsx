@@ -1,0 +1,76 @@
+import { useState } from 'react'
+import type { Workflow } from '../../../../shared/types'
+import { TagBadge } from './TagBadge'
+import { resolveIcon } from '../lib/icons'
+
+interface Props {
+  workflow: Workflow
+  onOpen: (id: string) => void
+}
+
+export function WorkflowCard({ workflow, onOpen }: Props) {
+  const [loading, setLoading] = useState(false)
+  const Icon = resolveIcon(workflow.icon, workflow.tags)
+
+  async function handleOpen() {
+    setLoading(true)
+    await onOpen(workflow.id)
+    setTimeout(() => setLoading(false), 800)
+  }
+
+  return (
+    <div
+      className="group relative flex flex-col rounded-2xl bg-zinc-900 border border-zinc-800/60
+                 overflow-hidden transition-all duration-200
+                 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 hover:border-zinc-700/80"
+    >
+      <div className="h-[3px] w-full shrink-0" style={{ backgroundColor: workflow.color }} />
+
+      <div className="flex flex-col flex-1 p-5 gap-3">
+        <div className="flex items-start gap-3">
+          <span
+            className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0"
+            style={{ backgroundColor: `${workflow.color}22` }}
+          >
+            <Icon size={18} style={{ color: workflow.color }} strokeWidth={1.75} />
+          </span>
+          <div className="min-w-0 pt-0.5">
+            <p className="font-semibold text-zinc-100 leading-snug truncate">{workflow.name}</p>
+            <p className="text-sm text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
+              {workflow.description}
+            </p>
+          </div>
+        </div>
+
+        {workflow.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {workflow.tags.map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+          </div>
+        )}
+
+        <div className="flex-1" />
+
+        <button
+          onClick={handleOpen}
+          disabled={loading}
+          className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
+                     border border-zinc-700/60 text-zinc-300
+                     hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+        >
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+              Opening…
+            </span>
+          ) : (
+            'Open in Claude ↗'
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}

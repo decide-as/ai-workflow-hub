@@ -1,0 +1,45 @@
+import {
+  Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
+  BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
+  Globe, Code, type LucideIcon,
+} from 'lucide-react'
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
+  BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
+  Globe, Code,
+}
+
+const TAG_DEFAULTS: Record<string, LucideIcon> = {
+  finance: Receipt,
+  expense: Receipt,
+  accounting: Receipt,
+  billing: Receipt,
+  invoicing: Receipt,
+  legal: Shield,
+  contracts: Shield,
+  compliance: Lock,
+  nda: PenLine,
+  email: Mail,
+  communication: Mail,
+  messaging: Mail,
+  meetings: Mic,
+  notes: FileText,
+  proposals: BookOpen,
+  operations: ClipboardList,
+  project: ClipboardList,
+  management: ClipboardList,
+  planning: ListOrdered,
+  reporting: BarChart2,
+  analysis: BarChart2,
+  travel: Plane,
+}
+
+export function resolveIcon(name: string, tags: string[]): LucideIcon {
+  if (name && ICON_MAP[name]) return ICON_MAP[name]
+  for (const tag of tags) {
+    const icon = TAG_DEFAULTS[tag.toLowerCase()]
+    if (icon) return icon
+  }
+  return Bot
+}

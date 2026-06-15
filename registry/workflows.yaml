@@ -1,0 +1,209 @@
+workflows:
+  - id: a1b2c3d4-0001-0000-0000-000000000001
+    name: Travel Expense Report
+    description: Processes travel receipts and generates structured expense reports for finance approval
+    tags:
+      - finance
+      - expense
+      - travel
+    repo_path: /Users/decide/git/travel-expense-reporter
+    color: '#10b981'
+    icon: Receipt
+    cluster_id: a1b2c3d4-0001-0000-0000-000000000003
+    added: '2026-01-10'
+    updated: '2026-01-10'
+  - id: a1b2c3d4-0001-0000-0000-000000000002
+    name: Budget Variance Analyst
+    description: Compares actuals vs budget per cost centre and highlights material variances with commentary
+    tags:
+      - finance
+      - budget
+      - analysis
+    repo_path: /Users/decide/git/budget-variance-analyst
+    color: '#10b981'
+    icon: BarChart2
+    cluster_id: a1b2c3d4-0001-0000-0000-000000000003
+    added: '2026-01-15'
+    updated: '2026-01-15'
+  - id: a1b2c3d4-0001-0000-0000-000000000003
+    name: Invoice Generator
+    description: Drafts professional invoices from project summaries and auto-populates client billing details
+    tags:
+      - finance
+      - invoicing
+      - billing
+    repo_path: /Users/decide/git/invoice-generator
+    color: '#10b981'
+    icon: FileText
+    cluster_id: a1b2c3d4-0001-0000-0000-000000000003
+    added: '2026-02-01'
+    updated: '2026-02-01'
+  - id: b2c3d4e5-0002-0000-0000-000000000001
+    name: Contract Reviewer
+    description: Analyses vendor contracts for red flags, unusual clauses, and compliance gaps
+    tags:
+      - legal
+      - contracts
+      - compliance
+    repo_path: /Users/decide/git/contract-reviewer
+    color: '#8b5cf6'
+    icon: Shield
+    cluster_id: b2c3d4e5-0002-0000-0000-000000000003
+    added: '2026-01-20'
+    updated: '2026-01-20'
+  - id: b2c3d4e5-0002-0000-0000-000000000002
+    name: NDA Drafter
+    description: Generates balanced mutual NDA drafts from counterparty details and negotiation preferences
+    tags:
+      - legal
+      - nda
+      - contracts
+    repo_path: /Users/decide/git/nda-drafter
+    color: '#8b5cf6'
+    icon: PenLine
+    cluster_id: b2c3d4e5-0002-0000-0000-000000000003
+    added: '2026-02-05'
+    updated: '2026-02-05'
+  - id: b2c3d4e5-0002-0000-0000-000000000003
+    name: GDPR Compliance Checker
+    description: Reviews data flows and product features against GDPR obligations and flags remediation items
+    tags:
+      - legal
+      - compliance
+      - privacy
+    repo_path: /Users/decide/git/gdpr-checker
+    color: '#8b5cf6'
+    icon: Lock
+    cluster_id: b2c3d4e5-0002-0000-0000-000000000003
+    added: '2026-02-10'
+    updated: '2026-02-10'
+  - id: c3d4e5f6-0003-0000-0000-000000000001
+    name: Client Email Drafter
+    description: Writes professional client-facing emails from bullet-point notes, matching the client's preferred tone
+    tags:
+      - communication
+      - email
+      - client
+    repo_path: /Users/decide/git/email-drafter
+    color: '#f59e0b'
+    icon: Mail
+    cluster_id: c3d4e5f6-0003-0000-0000-000000000003
+    added: '2026-01-25'
+    updated: '2026-01-25'
+  - id: c3d4e5f6-0003-0000-0000-000000000002
+    name: Meeting Notes Summariser
+    description: Converts raw meeting transcripts into structured summaries with decisions, actions, and owners
+    tags:
+      - communication
+      - meetings
+      - notes
+    repo_path: /Users/decide/git/meeting-summariser
+    color: '#f59e0b'
+    icon: Mic
+    cluster_id: c3d4e5f6-0003-0000-0000-000000000003
+    added: '2026-02-03'
+    updated: '2026-02-03'
+  - id: c3d4e5f6-0003-0000-0000-000000000003
+    name: Proposal Writer
+    description: Structures commercial proposals from scope notes, pricing, and company context into polished documents
+    tags:
+      - communication
+      - proposals
+      - client
+    repo_path: /Users/decide/git/proposal-writer
+    color: '#f59e0b'
+    icon: BookOpen
+    cluster_id: c3d4e5f6-0003-0000-0000-000000000003
+    added: '2026-02-12'
+    updated: '2026-02-12'
+  - id: d4e5f6a7-0004-0000-0000-000000000001
+    name: Project Status Reporter
+    description: Generates weekly project health summaries from ticket data, highlighting blockers and risks
+    tags:
+      - operations
+      - project
+      - reporting
+    repo_path: /Users/decide/git/status-reporter
+    color: '#3b82f6'
+    icon: ClipboardList
+    cluster_id: d4e5f6a7-0004-0000-0000-000000000003
+    added: '2026-01-18'
+    updated: '2026-01-18'
+  - id: d4e5f6a7-0004-0000-0000-000000000002
+    name: Task Prioritiser
+    description: Scores and ranks backlog items by impact, effort, and strategic alignment using ICE/RICE frameworks
+    tags:
+      - operations
+      - planning
+      - management
+    repo_path: /Users/decide/git/task-prioritiser
+    color: '#3b82f6'
+    icon: ListOrdered
+    cluster_id: d4e5f6a7-0004-0000-0000-000000000003
+    added: '2026-02-08'
+    updated: '2026-02-08'
+  - id: d4e5f6a7-0004-0000-0000-000000000003
+    name: Team Briefing Generator
+    description: Produces concise weekly team briefings from Slack digests, completed tasks, and upcoming deadlines
+    tags:
+      - operations
+      - planning
+      - reporting
+    repo_path: /Users/decide/git/team-briefing
+    color: '#3b82f6'
+    icon: Users
+    cluster_id: d4e5f6a7-0004-0000-0000-000000000003
+    added: '2026-02-14'
+    updated: '2026-02-14'
+clusters:
+  - id: a1b2c3d4-0001-0000-0000-000000000003
+    name: finance
+    tags:
+      - finance
+      - expense
+      - travel
+      - budget
+      - analysis
+      - invoicing
+      - billing
+    workflow_ids:
+      - a1b2c3d4-0001-0000-0000-000000000001
+      - a1b2c3d4-0001-0000-0000-000000000002
+      - a1b2c3d4-0001-0000-0000-000000000003
+  - id: b2c3d4e5-0002-0000-0000-000000000003
+    name: legal
+    tags:
+      - legal
+      - contracts
+      - compliance
+      - nda
+      - privacy
+    workflow_ids:
+      - b2c3d4e5-0002-0000-0000-000000000001
+      - b2c3d4e5-0002-0000-0000-000000000002
+      - b2c3d4e5-0002-0000-0000-000000000003
+  - id: c3d4e5f6-0003-0000-0000-000000000003
+    name: communication
+    tags:
+      - communication
+      - email
+      - client
+      - meetings
+      - notes
+      - proposals
+    workflow_ids:
+      - c3d4e5f6-0003-0000-0000-000000000001
+      - c3d4e5f6-0003-0000-0000-000000000002
+      - c3d4e5f6-0003-0000-0000-000000000003
+  - id: d4e5f6a7-0004-0000-0000-000000000003
+    name: operations
+    tags:
+      - operations
+      - project
+      - reporting
+      - planning
+      - management
+    workflow_ids:
+      - d4e5f6a7-0004-0000-0000-000000000001
+      - d4e5f6a7-0004-0000-0000-000000000002
+      - d4e5f6a7-0004-0000-0000-000000000003

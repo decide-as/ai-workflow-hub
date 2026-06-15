@@ -28,3 +28,10 @@ node_modules/
 dist/
 .cache/
 *.tsbuildinfo
+
+# Electron build output
+out/
+release/
+
+# Vite
+.vite/

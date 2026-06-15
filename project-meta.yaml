@@ -1,12 +1,14 @@
 # Identity
 name: ai-workflow-hub
-display_name: Ai-Workflow-Hub
+display_name: AI Workflow Hub
 version: 0.1.0
 description: >
-  Desktop app for managing and launching AI workflow sessions
+  Desktop Electron app for managing and launching AI workflow sessions.
+  Displays registered workflows as clickable cards grouped by auto-detected
+  workspace clusters, with a CLI for registration.
 summary: Desktop app for managing and launching AI workflow sessions
 author:
-  name: 
+  name: Christian Braathen
   github: decide-as
 license: All Rights Reserved
 repository: https://github.com/decide-as/ai-workflow-hub
@@ -15,8 +17,8 @@ repository: https://github.com/decide-as/ai-workflow-hub
 visibility: personal
 category: tool
 archetype: node-tool
-tags: []
-domain: 
+tags: [electron, desktop, ai, workflows, productivity]
+domain: productivity
 
 
 # Technical
@@ -24,9 +26,9 @@ language: node
 language_version: ">=20"
 runtime: node
 ai_providers: [none]
-entry_point: 
+entry_point: src/main/index.ts
 install_command: npm install
-run_command: 
+run_command: npm run dev
 test_command: npm test
 
 
@@ -36,10 +38,10 @@ test_command: npm test
 # Capabilities
 has_api_keys: false
 has_cron: false
-has_cli: false
+has_cli: true
 has_tests: true
 has_lib: false
-has_ui: false
+has_ui: true
 has_database: false
 
 
@@ -49,8 +51,8 @@ docker_image: false
 registry_status: draft
 
 # Maturity
-stage: ideation
-phase: discovery
+stage: build
+phase: mvp
 
 # Permissions
 allow_git_push: false
@@ -68,4 +70,3 @@ scoring_profile: solo_dev
 # Template provenance
 template_name: node-tool
 template_version: "10cb18bd7ba2"
-
