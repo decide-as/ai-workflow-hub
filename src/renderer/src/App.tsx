@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Registry, Workflow } from '../../../shared/types'
+import type { Registry, Workflow, OpenErrorKind } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
 import { Sidebar } from './components/Sidebar'
+import { WorkflowModal } from './components/WorkflowModal'
 
 declare global {
   interface Window {
     api: {
       getRegistry: () => Promise<Registry>
-      openWorkflow: (id: string) => Promise<{ success: boolean; error?: string }>
+      openWorkflow: (id: string) => Promise<{ success: boolean; error?: string; errorKind?: OpenErrorKind }>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
@@ -20,6 +21,7 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
+  const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -53,10 +55,28 @@ export default function App() {
   async function handleOpen(id: string) {
     const result = await window.api.openWorkflow(id)
     if (!result.success) {
-      setOpenError(result.error ?? 'Failed to open workflow')
+      setOpenError(errorMessage(result.errorKind, result.error))
       if (errorTimer.current) clearTimeout(errorTimer.current)
-      errorTimer.current = setTimeout(() => setOpenError(null), 4000)
+      errorTimer.current = setTimeout(() => setOpenError(null), 6000)
     }
+  }
+
+  function errorMessage(kind: OpenErrorKind | undefined, raw: string | undefined): string {
+    switch (kind) {
+      case 'permission':
+        return 'Automation permission required — System Settings › Privacy & Security › Automation'
+      case 'claude-missing':
+        return 'claude not found in PATH — install from claude.ai/download'
+      case 'path-missing':
+        return raw ?? 'Repo path not found'
+      default:
+        return raw ?? 'Failed to open workflow'
+    }
+  }
+
+  function handleCardClick(id: string) {
+    const w = registry.workflows.find((w) => w.id === id) ?? null
+    setActiveWorkflow(w)
   }
 
   const filtered = filterWorkflows(registry.workflows)
@@ -71,6 +91,10 @@ export default function App() {
   const unclustered = filtered.filter((w) => w.cluster_id === null)
   const activeCluster = selectedCluster
     ? registry.clusters.find((c) => c.id === selectedCluster)
+    : null
+
+  const modalCluster = activeWorkflow
+    ? registry.clusters.find((c) => c.id === activeWorkflow.cluster_id) ?? null
     : null
 
   return (
@@ -116,6 +140,7 @@ export default function App() {
                   cluster={cluster}
                   workflows={workflows}
                   onOpen={handleOpen}
+                  onClick={handleCardClick}
                 />
               ))}
               {unclustered.length > 0 && (
@@ -123,12 +148,22 @@ export default function App() {
                   cluster={{ id: '__other', name: 'Other', tags: [], workflow_ids: [] }}
                   workflows={unclustered}
                   onOpen={handleOpen}
+                  onClick={handleCardClick}
                 />
               )}
             </div>
           )}
         </main>
       </div>
+
+      {activeWorkflow && (
+        <WorkflowModal
+          workflow={activeWorkflow}
+          cluster={modalCluster}
+          onClose={() => setActiveWorkflow(null)}
+          onOpen={handleOpen}
+        />
+      )}
     </div>
   )
 }

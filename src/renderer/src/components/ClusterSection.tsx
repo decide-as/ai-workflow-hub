@@ -11,10 +11,11 @@ interface Props {
   cluster: Cluster
   workflows: Workflow[]
   onOpen: (id: string) => void
+  onClick: (id: string) => void
   showLabel?: boolean
 }
 
-export function ClusterSection({ cluster, workflows, onOpen, showLabel = true }: Props) {
+export function ClusterSection({ cluster, workflows, onOpen, onClick, showLabel = true }: Props) {
   const color = cluster.id === '__other' ? '#52525b' : hashColor(cluster.name)
 
   return (
@@ -31,7 +32,7 @@ export function ClusterSection({ cluster, workflows, onOpen, showLabel = true }:
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
         {workflows.map((w) => (
-          <WorkflowCard key={w.id} workflow={w} onOpen={onOpen} />
+          <WorkflowCard key={w.id} workflow={w} onOpen={onOpen} onClick={onClick} />
         ))}
       </div>
     </section>
