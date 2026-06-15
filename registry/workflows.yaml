@@ -8,7 +8,7 @@ workflows:
       expense report ready for finance approval — including a policy-compliance
       check against your company's travel policy document.
     tags: [finance, expense, travel]
-    repo_path: /Users/decide/git/travel-expense-reporter
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/travel-expense-report
     color: '#10b981'
     icon: Receipt
     cluster_id: a1b2c3d4-0001-0000-0000-000000000003
@@ -59,7 +59,7 @@ workflows:
       variance commentary with root-cause hypotheses and recommended actions,
       formatted for the monthly board pack.
     tags: [finance, budget, analysis]
-    repo_path: /Users/decide/git/budget-variance-analyst
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/budget-variance-analyst
     color: '#10b981'
     icon: BarChart2
     cluster_id: a1b2c3d4-0001-0000-0000-000000000003
@@ -110,7 +110,7 @@ workflows:
       Handles multi-currency, VAT/GST calculation by jurisdiction, and
       populates payment terms from the signed contract on file.
     tags: [finance, invoicing, billing]
-    repo_path: /Users/decide/git/invoice-generator
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/invoice-generator
     color: '#10b981'
     icon: FileText
     cluster_id: a1b2c3d4-0001-0000-0000-000000000003
@@ -163,7 +163,7 @@ workflows:
       explanations, and suggested redlines — prioritised so your lawyer
       can focus on what matters.
     tags: [legal, contracts, compliance]
-    repo_path: /Users/decide/git/contract-reviewer
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/contract-reviewer
     color: '#8b5cf6'
     icon: Shield
     cluster_id: b2c3d4e5-0002-0000-0000-000000000003
@@ -214,7 +214,7 @@ workflows:
       scope, exclusions, term, remedies) and flags any non-standard
       requests. Outputs a clean DOCX for counsel review before sending.
     tags: [legal, nda, contracts]
-    repo_path: /Users/decide/git/nda-drafter
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/nda-drafter
     color: '#8b5cf6'
     icon: PenLine
     cluster_id: b2c3d4e5-0002-0000-0000-000000000003
@@ -268,7 +268,7 @@ workflows:
       remediation plan with article references — suitable for submission
       to your DPA or external auditor.
     tags: [legal, compliance, privacy]
-    repo_path: /Users/decide/git/gdpr-checker
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/gdpr-compliance-checker
     color: '#8b5cf6'
     icon: Lock
     cluster_id: b2c3d4e5-0002-0000-0000-000000000003
@@ -316,7 +316,7 @@ workflows:
       ensures consistent use of the client's preferred terminology.
       Flags anything that should be legal-reviewed before sending.
     tags: [communication, email, client]
-    repo_path: /Users/decide/git/email-drafter
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/client-email-drafter
     color: '#f59e0b'
     icon: Mail
     cluster_id: c3d4e5f6-0003-0000-0000-000000000003
@@ -364,7 +364,7 @@ workflows:
       deadlines, open questions, and a 3-sentence executive summary.
       Supports Norwegian and English transcripts.
     tags: [communication, meetings, notes]
-    repo_path: /Users/decide/git/meeting-summariser
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/meeting-notes-summariser
     color: '#f59e0b'
     icon: Mic
     cluster_id: c3d4e5f6-0003-0000-0000-000000000003
@@ -411,7 +411,7 @@ workflows:
       approach, team, pricing, terms), and highlights your differentiators.
       Produces a PDF-ready DOCX.
     tags: [communication, proposals, client]
-    repo_path: /Users/decide/git/proposal-writer
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/proposal-writer
     color: '#f59e0b'
     icon: BookOpen
     cluster_id: c3d4e5f6-0003-0000-0000-000000000003
@@ -464,7 +464,7 @@ workflows:
       management action — formatted for both internal teams and
       client-facing delivery.
     tags: [operations, project, reporting]
-    repo_path: /Users/decide/git/status-reporter
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/project-status-reporter
     color: '#3b82f6'
     icon: ClipboardList
     cluster_id: d4e5f6a7-0004-0000-0000-000000000003
@@ -516,7 +516,7 @@ workflows:
       sprint plan — helping teams move from gut-feel to data-driven
       prioritisation in minutes.
     tags: [operations, planning, management]
-    repo_path: /Users/decide/git/task-prioritiser
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/task-prioritiser
     color: '#3b82f6'
     icon: ListOrdered
     cluster_id: d4e5f6a7-0004-0000-0000-000000000003
@@ -567,7 +567,7 @@ workflows:
       tone, highlights wins, flags risks, and lists the week's priorities
       — ready to post in under 2 minutes.
     tags: [operations, planning, reporting]
-    repo_path: /Users/decide/git/team-briefing
+    repo_path: /Users/decide/git/ai-workflow-hub/workflows/team-briefing-generator
     color: '#3b82f6'
     icon: Users
     cluster_id: d4e5f6a7-0004-0000-0000-000000000003
