@@ -51,8 +51,8 @@ docker_image: false
 registry_status: draft
 
 # Maturity
-stage: ideation
-phase: prototype
+stage: build
+phase: mvp
 
 # Permissions
 allow_git_push: false
