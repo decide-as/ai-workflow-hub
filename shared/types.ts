@@ -65,7 +65,10 @@ export interface Registry {
   clusters: Cluster[]
 }
 
+export type OpenErrorKind = 'permission' | 'claude-missing' | 'path-missing' | 'unknown'
+
 export interface OpenResult {
   success: boolean
   error?: string
+  errorKind?: OpenErrorKind
 }

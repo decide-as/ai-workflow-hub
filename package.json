@@ -8,7 +8,7 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron-vite dev",
-    "test": "vitest run",
+    "test": "node --experimental-vm-modules node_modules/.bin/vitest run",
     "lint": "eslint src/ cli/ clustering/ shared/ --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "ai-hub": "tsx cli/index.ts"
