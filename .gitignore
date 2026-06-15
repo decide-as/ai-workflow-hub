@@ -1,0 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.envrc
+
+# Claude Code (local-only files)
+.claude/settings.local.json
+.claude/plans/
+.claude/memory/
+.claude/session-state-*.md
+.claude/handover-*.md
+.claude/telemetry/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Runtime data
+data/
+!data/.gitkeep
+
+# Node.js
+node_modules/
+dist/
+.cache/
+*.tsbuildinfo
