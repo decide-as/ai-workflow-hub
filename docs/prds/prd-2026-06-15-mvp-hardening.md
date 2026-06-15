@@ -4,7 +4,8 @@ title: MVP Hardening — Launch Verification, Tests, Error UX
 owner: Christian Braathen
 created: 2026-06-15
 updated: 2026-06-15
-status: draft
+branch: 2026-06-15/feat/mvp-hardening
+status: implemented
 priority: P1
 related_docs: []
 ---
