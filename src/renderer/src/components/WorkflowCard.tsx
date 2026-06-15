@@ -6,13 +6,15 @@ import { resolveIcon } from '../lib/icons'
 interface Props {
   workflow: Workflow
   onOpen: (id: string) => void
+  onClick: (id: string) => void
 }
 
-export function WorkflowCard({ workflow, onOpen }: Props) {
+export function WorkflowCard({ workflow, onOpen, onClick }: Props) {
   const [loading, setLoading] = useState(false)
   const Icon = resolveIcon(workflow.icon, workflow.tags)
 
-  async function handleOpen() {
+  async function handleOpen(e: React.MouseEvent) {
+    e.stopPropagation()
     setLoading(true)
     await onOpen(workflow.id)
     setTimeout(() => setLoading(false), 800)
@@ -20,9 +22,14 @@ export function WorkflowCard({ workflow, onOpen }: Props) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onClick(workflow.id)}
+      onKeyDown={(e) => e.key === 'Enter' && onClick(workflow.id)}
       className="group relative flex flex-col rounded-2xl bg-zinc-900 border border-zinc-800/60
-                 overflow-hidden transition-all duration-200
-                 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 hover:border-zinc-700/80"
+                 overflow-hidden transition-all duration-200 cursor-pointer
+                 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 hover:border-zinc-700/80
+                 focus:outline-none focus:ring-2 focus:ring-zinc-600"
     >
       <div className="h-[3px] w-full shrink-0" style={{ backgroundColor: workflow.color }} />
 

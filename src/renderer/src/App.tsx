@@ -4,6 +4,7 @@ import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
 import { Sidebar } from './components/Sidebar'
+import { WorkflowModal } from './components/WorkflowModal'
 
 declare global {
   interface Window {
@@ -20,6 +21,7 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
+  const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -59,6 +61,11 @@ export default function App() {
     }
   }
 
+  function handleCardClick(id: string) {
+    const w = registry.workflows.find((w) => w.id === id) ?? null
+    setActiveWorkflow(w)
+  }
+
   const filtered = filterWorkflows(registry.workflows)
   const visibleClusters = selectedCluster
     ? registry.clusters.filter((c) => c.id === selectedCluster)
@@ -71,6 +78,10 @@ export default function App() {
   const unclustered = filtered.filter((w) => w.cluster_id === null)
   const activeCluster = selectedCluster
     ? registry.clusters.find((c) => c.id === selectedCluster)
+    : null
+
+  const modalCluster = activeWorkflow
+    ? registry.clusters.find((c) => c.id === activeWorkflow.cluster_id) ?? null
     : null
 
   return (
@@ -116,6 +127,7 @@ export default function App() {
                   cluster={cluster}
                   workflows={workflows}
                   onOpen={handleOpen}
+                  onClick={handleCardClick}
                 />
               ))}
               {unclustered.length > 0 && (
@@ -123,12 +135,22 @@ export default function App() {
                   cluster={{ id: '__other', name: 'Other', tags: [], workflow_ids: [] }}
                   workflows={unclustered}
                   onOpen={handleOpen}
+                  onClick={handleCardClick}
                 />
               )}
             </div>
           )}
         </main>
       </div>
+
+      {activeWorkflow && (
+        <WorkflowModal
+          workflow={activeWorkflow}
+          cluster={modalCluster}
+          onClose={() => setActiveWorkflow(null)}
+          onOpen={handleOpen}
+        />
+      )}
     </div>
   )
 }
