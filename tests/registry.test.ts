@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFileSync, mkdirSync, rmSync } from 'fs'
+import { writeFileSync, readFileSync, mkdirSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import yaml from 'js-yaml'
@@ -46,7 +46,7 @@ describe('registry YAML round-trip', () => {
       clusters: [],
     }
     writeFileSync(registryPath, yaml.dump(reg), 'utf-8')
-    const loaded = yaml.load(require('fs').readFileSync(registryPath, 'utf-8')) as Registry
+    const loaded = yaml.load(readFileSync(registryPath, 'utf-8')) as Registry
     expect(loaded.workflows).toHaveLength(1)
     expect(loaded.workflows[0].id).toBe('abc-123')
     expect(loaded.workflows[0].tags).toEqual(['finance', 'reporting'])
@@ -54,7 +54,7 @@ describe('registry YAML round-trip', () => {
 
   it('survives an empty registry file (empty YAML → null)', () => {
     writeFileSync(registryPath, '', 'utf-8')
-    const loaded = yaml.load(require('fs').readFileSync(registryPath, 'utf-8')) as Registry | null
+    const loaded = yaml.load(readFileSync(registryPath, 'utf-8')) as Registry | null
     const reg = loaded ?? makeRegistry()
     expect(reg.workflows).toHaveLength(0)
   })
@@ -82,7 +82,7 @@ describe('registry YAML round-trip', () => {
       clusters: [{ id: 'cluster-1', name: 'Legal', tags: ['legal'], workflow_ids: ['xyz-999'] }],
     }
     writeFileSync(registryPath, yaml.dump(reg), 'utf-8')
-    const loaded = yaml.load(require('fs').readFileSync(registryPath, 'utf-8')) as Registry
+    const loaded = yaml.load(readFileSync(registryPath, 'utf-8')) as Registry
     const w = loaded.workflows[0]
     expect(w.run_count).toBe(42)
     expect(w.success_rate).toBe(97.5)

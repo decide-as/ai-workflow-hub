@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync } from 'fs'
+import { writeFileSync, readFileSync, renameSync, mkdirSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import yaml from 'js-yaml'
@@ -15,7 +15,7 @@ function emptyRegistry(): Registry {
 function writeRegistry(path: string, reg: Registry): void {
   const tmp = path + '.tmp'
   writeFileSync(tmp, yaml.dump(reg, { lineWidth: 120 }), 'utf-8')
-  require('fs').renameSync(tmp, path)
+  renameSync(tmp, path)
 }
 
 function readRegistry(path: string): Registry {
