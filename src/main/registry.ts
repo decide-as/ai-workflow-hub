@@ -9,7 +9,14 @@ const EMPTY: Registry = { workflows: [], clusters: [] }
 
 export function getRegistryPath(): string {
   if (process.env.AI_HUB_REGISTRY) return process.env.AI_HUB_REGISTRY
-  return join(app.getAppPath(), 'registry', 'workflows.yaml')
+  // app.getAppPath() resolves to the dir containing package.json regardless of cwd
+  // In dev/production (non-asar) this is the project root; works with absolute launch paths
+  const appPath = app.getAppPath()
+  // electron-vite bundles to out/main/ — climb two levels if we're inside out/
+  const base = appPath.endsWith('/out/main') || appPath.endsWith('\\out\\main')
+    ? join(appPath, '..', '..')
+    : appPath
+  return join(base, 'registry', 'workflows.yaml')
 }
 
 let cache: Registry = EMPTY
