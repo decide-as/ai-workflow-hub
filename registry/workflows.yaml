@@ -4,9 +4,9 @@ workflows:
   - id: 1e66a6fe-42f3-40fc-b831-a0bea33de71f
     name: Travel Reimbursement
     description: >
-      Register a trip, drop in your receipts, and produce a Norwegian-format
-      travel expense report. Opens an in-app workspace for managing trips and
-      attachments.
+      Register a trip, drop your receipts into it, and produce a Norwegian-format
+      travel expense report (Excel) plus a bookkeeping summary. Opens a Claude
+      session that extracts, classifies, and totals the receipts.
     tags: [finance, expense, travel, reimbursement]
     repo_path: workflows/travel-reimbursement-form
     color: '#0ea5e9'
@@ -17,4 +17,23 @@ workflows:
     status: active
     trigger_type: manual
     complexity: moderate
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: receipts
+        type: file
+        description: Receipt images/PDFs — bank-app screenshots or paper receipts
+        required: true
+        example: '06.png, 29.pdf'
+      - name: trip_name
+        type: string
+        description: A name for the trip (becomes its data folder)
+        required: true
+        example: London May 2026
+    outputs:
+      - name: expense_report
+        type: file
+        description: >
+          Filled Travel Expense Report (.xlsx) with bookkeeping summary, plus the
+          receipts renamed to their 0# attachment numbers.
 clusters: []
