@@ -20,6 +20,9 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -63,6 +66,70 @@ MARKUP_ROW = {
 def die(msg: str) -> None:
     print(f"error: {msg}", file=sys.stderr)
     raise SystemExit(1)
+
+
+def _find_soffice():
+    """Locate the LibreOffice CLI, or None."""
+    for c in (
+        "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+        shutil.which("soffice"),
+        shutil.which("libreoffice"),
+    ):
+        if c and os.path.exists(c):
+            return c
+    return None
+
+
+def bake_values(path: Path) -> bool:
+    """Recalculate the workbook in place so computed totals are stored as cached
+    values. openpyxl writes formulas but no results, so without this some viewers
+    (Numbers, Excel for Mac) show blank/zero totals until a manual recalc. Uses
+    LibreOffice headless; returns False (with a warning) if it isn't available —
+    the file still carries fullCalcOnLoad so Excel will recalc on open."""
+    soffice = _find_soffice()
+    if not soffice:
+        print(
+            "warning: LibreOffice not found — totals will recalc on open but are "
+            "not pre-cached. Install LibreOffice for baked values.",
+            file=sys.stderr,
+        )
+        return False
+    tmp = path.parent / "_recalc"
+    tmp.mkdir(exist_ok=True)
+    try:
+        subprocess.run(
+            [
+                soffice,
+                "--headless",
+                "-env:UserInstallation=file:///tmp/lo_recalc_profile",
+                "--calc",
+                "--convert-to",
+                "xlsx:Calc MS Excel 2007 XML",
+                "--outdir",
+                str(tmp),
+                str(path),
+            ],
+            check=True,
+            capture_output=True,
+            timeout=180,
+        )
+        produced = tmp / f"{path.stem}.xlsx"
+        if produced.exists():
+            shutil.move(str(produced), str(path))
+            return True
+        print(
+            "warning: recalc produced no file; totals will recalc on open.",
+            file=sys.stderr,
+        )
+        return False
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        print(
+            f"warning: recalc failed ({e}); totals will recalc on open.",
+            file=sys.stderr,
+        )
+        return False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def parse_date(s: str):
@@ -156,9 +223,16 @@ def fill(report: dict, profile: dict, template: Path, out: Path) -> None:
             )
         ws[f"H{MARKUP_ROW[cat]}"] = float(rate)
 
+    # Force a full recalc on open as a fallback for viewers that honor it.
+    wb.calculation.fullCalcOnLoad = True
+
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
-    print(f"wrote {out}  ({len(txns)} transactions)")
+    # Bake computed totals in so they display in every viewer, not just on recalc.
+    baked = bake_values(out)
+    print(
+        f"wrote {out}  ({len(txns)} transactions){'  [totals baked]' if baked else ''}"
+    )
 
 
 def main() -> None:

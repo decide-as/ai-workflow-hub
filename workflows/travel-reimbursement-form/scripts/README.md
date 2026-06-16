@@ -18,7 +18,13 @@ python3 scripts/generate_report.py \
   --out      data/<trip-slug>/output/<trip-slug>.xlsx
 ```
 
-Requires **openpyxl**: `python3 -m pip install --user openpyxl`.
+Requires **openpyxl**: `python3 -m pip install --user openpyxl`. After filling the
+template, it recalculates the workbook with **LibreOffice** (headless) to bake the
+computed totals into the file — openpyxl writes formulas but no results, so without
+this some viewers (Numbers, Excel for Mac) show blank/zero totals. If LibreOffice
+isn't installed the generator still works and sets `fullCalcOnLoad`, so the totals
+recalc when the file is opened in Excel; install LibreOffice for pre-baked totals.
+
 Input schema: `report.example.json`. Behavior/rules: `.claude/rules/06-output-excel.md`.
 
 It validates the data (VAT vs currency, ledger category, mandatory currency, max
