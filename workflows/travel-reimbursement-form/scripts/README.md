@@ -28,7 +28,10 @@ recalc when the file is opened in Excel; install LibreOffice for pre-baked total
 Input schema: `report.example.json`. Behavior/rules: `.claude/rules/06-output-excel.md`.
 
 It validates the data (VAT vs currency, ledger category, mandatory currency, max
-28 ledger rows) and exits non-zero with a clear message on violation.
+28 ledger rows) and, after baking, cross-checks the workbook's computed totals
+against the transaction sums (grand total, markup combined, and every per-category
+NOK/other × refunded/not cell). It exits non-zero with a clear message on any
+violation.
 
 ## Other helpers
 

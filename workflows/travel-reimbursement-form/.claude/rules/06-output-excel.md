@@ -31,6 +31,13 @@ It enforces the rules: NOK rows need VAT / non-NOK rows must not have it; catego
 must be one of the seven ledger categories; original currency is mandatory; max
 **28** ledger rows. Fix the data if it errors — don't bypass it.
 
+After filling, it recalculates the workbook (LibreOffice) so the totals are baked
+in, then **cross-checks** the workbook's computed totals against sums taken
+straight from the transactions — the grand total, the markup combined total, and
+every per-category bookkeeping cell (NOK/other × refunded/not). If any disagree it
+fails: that means a row landed outside a formula's range or a category is off, not
+that the data is wrong. Don't bypass it.
+
 `report.json`'s `allowance` entries are keyed by **template row** (47–67); see
 `.claude/reference/skatteetaten-rates-2026.md` for the row meanings.
 

@@ -132,6 +132,84 @@ def bake_values(path: Path) -> bool:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _cellnum(ws, coord) -> float:
+    v = ws[coord].value
+    return float(v) if v is not None else 0.0
+
+
+def validate_totals(path: Path, txns: list) -> None:
+    """Cross-check the template's computed totals against sums taken directly from
+    the transactions: the grand total, the markup combined total, and every
+    per-category bookkeeping cell (NOK/other x refunded/not). Catches a misplaced
+    row, a formula whose range misses data, or a category mismatch. Requires the
+    workbook to have been recalculated (baked); skips with a warning otherwise."""
+    ws = openpyxl.load_workbook(path, data_only=True)["Sheet1"]
+    if ws["G91"].value is None:  # no cached results -> can't compare
+        print(
+            "warning: totals not pre-computed (no recalc) — skipping totals "
+            "cross-check. Install LibreOffice to enable it.",
+            file=sys.stderr,
+        )
+        return
+
+    TOL = 0.01
+
+    def amt(t):
+        return float(t.get("amount_nok") or 0)
+
+    def rebilled(t):
+        v = t.get("rebilled_nok")
+        return v is not None and float(v) > 0
+
+    problems = []
+    expected_grand = round(sum(amt(t) for t in txns), 2)
+    if abs(_cellnum(ws, "G91") - expected_grand) > TOL:
+        problems.append(
+            f"grand total G91={_cellnum(ws, 'G91'):.2f}, "
+            f"sum of transactions={expected_grand:.2f}"
+        )
+    if abs(_cellnum(ws, "J79") - expected_grand) > TOL:
+        problems.append(
+            f"markup combined J79={_cellnum(ws, 'J79'):.2f}, "
+            f"expected {expected_grand:.2f}"
+        )
+
+    # Per-category bookkeeping rows (category label is in column A).
+    for r in range(84, 91):
+        cat = ws[f"A{r}"].value
+        if not cat:
+            continue
+        rows = [t for t in txns if t.get("category") == cat]
+        nok = sum(amt(t) for t in rows if t.get("original_currency") == "NOK")
+        oth = sum(amt(t) for t in rows if t.get("original_currency") != "NOK")
+        ref_nok = sum(
+            amt(t) for t in rows if t.get("original_currency") == "NOK" and rebilled(t)
+        )
+        ref_oth = sum(
+            amt(t) for t in rows if t.get("original_currency") != "NOK" and rebilled(t)
+        )
+        expected = {
+            "C": round(nok - ref_nok, 2),  # not refunded, NOK
+            "D": round(oth - ref_oth, 2),  # not refunded, other currencies
+            "E": round(ref_nok, 2),  # refunded, NOK
+            "F": round(ref_oth, 2),  # refunded, other currencies
+            "G": round(nok + oth, 2),  # category total
+        }
+        for col, exp in expected.items():
+            got = _cellnum(ws, f"{col}{r}")
+            if abs(got - exp) > TOL:
+                problems.append(f"{cat} {col}{r}={got:.2f}, expected {exp:.2f}")
+
+    if problems:
+        die(
+            "computed totals do not match the transactions:\n  - "
+            + "\n  - ".join(problems)
+        )
+    print(
+        f"  totals validated: {expected_grand:.2f} NOK == sum of {len(txns)} transactions"
+    )
+
+
 def parse_date(s: str):
     """ISO string -> date (no time) or datetime (with time)."""
     if s is None:
@@ -230,6 +308,9 @@ def fill(report: dict, profile: dict, template: Path, out: Path) -> None:
     wb.save(out)
     # Bake computed totals in so they display in every viewer, not just on recalc.
     baked = bake_values(out)
+    if baked:
+        # Guard: the template's computed totals must equal the transaction sums.
+        validate_totals(out, txns)
     print(
         f"wrote {out}  ({len(txns)} transactions){'  [totals baked]' if baked else ''}"
     )
