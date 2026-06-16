@@ -1,0 +1,4 @@
+{
+  "personal-dnb": { "kind": "personal", "currency": "NOK", "label": "DNB personal account" },
+  "company-sb1":  { "kind": "company",  "currency": "NOK", "label": "SpareBank 1 company card" }
+}

@@ -1,0 +1,12 @@
+# Working data — bank exports, the master ledger, normalized/triage state, routed
+# batches. Everything under data/ is private financial state and must never be
+# committed.
+data/*
+!data/.gitkeep
+
+# Account map (may reveal which banks/accounts you hold) — copy
+# accounts.example.json to accounts.json and fill it in. Never commit the real one.
+accounts.json
+
+# Any generated reports routed out to the forms.
+*.xlsx

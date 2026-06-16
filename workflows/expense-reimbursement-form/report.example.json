@@ -1,0 +1,39 @@
+{
+  "company": "Decide AS",
+  "claim_date": "2026-06-16",
+  "transactions": [
+    {
+      "date": "2026-05-18",
+      "attachment_ids": ["9f1c0b2a-1d3e-4f5a-8b6c-7d8e9f0a1b2c"],
+      "attachment_no": "01",
+      "supplier": "Rema 1000",
+      "description": "Groceries for office kitchen",
+      "category": "Meals",
+      "currency": "NOK",
+      "amount_incl_vat": 123.06,
+      "vat_rate": 0.15
+    },
+    {
+      "date": "2026-05-19",
+      "attachment_ids": ["a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"],
+      "attachment_no": "02",
+      "supplier": "Flytoget",
+      "description": "Airport express to client meeting",
+      "category": "Transport",
+      "currency": "NOK",
+      "amount_incl_vat": 220.0,
+      "vat_rate": 0.12
+    },
+    {
+      "date": "2026-05-20",
+      "attachment_ids": ["b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e"],
+      "attachment_no": "03",
+      "supplier": "Transport for London",
+      "description": "Tube to client (London)",
+      "category": "Transport",
+      "currency": "GBP",
+      "amount_incl_vat": 72.39,
+      "vat_rate": 0
+    }
+  ]
+}

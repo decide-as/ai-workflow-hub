@@ -43,8 +43,8 @@ export function WorkflowCard({ workflow, onOpen, onClick }: Props) {
           </span>
           <div className="min-w-0 pt-0.5">
             <p className="font-semibold text-zinc-100 leading-snug truncate">{workflow.name}</p>
-            <p className="text-sm text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
-              {workflow.description}
+            <p className="text-sm text-zinc-300 mt-1 truncate leading-relaxed">
+              {workflow.summary ?? workflow.description}
             </p>
           </div>
         </div>
