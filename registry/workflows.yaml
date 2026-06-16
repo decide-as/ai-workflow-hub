@@ -1,4 +1,20 @@
 # Workflow registry
 # Populated as workflows are added via the CLI (`ai-hub add`) or the desktop app.
-workflows: []
+workflows:
+  - id: 1e66a6fe-42f3-40fc-b831-a0bea33de71f
+    name: Travel Reimbursement
+    description: >
+      Register a trip, drop in your receipts, and produce a Norwegian-format
+      travel expense report. Opens an in-app workspace for managing trips and
+      attachments.
+    tags: [finance, expense, travel, reimbursement]
+    repo_path: workflows/travel-reimbursement-form
+    color: '#0ea5e9'
+    icon: Plane
+    cluster_id: null
+    added: '2026-06-16'
+    updated: '2026-06-16'
+    status: active
+    trigger_type: manual
+    complexity: moderate
 clusters: []

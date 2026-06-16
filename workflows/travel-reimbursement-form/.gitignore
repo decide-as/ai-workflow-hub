@@ -1,0 +1,12 @@
+# Working data — trips, raw receipts, processed attachments, generated reports.
+# Everything under data/ is private per-run state and must never be committed.
+data/*
+!data/.gitkeep
+
+# Personal profile (name, address, bank account) — copy profile.example.json
+# to profile.json and fill it in. Never commit the real one.
+profile.json
+
+# Generated reports anywhere
+*.xlsx
+!templates/*.xlsx

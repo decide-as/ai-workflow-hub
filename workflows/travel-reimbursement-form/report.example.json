@@ -1,0 +1,38 @@
+{
+  "travel_start": "2026-05-20T08:30",
+  "travel_end": "2026-05-26T20:00",
+  "date_submitted": "2026-06-16",
+
+  "transactions": [
+    {
+      "date": "2026-05-20",
+      "description": "SAS round-trip Oslo – London – Oslo (SK809 / SK812)",
+      "attachment_no": "29, 30, 33",
+      "amount_nok": 1666.00,
+      "vat_nok": 178.50,
+      "category": "Transport",
+      "rebilled_nok": 1666.00,
+      "original_currency": "NOK"
+    },
+    {
+      "date": "2026-05-20",
+      "description": "Uber – ride (London)",
+      "attachment_no": "07, 34",
+      "amount_nok": 269.04,
+      "vat_nok": null,
+      "category": "Transport",
+      "rebilled_nok": null,
+      "original_currency": "GBP"
+    }
+  ],
+
+  "allowance": [
+    { "row": 47, "quantity": 0, "quantity_rebilled": 0 }
+  ],
+
+  "markup": {
+    "Hotel": 0.10, "Transport": 0.10, "Fuel": 0.10, "Meals": 0.10,
+    "Phone": 0.10, "Entertainment": 0.10, "Misc": 0.10,
+    "Subsistence and supplements": 0.10
+  }
+}
