@@ -22,6 +22,8 @@ export interface Workflow {
   name: string
   description: string
   tags: string[]
+  // Path to the workflow repo, used to launch a Claude terminal session. May be
+  // absolute, or relative to the app root (resolved at open time).
   repo_path: string
   color: string
   icon: string

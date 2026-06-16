@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { join } from 'path'
+import { isAbsolute, join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { getRegistry, watchRegistry, getRegistryPath } from './registry'
+import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
 import { openInTerminal } from './terminal'
 import { IPC } from '../../shared/ipc-channels'
 
@@ -46,7 +46,11 @@ app.whenReady().then(() => {
     const reg = getRegistry()
     const workflow = reg.workflows.find((w) => w.id === id)
     if (!workflow) return { success: false, error: 'Workflow not found' }
-    return openInTerminal(workflow.repo_path)
+    // repo_path may be absolute, or relative to the app root (for bundled workflows).
+    const repoPath = isAbsolute(workflow.repo_path)
+      ? workflow.repo_path
+      : join(getBaseDir(), workflow.repo_path)
+    return openInTerminal(repoPath)
   })
 
   watchRegistry(getRegistryPath(), (reg) => {
