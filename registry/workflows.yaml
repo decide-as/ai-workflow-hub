@@ -73,10 +73,49 @@ workflows:
         description: >
           Filled Expense Reimbursement form (.xlsx) with bookkeeping summary, plus
           the receipts renamed to their 0# attachment numbers.
+  - id: db3104eb-04ac-47b1-87d6-6e369b7724f3
+    name: Bank Transaction Triage
+    summary: Bank exports → triaged, deduped, routed to forms.
+    description: >
+      Upload many bank exports (PDF statements, CSV/XLSX) from several accounts.
+      Opens a Claude session that normalizes every line, lets you mark each
+      register / maybe / skip, keeps a hash-keyed master ledger so re-imported
+      statements never double-count, and routes reimbursable items into the
+      Expense and Travel Reimbursement forms.
+    tags: [finance, accounting, bank, reconciliation, bookkeeping]
+    repo_path: workflows/bank-transaction-triage
+    color: '#f59e0b'
+    icon: ListOrdered
+    cluster_id: finance
+    added: '2026-06-16'
+    updated: '2026-06-16'
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: bank_exports
+        type: file
+        description: Bank statements / transaction exports (PDF, CSV, XLSX) from one or more accounts
+        required: true
+        example: 'dnb-mai-2026.pdf, sparebank1-q2.csv'
+      - name: batch_name
+        type: string
+        description: A name for the triage batch (becomes its data folder)
+        required: true
+        example: Q2 2026 reconciliation
+    outputs:
+      - name: triaged_ledger
+        type: json
+        description: >
+          The hash-keyed master ledger of every dispositioned transaction, plus
+          routed batches handed to the Expense/Travel Reimbursement generators.
 clusters:
   - id: finance
     name: Finance
-    tags: [finance, expense, reimbursement, accounting]
+    tags: [finance, expense, reimbursement, accounting, bank]
     workflow_ids:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
+      - db3104eb-04ac-47b1-87d6-6e369b7724f3

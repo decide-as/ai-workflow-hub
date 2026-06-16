@@ -1,0 +1,32 @@
+[
+  {
+    "account": "personal-dnb",
+    "date": "2026-05-18",
+    "amount": -123.06,
+    "currency": "NOK",
+    "description": "REMA 1000 OSLO",
+    "balance": 4567.89,
+    "type": "card",
+    "source_file": "dnb-mai-2026.pdf"
+  },
+  {
+    "account": "personal-dnb",
+    "date": "2026-05-22",
+    "amount": -880.0,
+    "currency": "NOK",
+    "description": "Flytoget AS",
+    "balance": 3687.89,
+    "type": "card",
+    "source_file": "dnb-mai-2026.pdf"
+  },
+  {
+    "account": "company-sb1",
+    "date": "2026-05-25",
+    "amount": -1499.0,
+    "currency": "NOK",
+    "description": "Elkjop Nordbyhagen — monitor",
+    "balance": null,
+    "type": "card",
+    "source_file": "sparebank1-q2.csv"
+  }
+]
