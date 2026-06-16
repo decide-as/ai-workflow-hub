@@ -3,6 +3,7 @@
 workflows:
   - id: 1e66a6fe-42f3-40fc-b831-a0bea33de71f
     name: Travel Reimbursement
+    summary: Trip receipts → a Norwegian travel expense report.
     description: >
       Register a trip, drop your receipts into it, and produce a Norwegian-format
       travel expense report (Excel) plus a bookkeeping summary. Opens a Claude
@@ -11,7 +12,7 @@ workflows:
     repo_path: workflows/travel-reimbursement-form
     color: '#0ea5e9'
     icon: Plane
-    cluster_id: null
+    cluster_id: finance
     added: '2026-06-16'
     updated: '2026-06-16'
     status: active
@@ -36,4 +37,46 @@ workflows:
         description: >
           Filled Travel Expense Report (.xlsx) with bookkeeping summary, plus the
           receipts renamed to their 0# attachment numbers.
-clusters: []
+  - id: 7bc57d10-d082-4905-8aa6-535744725c82
+    name: Expense Reimbursement
+    summary: Business receipts → a reimbursement form with VAT.
+    description: >
+      Drop your business-expense receipts into a batch and produce a reimbursement
+      form (Excel) plus a bookkeeping summary. Opens a Claude session that extracts,
+      classifies, and totals the receipts with VAT.
+    tags: [finance, expense, reimbursement, accounting]
+    repo_path: workflows/expense-reimbursement-form
+    color: '#10b981'
+    icon: Receipt
+    cluster_id: finance
+    added: '2026-06-16'
+    updated: '2026-06-16'
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: receipts
+        type: file
+        description: Receipt images/PDFs — bank-app screenshots or paper receipts
+        required: true
+        example: '06.png, 29.pdf'
+      - name: batch_name
+        type: string
+        description: A name for the expense batch (becomes its data folder)
+        required: true
+        example: Office supplies Q2 2026
+    outputs:
+      - name: expense_report
+        type: file
+        description: >
+          Filled Expense Reimbursement form (.xlsx) with bookkeeping summary, plus
+          the receipts renamed to their 0# attachment numbers.
+clusters:
+  - id: finance
+    name: Finance
+    tags: [finance, expense, reimbursement, accounting]
+    workflow_ids:
+      - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
+      - 7bc57d10-d082-4905-8aa6-535744725c82
