@@ -30,7 +30,7 @@ export function ClusterSection({ cluster, workflows, onOpen, onClick, showLabel 
         </div>
       )}
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3">
         {workflows.map((w) => (
           <WorkflowCard key={w.id} workflow={w} onOpen={onOpen} onClick={onClick} />
         ))}

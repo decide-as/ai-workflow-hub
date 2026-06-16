@@ -20,7 +20,10 @@ export interface WorkflowOutput {
 export interface Workflow {
   id: string
   name: string
+  // Full description — shown in the workflow modal.
   description: string
+  // Short one-line summary for the card. Falls back to description if unset.
+  summary?: string
   tags: string[]
   // Path to the workflow repo, used to launch a Claude terminal session. May be
   // absolute, or relative to the app root (resolved at open time).
