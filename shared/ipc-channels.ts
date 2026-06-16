@@ -4,4 +4,5 @@ export const IPC = {
   REGISTRY_UPDATED: 'registry-updated',
   PICK_FOLDER: 'pick-folder',
   RUN_WORKFLOW: 'run-workflow',
+  REVEAL_PATH: 'reveal-path',
 } as const

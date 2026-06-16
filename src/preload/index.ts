@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
   runWorkflow: (id: string, folder: string, apply: boolean): Promise<RunResult> =>
     ipcRenderer.invoke(IPC.RUN_WORKFLOW, id, folder, apply),
+  revealPath: (target: string): Promise<string> => ipcRenderer.invoke(IPC.REVEAL_PATH, target),
   onRegistryUpdated: (cb: (reg: Registry) => void): (() => void) => {
     const handler = (_: unknown, reg: Registry) => cb(reg)
     ipcRenderer.on(IPC.REGISTRY_UPDATED, handler)

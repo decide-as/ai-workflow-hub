@@ -57,6 +57,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) => pickFolder(mainWindow, prompt))
 
+  // Open a folder in Finder. Returns '' on success or an error string.
+  ipcMain.handle(IPC.REVEAL_PATH, (_, target: string) => shell.openPath(target))
+
   ipcMain.handle(
     IPC.RUN_WORKFLOW,
     (_, id: string, folder: string, apply: boolean): RunResult => {

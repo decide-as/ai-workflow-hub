@@ -1,7 +1,15 @@
 import { useEffect } from 'react'
-import { X, Play, FolderInput, CheckCircle2, AlertCircle } from 'lucide-react'
+import { X, Play, FolderInput, FolderOpen, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Workflow, RunResult } from '../../../../shared/types'
 import { resolveIcon } from '../lib/icons'
+
+// The script prints "Dest directory   : <path>" — pull it out so "Open in
+// Finder" reveals exactly where the files landed. Falls back to the source
+// folder, which contains the destination subfolder anyway.
+function destFromOutput(output: string, fallback: string): string {
+  const m = output.match(/^Dest directory\s*:\s*(.+)$/m)
+  return m ? m[1].trim() : fallback
+}
 
 export type RunPhase = 'running' | 'preview' | 'applying' | 'done'
 
@@ -16,6 +24,7 @@ export interface RunState {
 interface Props {
   state: RunState
   onApply: () => void
+  onReveal: (target: string) => void
   onClose: () => void
 }
 
@@ -23,7 +32,7 @@ function Spinner() {
   return <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
 }
 
-export function RunModal({ state, onApply, onClose }: Props) {
+export function RunModal({ state, onApply, onReveal, onClose }: Props) {
   const { workflow, folder, phase, result, applied } = state
   const Icon = resolveIcon(workflow.icon, workflow.tags)
   const busy = phase === 'running' || phase === 'applying'
@@ -134,6 +143,18 @@ export function RunModal({ state, onApply, onClose }: Props) {
                 Apply moves
               </button>
             </>
+          )}
+
+          {phase === 'done' && applied && (
+            <button
+              onClick={() => onReveal(destFromOutput(result?.output ?? '', folder))}
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
+                         text-zinc-950 transition-all hover:brightness-110"
+              style={{ backgroundColor: workflow.color }}
+            >
+              <FolderOpen size={14} strokeWidth={2.5} />
+              Open in Finder
+            </button>
           )}
 
           {(phase === 'done' || (phase === 'preview' && failed)) && (

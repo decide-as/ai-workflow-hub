@@ -14,6 +14,7 @@ declare global {
       openWorkflow: (id: string) => Promise<OpenResult>
       pickFolder: (prompt?: string) => Promise<string | null>
       runWorkflow: (id: string, folder: string, apply: boolean) => Promise<RunResult>
+      revealPath: (target: string) => Promise<string>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
@@ -206,6 +207,7 @@ export default function App() {
         <RunModal
           state={runState}
           onApply={handleApply}
+          onReveal={(target) => window.api.revealPath(target)}
           onClose={() => setRunState(null)}
         />
       )}
