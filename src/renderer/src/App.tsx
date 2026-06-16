@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Registry, Workflow, OpenErrorKind } from '../../../shared/types'
+import type { Registry, Workflow, OpenErrorKind, OpenResult } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
@@ -10,7 +10,7 @@ declare global {
   interface Window {
     api: {
       getRegistry: () => Promise<Registry>
-      openWorkflow: (id: string) => Promise<{ success: boolean; error?: string; errorKind?: OpenErrorKind }>
+      openWorkflow: (id: string) => Promise<OpenResult>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
