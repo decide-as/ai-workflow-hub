@@ -168,6 +168,39 @@ workflows:
         description: >
           An __ORGANIZED__ subfolder with files sorted into category folders,
           duplicates set aside, plus a JSON report of every move for undo.
+  - id: 115a3614-d1fe-460a-a6cb-54676775749b
+    name: LinkedIn Posts
+    summary: Ideate, draft, score, and schedule LinkedIn posts.
+    description: >
+      A content management system for LinkedIn thought-leadership publishing.
+      Opens a Claude session in the standalone linkedin_posts repo that tracks
+      the full lifecycle — idea capture, drafting against post-type templates,
+      quality scoring (5 weighted criteria, publish at ≥75), weekly scheduling,
+      and post-publish analytics — backed by a SQLite store.
+    tags: [content, linkedin, writing, marketing]
+    repo_path: /Users/christianbraathen/Repositories/linkedin_posts
+    color: '#0a66c2'
+    icon: PenLine
+    cluster_id: content
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: manual
+    complexity: complex
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: idea_or_url
+        type: string
+        description: A post idea, topic, or a source URL (Instagram/LinkedIn/YouTube/web) to research
+        required: false
+        example: 'Why agentic AI is a strategic decision, not a technical one'
+    outputs:
+      - name: post_folder
+        type: file
+        description: >
+          A numbered per-post folder (idea, draft versions, final text, scores,
+          metadata, analytics) plus updates to the SQLite content database.
 clusters:
   - id: finance
     name: Finance
@@ -181,3 +214,8 @@ clusters:
     tags: [files, organization, utility]
     workflow_ids:
       - c339825f-f476-4a4d-a96c-8a4aa989fe36
+  - id: content
+    name: Content
+    tags: [content, linkedin, writing, marketing]
+    workflow_ids:
+      - 115a3614-d1fe-460a-a6cb-54676775749b
