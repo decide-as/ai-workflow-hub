@@ -1,13 +1,13 @@
 import {
   Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
   BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
-  Globe, Code, type LucideIcon,
+  Globe, Code, FolderTree, FolderCog, type LucideIcon,
 } from 'lucide-react'
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
   BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
-  Globe, Code,
+  Globe, Code, FolderTree, FolderCog,
 }
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {

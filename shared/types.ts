@@ -17,6 +17,26 @@ export interface WorkflowOutput {
   description: string
 }
 
+// How the primary action button behaves:
+//   'claude' — open a Claude terminal session in the repo (default).
+//   'run'    — pick a folder and run a bundled script against it.
+export type WorkflowAction = 'claude' | 'run'
+
+export interface WorkflowRunner {
+  // Script to execute, relative to the workflow's repo_path.
+  script: string
+  // Interpreter binary. Defaults to python3.
+  interpreter?: string
+  // Title for the folder-picker dialog.
+  pick_prompt?: string
+  // When true, a first dry-run produces a preview the user confirms before the
+  // real run. The script receives no apply flag for the preview and
+  // `apply_flag` for the real run.
+  preview?: boolean
+  // CLI flag appended to switch the script from preview to a real run.
+  apply_flag?: string
+}
+
 export interface Workflow {
   id: string
   name: string
@@ -56,6 +76,10 @@ export interface Workflow {
   owner?: string | null
   inputs?: WorkflowInput[]
   outputs?: WorkflowOutput[]
+
+  // Action — how the primary button behaves. Defaults to 'claude'.
+  action?: WorkflowAction
+  runner?: WorkflowRunner
 }
 
 export interface Cluster {
@@ -76,4 +100,19 @@ export interface OpenResult {
   success: boolean
   error?: string
   errorKind?: OpenErrorKind
+}
+
+export type RunErrorKind =
+  | 'not-runnable'
+  | 'interpreter-missing'
+  | 'script-missing'
+  | 'folder-missing'
+  | 'unknown'
+
+export interface RunResult {
+  success: boolean
+  // Combined stdout + stderr from the script — shown verbatim to the user.
+  output: string
+  error?: string
+  errorKind?: RunErrorKind
 }

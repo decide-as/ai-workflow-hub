@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Registry, Workflow, OpenErrorKind, OpenResult } from '../../../shared/types'
+import type { Registry, Workflow, OpenErrorKind, OpenResult, RunResult } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
 import { Sidebar } from './components/Sidebar'
 import { WorkflowModal } from './components/WorkflowModal'
+import { RunModal, type RunState } from './components/RunModal'
 
 declare global {
   interface Window {
     api: {
       getRegistry: () => Promise<Registry>
       openWorkflow: (id: string) => Promise<OpenResult>
+      pickFolder: (prompt?: string) => Promise<string | null>
+      runWorkflow: (id: string, folder: string, apply: boolean) => Promise<RunResult>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
@@ -22,6 +25,7 @@ export default function App() {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
+  const [runState, setRunState] = useState<RunState | null>(null)
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -72,6 +76,36 @@ export default function App() {
       default:
         return raw ?? 'Failed to open workflow'
     }
+  }
+
+  async function handleRun(id: string) {
+    const workflow = registry.workflows.find((w) => w.id === id)
+    if (!workflow) return
+    const folder = await window.api.pickFolder(workflow.runner?.pick_prompt)
+    if (!folder) return // user cancelled the folder picker
+
+    setRunState({ workflow, folder, phase: 'running', result: null, applied: false })
+    const result = await window.api.runWorkflow(id, folder, false)
+    // If preview isn't supported, a successful first run is already the final run.
+    const previewSupported = workflow.runner?.preview ?? true
+    setRunState({
+      workflow,
+      folder,
+      phase: previewSupported ? 'preview' : 'done',
+      result,
+      applied: !previewSupported && result.success,
+    })
+  }
+
+  function handleApply() {
+    if (!runState) return
+    const { workflow, folder } = runState
+    setRunState({ ...runState, phase: 'applying' })
+    window.api.runWorkflow(workflow.id, folder, true).then((result) => {
+      setRunState((cur) =>
+        cur ? { ...cur, phase: 'done', result, applied: result.success } : cur
+      )
+    })
   }
 
   function handleCardClick(id: string) {
@@ -140,6 +174,7 @@ export default function App() {
                   cluster={cluster}
                   workflows={workflows}
                   onOpen={handleOpen}
+                  onRun={handleRun}
                   onClick={handleCardClick}
                 />
               ))}
@@ -148,6 +183,7 @@ export default function App() {
                   cluster={{ id: '__other', name: 'Other', tags: [], workflow_ids: [] }}
                   workflows={unclustered}
                   onOpen={handleOpen}
+                  onRun={handleRun}
                   onClick={handleCardClick}
                 />
               )}
@@ -162,6 +198,15 @@ export default function App() {
           cluster={modalCluster}
           onClose={() => setActiveWorkflow(null)}
           onOpen={handleOpen}
+          onRun={handleRun}
+        />
+      )}
+
+      {runState && (
+        <RunModal
+          state={runState}
+          onApply={handleApply}
+          onClose={() => setRunState(null)}
         />
       )}
     </div>

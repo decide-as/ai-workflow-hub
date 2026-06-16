@@ -111,6 +111,47 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
+  - id: c339825f-f476-4a4d-a96c-8a4aa989fe36
+    name: File Organizer
+    summary: Tidy a messy folder into category subfolders.
+    description: >
+      Pick a folder (e.g. Downloads) and sort its top-level files into category
+      subfolders by file type — Images, PDF, Spreadsheets, and more — inside an
+      __ORGANIZED__ subfolder. Runs a dry-run preview first so you see every
+      move before anything happens; content duplicates are set aside, empty
+      folders removed, and an undo report written. Runs locally — no Claude
+      session.
+    tags: [files, organization, utility]
+    repo_path: workflows/file-organizer
+    color: '#8b5cf6'
+    icon: FolderTree
+    cluster_id: utilities
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    action: run
+    runner:
+      script: scripts/organize.py
+      interpreter: python3
+      pick_prompt: Choose a folder to organize
+      preview: true
+      apply_flag: '--execute'
+    inputs:
+      - name: folder
+        type: file
+        description: The folder to organize (its top-level files get sorted)
+        required: true
+        example: ~/Downloads
+    outputs:
+      - name: organized_folder
+        type: file
+        description: >
+          An __ORGANIZED__ subfolder with files sorted into category folders,
+          duplicates set aside, plus a JSON report of every move for undo.
 clusters:
   - id: finance
     name: Finance
@@ -119,3 +160,8 @@ clusters:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
+  - id: utilities
+    name: Utilities
+    tags: [files, organization, utility]
+    workflow_ids:
+      - c339825f-f476-4a4d-a96c-8a4aa989fe36

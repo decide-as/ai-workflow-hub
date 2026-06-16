@@ -3,7 +3,9 @@ import { isAbsolute, join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
 import { openInTerminal } from './terminal'
+import { pickFolder, runScript } from './runner'
 import { IPC } from '../../shared/ipc-channels'
+import type { RunResult } from '../../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -52,6 +54,31 @@ app.whenReady().then(() => {
       : join(getBaseDir(), workflow.repo_path)
     return openInTerminal(repoPath)
   })
+
+  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) => pickFolder(mainWindow, prompt))
+
+  ipcMain.handle(
+    IPC.RUN_WORKFLOW,
+    (_, id: string, folder: string, apply: boolean): RunResult => {
+      const reg = getRegistry()
+      const workflow = reg.workflows.find((w) => w.id === id)
+      if (!workflow) {
+        return { success: false, output: '', error: 'Workflow not found', errorKind: 'unknown' }
+      }
+      if (workflow.action !== 'run' || !workflow.runner) {
+        return {
+          success: false,
+          output: '',
+          error: 'This workflow is not runnable.',
+          errorKind: 'not-runnable',
+        }
+      }
+      const repoPath = isAbsolute(workflow.repo_path)
+        ? workflow.repo_path
+        : join(getBaseDir(), workflow.repo_path)
+      return runScript(repoPath, workflow.runner, folder, apply)
+    },
+  )
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg)
