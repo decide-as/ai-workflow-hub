@@ -107,7 +107,8 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: pip
+          # No pip cache: this is a Node repo with no requirements.txt/pyproject.toml,
+          # which makes setup-python's pip cache fail. PyYAML is installed below.
 
       - name: Install PyYAML
         if: steps.check.outputs.fragment_count != '0'
