@@ -5,4 +5,7 @@ export const IPC = {
   PICK_FOLDER: 'pick-folder',
   RUN_WORKFLOW: 'run-workflow',
   REVEAL_PATH: 'reveal-path',
+  SCHEDULE_STATUS: 'schedule-status',
+  SCHEDULE_ENABLE: 'schedule-enable',
+  SCHEDULE_DISABLE: 'schedule-disable',
 } as const

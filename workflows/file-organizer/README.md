@@ -33,6 +33,31 @@ adjusting the number re-runs the preview. Off by default (everything moves).
 - **Idempotent** — re-running skips the `__ORGANIZED__` folder and previously
   sorted category folders, so it never re-shuffles itself.
 
+## Scheduled runs (launchd)
+
+The workflow can run unattended on a folder via a macOS **launchd** agent. In the
+hub, the card shows the cadence, target, live status, and an **Enable / Disable**
+button. The default job organizes `~/Downloads` **every hour**, moving only files
+**older than 7 days** (so it never sweeps something you just downloaded).
+
+The agent is managed by `scripts/schedule.sh`, which the app calls and you can run
+directly:
+
+```bash
+scripts/schedule.sh enable    # write the LaunchAgent plist and load it
+scripts/schedule.sh disable   # unload and delete the plist
+scripts/schedule.sh status    # JSON: installed / loaded / lastRunAt
+```
+
+Configure via env vars (the app passes these from the registry's `scheduled_job`):
+`FO_TARGET`, `FO_INTERVAL` (seconds), `FO_MIN_AGE_DAYS`, `FO_LABEL`. Scheduled runs
+use `--execute` (no preview) and log to
+`~/Library/Logs/ai-workflow-hub/<label>.log`.
+
+> The plist records the **absolute path** of `organize.py` at enable time. If you
+> move the repo (or enable from a temporary git worktree), disable and re-enable
+> from the new location to repoint it.
+
 ## Running it directly
 
 The script is plain stdlib Python 3 — no dependencies:

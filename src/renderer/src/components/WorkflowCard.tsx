@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Workflow } from '../../../../shared/types'
 import { TagBadge } from './TagBadge'
+import { SchedulePanel } from './SchedulePanel'
 import { resolveIcon } from '../lib/icons'
 
 interface Props {
@@ -58,6 +59,8 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
             ))}
           </div>
         )}
+
+        {workflow.scheduled_job && <SchedulePanel workflow={workflow} />}
 
         <div className="flex-1" />
 

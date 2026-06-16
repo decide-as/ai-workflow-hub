@@ -42,6 +42,30 @@ export interface WorkflowRunnerOption {
   optional?: boolean
 }
 
+// A launchd-backed scheduled run of the workflow's script. Display metadata
+// lives here; the actual install/load is done by the workflow's schedule.sh.
+export interface ScheduledJob {
+  // launchd label, e.g. as.decide.ai-workflow-hub.file-organizer.
+  label: string
+  // Folder the job operates on (~ is expanded). Shown in the UI.
+  target: string
+  // Human cadence shown in the UI, e.g. "Every hour".
+  cadence: string
+  // Seconds between runs (StartInterval).
+  interval_seconds?: number
+  // Only act on files older than this many days (0 = all).
+  min_age_days?: number
+}
+
+// Live state of a scheduled job, reported by schedule.sh status.
+export interface ScheduleStatus {
+  installed: boolean
+  loaded: boolean
+  lastRunAt?: string | null
+  lastExitCode?: number | null
+  error?: string
+}
+
 export interface WorkflowRunner {
   // Script to execute, relative to the workflow's repo_path.
   script: string
@@ -102,6 +126,8 @@ export interface Workflow {
   // Action — how the primary button behaves. Defaults to 'claude'.
   action?: WorkflowAction
   runner?: WorkflowRunner
+  // Present when the workflow can be installed as a recurring launchd job.
+  scheduled_job?: ScheduledJob
 }
 
 export interface Cluster {

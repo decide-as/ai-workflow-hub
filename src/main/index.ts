@@ -4,8 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
 import { openInTerminal } from './terminal'
 import { pickFolder, runScript } from './runner'
+import { getScheduleStatus, enableSchedule, disableSchedule } from './schedule'
 import { IPC } from '../../shared/ipc-channels'
-import type { RunResult } from '../../shared/types'
+import type { RunResult, ScheduleStatus, Workflow } from '../../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -59,6 +60,19 @@ app.whenReady().then(() => {
 
   // Open a folder in Finder. Returns '' on success or an error string.
   ipcMain.handle(IPC.REVEAL_PATH, (_, target: string) => shell.openPath(target))
+
+  const withWorkflow = (
+    id: string,
+    fn: (w: Workflow) => ScheduleStatus,
+  ): ScheduleStatus => {
+    const workflow = getRegistry().workflows.find((w) => w.id === id)
+    if (!workflow) return { installed: false, loaded: false, error: 'Workflow not found' }
+    return fn(workflow)
+  }
+
+  ipcMain.handle(IPC.SCHEDULE_STATUS, (_, id: string) => withWorkflow(id, getScheduleStatus))
+  ipcMain.handle(IPC.SCHEDULE_ENABLE, (_, id: string) => withWorkflow(id, enableSchedule))
+  ipcMain.handle(IPC.SCHEDULE_DISABLE, (_, id: string) => withWorkflow(id, disableSchedule))
 
   ipcMain.handle(
     IPC.RUN_WORKFLOW,

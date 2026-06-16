@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type {
-  Registry, Workflow, OpenErrorKind, OpenResult, RunResult, WorkflowRunner,
+  Registry, Workflow, OpenErrorKind, OpenResult, RunResult, WorkflowRunner, ScheduleStatus,
 } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
@@ -39,6 +39,9 @@ declare global {
         id: string, folder: string, apply: boolean, extraArgs?: string[],
       ) => Promise<RunResult>
       revealPath: (target: string) => Promise<string>
+      scheduleStatus: (id: string) => Promise<ScheduleStatus>
+      scheduleEnable: (id: string) => Promise<ScheduleStatus>
+      scheduleDisable: (id: string) => Promise<ScheduleStatus>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }

@@ -129,7 +129,8 @@ workflows:
     added: '2026-06-17'
     updated: '2026-06-17'
     status: active
-    trigger_type: manual
+    trigger_type: scheduled
+    schedule: Every hour · ~/Downloads
     complexity: simple
     version: '0.1.0'
     owner: Christian Braathen — christian@decide.as
@@ -149,6 +150,12 @@ workflows:
           unit: days
           min: 0
           optional: true
+    scheduled_job:
+      label: as.decide.ai-workflow-hub.file-organizer
+      target: ~/Downloads
+      cadence: Every hour
+      interval_seconds: 3600
+      min_age_days: 7
     inputs:
       - name: folder
         type: file
