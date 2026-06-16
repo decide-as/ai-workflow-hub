@@ -22,6 +22,26 @@ export interface WorkflowOutput {
 //   'run'    — pick a folder and run a bundled script against it.
 export type WorkflowAction = 'claude' | 'run'
 
+// A user-adjustable option surfaced in the run modal and passed to the script
+// as a CLI flag. Currently numeric only.
+export interface WorkflowRunnerOption {
+  key: string
+  // Control label, e.g. "Only move files older than".
+  label: string
+  // CLI flag the value is passed with, e.g. "--min-age-days".
+  flag: string
+  type: 'number'
+  // Value used when the option is enabled.
+  default: number
+  // Unit suffix shown after the input, e.g. "days".
+  unit?: string
+  min?: number
+  max?: number
+  // When true the option is off by default and gets an on/off toggle; the flag
+  // is only passed when the user enables it.
+  optional?: boolean
+}
+
 export interface WorkflowRunner {
   // Script to execute, relative to the workflow's repo_path.
   script: string
@@ -35,6 +55,8 @@ export interface WorkflowRunner {
   preview?: boolean
   // CLI flag appended to switch the script from preview to a real run.
   apply_flag?: string
+  // Adjustable options shown in the run modal.
+  options?: WorkflowRunnerOption[]
 }
 
 export interface Workflow {

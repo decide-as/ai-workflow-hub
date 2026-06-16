@@ -104,6 +104,12 @@ describe('runScript()', () => {
     expect(args).toContain('--execute')
   })
 
+  it('inserts extra option args after the folder and before the apply flag', () => {
+    runScript('/repo', RUNNER, '/folder', true, ['--min-age-days', '7'])
+    const args = mockSpawnSync.mock.calls[0][1] as string[]
+    expect(args).toEqual(['/repo/scripts/organize.py', '/folder', '--min-age-days', '7', '--execute'])
+  })
+
   it('returns success with captured output on exit 0', () => {
     mockSpawnSync.mockReturnValue(spawnResult(0, 'plan output'))
     const r = runScript('/repo', RUNNER, '/folder', false)

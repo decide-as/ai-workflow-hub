@@ -62,7 +62,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     IPC.RUN_WORKFLOW,
-    (_, id: string, folder: string, apply: boolean): RunResult => {
+    (_, id: string, folder: string, apply: boolean, extraArgs: string[] = []): RunResult => {
       const reg = getRegistry()
       const workflow = reg.workflows.find((w) => w.id === id)
       if (!workflow) {
@@ -79,7 +79,7 @@ app.whenReady().then(() => {
       const repoPath = isAbsolute(workflow.repo_path)
         ? workflow.repo_path
         : join(getBaseDir(), workflow.repo_path)
-      return runScript(repoPath, workflow.runner, folder, apply)
+      return runScript(repoPath, workflow.runner, folder, apply, extraArgs)
     },
   )
 

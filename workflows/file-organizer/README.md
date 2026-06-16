@@ -14,6 +14,12 @@ pick.
 Organized files land in an `__ORGANIZED__` subfolder inside the chosen folder,
 split into category folders (`Images`, `PDF`, `Spreadsheets`, …).
 
+### Age filter (optional)
+
+The preview has an **Only move files older than N days** toggle (default 7).
+Enable it to leave recent files where they are and only organize older ones —
+adjusting the number re-runs the preview. Off by default (everything moves).
+
 ## Safety
 
 - **Preview first** — nothing moves until you click *Apply moves*.

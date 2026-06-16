@@ -140,6 +140,15 @@ workflows:
       pick_prompt: Choose a folder to organize
       preview: true
       apply_flag: '--execute'
+      options:
+        - key: min_age_days
+          label: Only move files older than
+          flag: '--min-age-days'
+          type: number
+          default: 7
+          unit: days
+          min: 0
+          optional: true
     inputs:
       - name: folder
         type: file

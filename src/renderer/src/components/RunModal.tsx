@@ -1,7 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { X, Play, FolderInput, FolderOpen, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Workflow, RunResult } from '../../../../shared/types'
 import { resolveIcon } from '../lib/icons'
+
+// Per-option UI state, keyed by the option's `key`.
+export type OptionValues = Record<string, { enabled: boolean; value: number }>;
 
 // The script prints "Dest directory   : <path>" — pull it out so "Open in
 // Finder" reveals exactly where the files landed. Falls back to the source
@@ -19,12 +22,14 @@ export interface RunState {
   phase: RunPhase
   result: RunResult | null
   applied: boolean
+  options: OptionValues
 }
 
 interface Props {
   state: RunState
   onApply: () => void
   onReveal: (target: string) => void
+  onOptionsChange: (next: OptionValues) => void
   onClose: () => void
 }
 
@@ -32,10 +37,21 @@ function Spinner() {
   return <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
 }
 
-export function RunModal({ state, onApply, onReveal, onClose }: Props) {
+export function RunModal({ state, onApply, onReveal, onOptionsChange, onClose }: Props) {
   const { workflow, folder, phase, result, applied } = state
   const Icon = resolveIcon(workflow.icon, workflow.tags)
   const busy = phase === 'running' || phase === 'applying'
+
+  // Local mirror so typing in a number field doesn't re-run the preview on every
+  // keystroke — changes are committed (and the preview re-run) on toggle/blur/Enter.
+  const [optValues, setOptValues] = useState<OptionValues>(state.options)
+  const runnerOptions = workflow.runner?.options ?? []
+  const showOptions = runnerOptions.length > 0 && (phase === 'running' || phase === 'preview')
+
+  function commit(next: OptionValues) {
+    setOptValues(next)
+    onOptionsChange(next)
+  }
 
   // Only allow dismissing when not mid-run, so a click-away can't strand work.
   useEffect(() => {
@@ -103,6 +119,52 @@ export function RunModal({ state, onApply, onReveal, onClose }: Props) {
             <span className={failed ? 'text-red-300' : 'text-zinc-400'}>{phaseLabel}</span>
           </div>
         </div>
+
+        {/* Options — adjustable filters; changing one re-runs the preview */}
+        {showOptions && (
+          <div className="px-6 pb-3 shrink-0 flex flex-wrap gap-x-4 gap-y-2">
+            {runnerOptions.map((opt) => {
+              const v = optValues[opt.key]
+              if (!v) return null
+              const numDisabled = busy || (opt.optional && !v.enabled)
+              return (
+                <div key={opt.key} className="inline-flex items-center gap-2 text-xs text-zinc-300">
+                  {opt.optional && (
+                    <input
+                      type="checkbox"
+                      checked={v.enabled}
+                      disabled={busy}
+                      onChange={(e) =>
+                        commit({ ...optValues, [opt.key]: { ...v, enabled: e.target.checked } })
+                      }
+                      style={{ accentColor: workflow.color }}
+                    />
+                  )}
+                  <span className={opt.optional && !v.enabled ? 'text-zinc-500' : ''}>{opt.label}</span>
+                  <input
+                    type="number"
+                    min={opt.min}
+                    max={opt.max}
+                    value={v.value}
+                    disabled={numDisabled}
+                    onChange={(e) =>
+                      setOptValues({ ...optValues, [opt.key]: { ...v, value: Number(e.target.value) } })
+                    }
+                    onBlur={() => commit(optValues)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') commit(optValues) }}
+                    className="w-16 rounded-md bg-zinc-800 border border-zinc-700 px-2 py-1 text-zinc-100
+                               tabular-nums disabled:opacity-40 focus:outline-none focus:border-zinc-500"
+                  />
+                  {opt.unit && (
+                    <span className={opt.optional && !v.enabled ? 'text-zinc-600' : 'text-zinc-500'}>
+                      {opt.unit}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Output */}
         <div className="overflow-y-auto flex-1 px-6 pb-4">

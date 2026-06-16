@@ -54,6 +54,7 @@ export function runScript(
   runner: WorkflowRunner,
   folder: string,
   apply: boolean,
+  extraArgs: string[] = [],
 ): RunResult {
   const interpreter = findInterpreter(runner.interpreter)
   if (!interpreter) {
@@ -85,7 +86,7 @@ export function runScript(
     }
   }
 
-  const args = [scriptPath, folder]
+  const args = [scriptPath, folder, ...extraArgs]
   if (apply && runner.apply_flag) args.push(runner.apply_flag)
 
   const result = spawnSync(interpreter, args, {
