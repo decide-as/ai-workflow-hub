@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [master]
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: release
@@ -22,21 +23,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync to latest master
+      - name: Sync to latest main
         run: |
           # Queued runs check out their triggering SHA, which may be behind
-          # master if a prior run pushed a REL commit. Pull to get the true
+          # main if a prior run pushed a REL commit. Pull to get the true
           # current state so we don't re-process consumed fragments or fail
           # to push due to non-fast-forward.
-          git pull origin master --ff-only
+          git pull origin main --ff-only
 
       - name: Identify triggering PR branch
         id: branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # The squash-merge commit is the latest non-REL commit on master.
-          # After the ff-only pull, HEAD is current master. Walk back to find
+          # Manual dispatch has no triggering PR — process all pending fragments.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "[--] Manual dispatch — collecting all fragments."
+            echo "branch_name=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The squash-merge commit is the latest non-REL commit on main.
+          # After the ff-only pull, HEAD is current main. Walk back to find
           # the merge commit (skip any REL commits from prior release runs).
           MERGE_SHA=""
           for i in 0 1 2 3 4; do
@@ -147,7 +154,7 @@ jobs:
               echo "[--] Phase tag phase/$PHASE already exists — skipping"
             fi
           fi
-          git push origin master --tags
+          git push origin main --tags
 
       - name: Extract release notes
         if: steps.check.outputs.fragment_count != '0'
