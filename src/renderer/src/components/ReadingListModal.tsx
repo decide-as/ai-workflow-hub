@@ -7,7 +7,8 @@ interface Props {
   onClose: () => void;
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -128,7 +129,9 @@ export function ReadingListModal({ workflow, onClose }: Props) {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-zinc-600 mb-1">
-                    {domainOf(entry.url)} · {formatDate(entry.added_at)} ·{" "}
+                    {domainOf(entry.url)}
+                    {entry.added_at ? ` · ${formatDate(entry.added_at)}` : ""}
+                    {" · "}
                     <span className="capitalize">{entry.source}</span>
                   </p>
                   <p className="text-xs text-zinc-400 font-mono leading-snug break-all">

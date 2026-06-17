@@ -207,7 +207,7 @@ export interface ReadingListEntry {
   title: string;
   notes: string;
   source: string;
-  added_at: string;
+  added_at: string | null;
   status: "unread" | "read" | "skipped";
 }
 

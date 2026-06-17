@@ -19,7 +19,7 @@ def init_db(conn: sqlite3.Connection) -> None:
             title TEXT DEFAULT '',
             notes TEXT DEFAULT '',
             source TEXT NOT NULL,
-            added_at TEXT NOT NULL,
+            added_at TEXT,
             status TEXT DEFAULT 'unread'
         )
     """)
