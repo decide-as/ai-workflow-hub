@@ -37,6 +37,11 @@ import {
   getTranscriptionLog,
   saveTranscription,
 } from "./transcriber";
+import {
+  importFromReminders,
+  addUrl as readingListAddUrl,
+  getEntries as readingListGetEntries,
+} from "./reading-list";
 import { execOsascript, readClipboardImage, generateCalendarScript } from "./calendar";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
@@ -213,6 +218,18 @@ app.whenReady().then(() => {
     const buf = Buffer.from(audioData);
     return transcribeAudio(buf);
   });
+
+  ipcMain.handle(IPC.READING_LIST_IMPORT, () =>
+    importFromReminders(getBaseDir()),
+  );
+
+  ipcMain.handle(IPC.READING_LIST_ADD_URL, (_, url: string) =>
+    readingListAddUrl(getBaseDir(), url),
+  );
+
+  ipcMain.handle(IPC.READING_LIST_GET_ENTRIES, (_, limit?: number) =>
+    readingListGetEntries(getBaseDir(), limit),
+  );
 
   ipcMain.handle(IPC.EXEC_OSASCRIPT, (_, script: string) =>
     execOsascript(script),

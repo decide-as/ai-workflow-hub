@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Check, Square, Mic, Loader2 } from "lucide-react";
+import {
+  Copy,
+  Check,
+  Square,
+  Mic,
+  Loader2,
+  RefreshCw,
+  Plus,
+} from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
 import { SchedulePanel } from "./SchedulePanel";
@@ -192,6 +200,134 @@ function TranscribeControls(_: { workflow: Workflow }) {
   );
 }
 
+type ImportState = "idle" | "running" | "done" | "error";
+type AddState = "idle" | "running" | "done" | "error";
+
+function ReadingListControls({ onClick }: { onClick: () => void }) {
+  const [importState, setImportState] = useState<ImportState>("idle");
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
+  const [addState, setAddState] = useState<AddState>("idle");
+  const [addMsg, setAddMsg] = useState<string | null>(null);
+
+  async function handleImport(e: React.MouseEvent) {
+    e.stopPropagation();
+    setImportState("running");
+    setImportMsg(null);
+    const result = await window.api.readingListImport();
+    if (result.success) {
+      setImportMsg(
+        `+${result.imported ?? 0} new · ${result.duplicates ?? 0} dupes`,
+      );
+      setImportState("done");
+    } else {
+      setImportMsg(result.error ?? "Import failed");
+      setImportState("error");
+    }
+    setTimeout(() => {
+      setImportState("idle");
+      setImportMsg(null);
+    }, 4000);
+  }
+
+  async function handleAddUrl(e: React.FormEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    setAddState("running");
+    setAddMsg(null);
+    const result = await window.api.readingListAddUrl(trimmed);
+    if (result.success) {
+      setUrl("");
+      setAddMsg("Added");
+      setAddState("done");
+    } else {
+      setAddMsg(result.error ?? "Failed");
+      setAddState("error");
+    }
+    setTimeout(() => {
+      setAddState("idle");
+      setAddMsg(null);
+    }, 3000);
+  }
+
+  return (
+    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+      {/* Import from Reminders */}
+      <button
+        onClick={handleImport}
+        disabled={importState === "running"}
+        className={[
+          "w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium",
+          "transition-all duration-150 border focus:outline-none focus:ring-2",
+          "focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed",
+          importState === "done"
+            ? "border-emerald-700/60 text-emerald-400 bg-emerald-950/30"
+            : importState === "error"
+              ? "border-red-700/60 text-red-400 bg-red-950/30"
+              : "border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60",
+        ].join(" ")}
+      >
+        <RefreshCw
+          size={13}
+          className={importState === "running" ? "animate-spin" : ""}
+        />
+        {importState === "running"
+          ? "Importing…"
+          : (importMsg ?? "Get from Reminders")}
+      </button>
+
+      {/* Paste URL */}
+      <form onSubmit={handleAddUrl} className="flex gap-1.5">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          placeholder={
+            addState === "done"
+              ? "Added ✓"
+              : addState === "error"
+                ? (addMsg ?? "Error")
+                : "Paste a URL…"
+          }
+          disabled={addState === "running"}
+          className={[
+            "flex-1 rounded-xl px-3 py-2 text-xs bg-zinc-800/60 border outline-none",
+            "placeholder:text-zinc-600 text-zinc-200 transition-colors",
+            "focus:border-zinc-500 disabled:opacity-50",
+            addState === "error"
+              ? "border-red-700/60 placeholder:text-red-500"
+              : addState === "done"
+                ? "border-emerald-700/60 placeholder:text-emerald-500"
+                : "border-zinc-700/60",
+          ].join(" ")}
+        />
+        <button
+          type="submit"
+          disabled={!url.trim() || addState === "running"}
+          className="w-9 h-9 flex items-center justify-center rounded-xl border border-zinc-700/60
+                     text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/60
+                     transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+          title="Add URL"
+        >
+          <Plus size={14} />
+        </button>
+      </form>
+
+      {/* View list link */}
+      <button
+        onClick={onClick}
+        className="w-full text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors py-0.5"
+      >
+        View reading list →
+      </button>
+    </div>
+  );
+}
+
 export function WorkflowCard({
   workflow,
   clusterName,
@@ -206,6 +342,7 @@ export function WorkflowCard({
   const isScaffold = workflow.action === "scaffold";
   const isTranscribe = workflow.action === "transcribe";
   const isCalendar = workflow.action === "calendar";
+  const isReadingList = workflow.action === "reading-list";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
@@ -289,6 +426,8 @@ export function WorkflowCard({
 
         {isTranscribe ? (
           <TranscribeControls workflow={workflow} />
+        ) : isReadingList ? (
+          <ReadingListControls onClick={() => onClick(workflow.id)} />
         ) : (
           <button
             onClick={handleAction}

@@ -7,7 +7,7 @@ function hashColor(str: string): string {
   return `hsl(${Math.abs(h) % 360}, 65%, 58%)`;
 }
 
-export type SolutionType = "scheduled" | "claude" | "run";
+export type SolutionType = "scheduled" | "claude" | "routine";
 
 interface TypeOption {
   id: SolutionType;
@@ -19,7 +19,7 @@ interface TypeOption {
 const TYPE_OPTIONS: TypeOption[] = [
   { id: "scheduled", label: "Scheduled Task", color: "#8b5cf6", Icon: Clock },
   { id: "claude", label: "Claude", color: "#0ea5e9", Icon: MessageSquare },
-  { id: "run", label: "Script", color: "#10b981", Icon: Play },
+  { id: "routine", label: "Routine", color: "#10b981", Icon: Play },
 ];
 
 interface Props {
