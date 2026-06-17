@@ -22,7 +22,10 @@ MANIFEST_PATH = CONTENT_DIR / "templates" / "test-manifest.yaml"
 
 # Test categories inferred from description keywords and filenames.
 CATEGORY_RULES: list[tuple[str, list[str]]] = [
-    ("structural", ["structure", "required files", "metadata", "version sync", "readme health"]),
+    (
+        "structural",
+        ["structure", "required files", "metadata", "version sync", "readme health"],
+    ),
     ("quality", ["docstring", "no print", "no secret", "code quality", "todo"]),
     ("smoke", ["smoke", "import"]),
     ("framework", ["endpoint", "health", "api", "app", "component", "render"]),
@@ -87,7 +90,9 @@ def render_report(templates: dict, resolved: dict[str, dict[str, list[dict]]]) -
         if name.startswith("_"):
             continue
         lang = info.get("language", "none")
-        stats = lang_stats.setdefault(lang, {"templates": 0, "with_tests": 0, "test_count": 0})
+        stats = lang_stats.setdefault(
+            lang, {"templates": 0, "with_tests": 0, "test_count": 0}
+        )
         stats["templates"] += 1
         all_tests = resolved.get(name, {})
         total = sum(len(v) for v in all_tests.values())
@@ -98,20 +103,28 @@ def render_report(templates: dict, resolved: dict[str, dict[str, list[dict]]]) -
     lines.append("## Language Summary\n")
     lines.append("| Language | Templates | With Tests | Test Files | Coverage |")
     lines.append("|----------|-----------|-----------|------------|----------|")
-    for lang in sorted(lang_stats, key=lambda k: lang_stats[k]["templates"], reverse=True):
+    for lang in sorted(
+        lang_stats, key=lambda k: lang_stats[k]["templates"], reverse=True
+    ):
         s = lang_stats[lang]
         pct = (s["with_tests"] / s["templates"] * 100) if s["templates"] > 0 else 0
-        lines.append(f"| {lang} | {s['templates']} | {s['with_tests']} | {s['test_count']} | {pct:.0f}% |")
+        lines.append(
+            f"| {lang} | {s['templates']} | {s['with_tests']} | {s['test_count']} | {pct:.0f}% |"
+        )
     total_templates = sum(s["templates"] for s in lang_stats.values())
     total_with = sum(s["with_tests"] for s in lang_stats.values())
     total_tests = sum(s["test_count"] for s in lang_stats.values())
     total_pct = (total_with / total_templates * 100) if total_templates > 0 else 0
-    lines.append(f"| **Total** | **{total_templates}** | **{total_with}** | **{total_tests}** | **{total_pct:.0f}%** |")
+    lines.append(
+        f"| **Total** | **{total_templates}** | **{total_with}** | **{total_tests}** | **{total_pct:.0f}%** |"
+    )
 
     # --- Comparison matrix ---
     lines.append("\n## Comparison Matrix\n")
     lines.append("Markers: `✓` direct, `↑` inherited, `—` missing\n")
-    header = "| Template | Language | " + " | ".join(c.title() for c in categories) + " |"
+    header = (
+        "| Template | Language | " + " | ".join(c.title() for c in categories) + " |"
+    )
     sep = "|----------|----------|" + "|".join("----------" for _ in categories) + "|"
     lines.append(header)
     lines.append(sep)
@@ -179,8 +192,12 @@ def render_report(templates: dict, resolved: dict[str, dict[str, list[dict]]]) -
 
 def main() -> None:
     """Entry point."""
-    parser = argparse.ArgumentParser(description="Cross-language scaffolded test report")
-    parser.add_argument("--output", type=Path, help="Write report to file instead of stdout")
+    parser = argparse.ArgumentParser(
+        description="Cross-language scaffolded test report"
+    )
+    parser.add_argument(
+        "--output", type=Path, help="Write report to file instead of stdout"
+    )
     args = parser.parse_args()
 
     if not MANIFEST_PATH.exists():
