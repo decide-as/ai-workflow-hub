@@ -47,6 +47,7 @@ import {
   readClipboardImage,
   generateCalendarScript,
 } from "./calendar";
+import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -109,8 +110,8 @@ app.whenReady().then(() => {
     return result;
   });
 
-  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) =>
-    pickFolder(mainWindow, prompt),
+  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string, defaultPath?: string) =>
+    pickFolder(mainWindow, prompt, defaultPath),
   );
 
   // Open a folder in Finder. Returns '' on success or an error string.
@@ -245,6 +246,15 @@ app.whenReady().then(() => {
     IPC.GENERATE_CALENDAR_SCRIPT,
     (_, text: string, imageDataUrl: string | null, today: string) =>
       generateCalendarScript(text, imageDataUrl, today),
+  );
+
+  ipcMain.handle(
+    IPC.CREATE_VOUCHER_FOLDERS,
+    (
+      _,
+      files: Array<{ name: string; dataUrl: string }>,
+      outputDir: string,
+    ) => createVoucherFolders(files, outputDir),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

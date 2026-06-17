@@ -294,6 +294,42 @@ workflows:
         Start by writing the answers.yaml, show it to me for a quick review, and
         then run the command.
 
+  - id: d38a76f2-0530-40b8-ab82-33b2edd52240
+    name: Voucher Folder Creator
+    summary: Bank statement screenshots → one folder per transaction.
+    description: >
+      Drop one or more bank statement screenshots onto the card. Claude reads the
+      transactions, names each one correctly (vendor, date, transfer, or incoming
+      payment), and creates a voucher sub-folder for every line — ready to drop
+      receipts and attachments into. Duplicate transactions get #1 / #2 suffixes.
+      Company-type suffixes (AS, Inc) are stripped and everything is Title Case.
+    tags: [finance, bookkeeping, accounting, voucher]
+    repo_path: .
+    color: "#f59e0b"
+    icon: FolderPlus
+    cluster_id: finance
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: bookkeeping
+    bookkeeping:
+      default_output_dir: "/Users/christianbraathen/My Drive/02 Companies/Decide/Finances/Bookkeeping/Registering"
+    inputs:
+      - name: bank_statements
+        type: file
+        description: Screenshots or images of bank account transaction lists
+        required: true
+        example: "statement_june.png, statement_july.png"
+    outputs:
+      - name: voucher_folders
+        type: file
+        description: >
+          One sub-folder per transaction in the chosen output directory, named
+          "YYYY-MM-DD Vendor", "YYYY-MM-DD OVERFØRING", or "YYYY-MM-DD Customer, INN".
   - id: f3a91c2d-8e47-4b05-bc12-7d6f0e3a9c84
     name: Calendar Event Creator
     summary: Text, voice, or screenshot → Apple Calendar events via AppleScript.
@@ -351,11 +387,12 @@ workflows:
 clusters:
   - id: finance
     name: Finance
-    tags: [finance, expense, reimbursement, accounting, bank]
+    tags: [finance, expense, reimbursement, accounting, bank, bookkeeping, voucher]
     workflow_ids:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
+      - d38a76f2-0530-40b8-ab82-33b2edd52240
   - id: utilities
     name: Utilities
     tags: [files, organization, utility, voice, transcription, calendar]

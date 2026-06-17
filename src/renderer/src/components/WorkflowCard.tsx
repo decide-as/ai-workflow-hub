@@ -12,6 +12,7 @@ import type { Workflow } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
 import { SchedulePanel } from "./SchedulePanel";
 import { resolveIcon } from "../lib/icons";
+import { BookkeepingControls } from "./BookkeepingControls";
 
 interface Props {
   workflow: Workflow;
@@ -348,6 +349,7 @@ export function WorkflowCard({
   const isTranscribe = workflow.action === "transcribe";
   const isCalendar = workflow.action === "calendar";
   const isReadingList = workflow.action === "reading-list";
+  const isBookkeeping = workflow.action === "bookkeeping";
   const hasTranscribeToClaude = !isTranscribe && workflow.transcribe_to_claude;
 
   async function handleAction(e: React.MouseEvent) {
@@ -438,6 +440,8 @@ export function WorkflowCard({
           <TranscribeControls />
         ) : isReadingList ? (
           <ReadingListControls onClick={() => onClick(workflow.id)} />
+        ) : isBookkeeping ? (
+          <BookkeepingControls workflow={workflow} />
         ) : (
           <div className="space-y-2">
             <button
