@@ -141,7 +141,9 @@ export function LoanModal({ workflow, onClose }: Props) {
                   >
                     {stakeholders.map((s) => (
                       <option key={s.name} value={s.name}>
-                        {s.name}
+                        {s.type === "company"
+                          ? `${s.name} (${s.account})`
+                          : s.name}
                       </option>
                     ))}
                   </select>
@@ -154,7 +156,9 @@ export function LoanModal({ workflow, onClose }: Props) {
                   >
                     {stakeholders.map((s) => (
                       <option key={s.name} value={s.name}>
-                        {s.name}
+                        {s.type === "company"
+                          ? `${s.name} (${s.account})`
+                          : s.name}
                       </option>
                     ))}
                   </select>
