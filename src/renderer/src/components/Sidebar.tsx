@@ -17,8 +17,8 @@ interface TypeOption {
 }
 
 const TYPE_OPTIONS: TypeOption[] = [
-  { id: "scheduled", label: "Scheduled Task", color: "#8b5cf6", Icon: Clock },
-  { id: "claude", label: "Claude", color: "#0ea5e9", Icon: MessageSquare },
+  { id: "scheduled", label: "Scheduled", color: "#8b5cf6", Icon: Clock },
+  { id: "claude", label: "Claude", color: "#06b6d4", Icon: MessageSquare },
   { id: "routine", label: "Routine", color: "#10b981", Icon: Play },
 ];
 
@@ -42,24 +42,64 @@ export function Sidebar({
   typeCounts,
 }: Props) {
   return (
-    <aside className="w-52 shrink-0 flex flex-col border-r border-zinc-800/60 bg-zinc-950/80 pt-12 pb-4 overflow-y-auto">
-      {/* Workspaces (clusters) */}
+    <aside
+      className="w-52 shrink-0 flex flex-col border-r pt-12 pb-4 overflow-y-auto"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        borderColor: "rgba(255,255,255,0.06)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+      }}
+    >
+      {/* Wordmark */}
+      <div className="px-5 mb-6">
+        <span className="text-sm font-semibold tracking-tight text-gradient">
+          Workflow Hub
+        </span>
+      </div>
+
+      {/* Workspaces */}
       <div className="px-3 mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 px-2 mb-1">
+        <p
+          className="text-[9px] font-medium uppercase px-2 mb-1.5"
+          style={{ letterSpacing: "0.15em", color: "rgba(255,255,255,0.22)" }}
+        >
           Workspaces
         </p>
 
         <button
           onClick={() => onSelect(null)}
-          className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors duration-100 ${
+          className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 ${
             selected === null
-              ? "bg-zinc-800 text-zinc-100"
-              : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+              ? "text-white"
+              : "text-white/40 hover:text-white/70"
           }`}
+          style={
+            selected === null
+              ? {
+                  background: "rgba(139,92,246,0.1)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                }
+              : {
+                  background: "transparent",
+                  border: "1px solid transparent",
+                }
+          }
         >
-          <span className="w-2 h-2 rounded-full bg-zinc-500 shrink-0" />
+          <span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{
+              background:
+                selected === null
+                  ? "linear-gradient(135deg, #8b5cf6, #06b6d4)"
+                  : "rgba(255,255,255,0.2)",
+            }}
+          />
           <span className="flex-1 text-left font-medium">All</span>
-          <span className="text-[11px] text-zinc-600 tabular-nums">
+          <span
+            className="text-[11px] tabular-nums"
+            style={{ color: "rgba(255,255,255,0.25)" }}
+          >
             {totalCount}
           </span>
         </button>
@@ -67,7 +107,10 @@ export function Sidebar({
 
       {clusters.length > 0 && (
         <div className="px-3 mt-2">
-          <div className="h-px bg-zinc-800/60 mb-3" />
+          <div
+            className="h-px mb-3"
+            style={{ background: "rgba(255,255,255,0.05)" }}
+          />
           <div className="space-y-0.5">
             {clusters.map((c) => {
               const color = hashColor(c.name);
@@ -76,20 +119,32 @@ export function Sidebar({
                 <button
                   key={c.id}
                   onClick={() => onSelect(c.id)}
-                  className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors duration-100 ${
-                    active
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                  className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 ${
+                    active ? "text-white" : "text-white/40 hover:text-white/70"
                   }`}
+                  style={
+                    active
+                      ? {
+                          background: `${color}18`,
+                          border: `1px solid ${color}30`,
+                        }
+                      : {
+                          background: "transparent",
+                          border: "1px solid transparent",
+                        }
+                  }
                 >
                   <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: color }}
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: color, opacity: active ? 1 : 0.5 }}
                   />
                   <span className="flex-1 text-left font-medium capitalize truncate">
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-zinc-600 tabular-nums">
+                  <span
+                    className="text-[11px] tabular-nums"
+                    style={{ color: "rgba(255,255,255,0.25)" }}
+                  >
                     {c.workflow_ids.length}
                   </span>
                 </button>
@@ -99,10 +154,16 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Solution type filter */}
+      {/* Type filter */}
       <div className="px-3 mt-4">
-        <div className="h-px bg-zinc-800/60 mb-3" />
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 px-2 mb-1">
+        <div
+          className="h-px mb-3"
+          style={{ background: "rgba(255,255,255,0.05)" }}
+        />
+        <p
+          className="text-[9px] font-medium uppercase px-2 mb-1.5"
+          style={{ letterSpacing: "0.15em", color: "rgba(255,255,255,0.22)" }}
+        >
           Type
         </p>
         <div className="space-y-0.5">
@@ -112,21 +173,33 @@ export function Sidebar({
               <button
                 key={t.id}
                 onClick={() => onSelectType(active ? null : t.id)}
-                className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-colors duration-100 ${
-                  active
-                    ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all duration-150 ${
+                  active ? "text-white" : "text-white/40 hover:text-white/70"
                 }`}
+                style={
+                  active
+                    ? {
+                        background: `${t.color}15`,
+                        border: `1px solid ${t.color}28`,
+                      }
+                    : {
+                        background: "transparent",
+                        border: "1px solid transparent",
+                      }
+                }
               >
                 <t.Icon
                   size={13}
                   className="shrink-0"
-                  style={{ color: active ? t.color : undefined }}
+                  style={{ color: active ? t.color : "rgba(255,255,255,0.3)" }}
                 />
                 <span className="flex-1 text-left font-medium truncate">
                   {t.label}
                 </span>
-                <span className="text-[11px] text-zinc-600 tabular-nums">
+                <span
+                  className="text-[11px] tabular-nums"
+                  style={{ color: "rgba(255,255,255,0.25)" }}
+                >
                   {typeCounts[t.id]}
                 </span>
               </button>

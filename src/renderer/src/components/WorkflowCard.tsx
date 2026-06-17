@@ -7,6 +7,9 @@ import {
   Loader2,
   RefreshCw,
   Plus,
+  Play,
+  ExternalLink,
+  GitBranch,
 } from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
@@ -49,7 +52,6 @@ function TranscribeControls(_: { workflow: Workflow }) {
     }
   }
 
-  // Auto-stop when countdown reaches zero
   useEffect(() => {
     if (state === "recording" && remaining === 0) {
       clearTimer();
@@ -92,7 +94,6 @@ function TranscribeControls(_: { workflow: Workflow }) {
       mediaRef.current = recorder;
       recorder.start();
       setState("recording");
-
       timerRef.current = setInterval(() => {
         setRemaining((prev) => Math.max(0, prev - 1));
       }, 1000);
@@ -136,25 +137,32 @@ function TranscribeControls(_: { workflow: Workflow }) {
       {error && (
         <p className="text-[11px] text-red-400 leading-snug">{error}</p>
       )}
-
       {lastText && (
-        <p className="text-[11px] text-zinc-500 leading-snug line-clamp-2">
+        <p
+          className="text-[11px] leading-snug line-clamp-2"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
           {lastText}
         </p>
       )}
-
       <div className="flex gap-2">
         <button
           onClick={handleRecordClick}
           disabled={isTranscribing}
-          className={[
-            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium",
-            "transition-all duration-150 border focus:outline-none focus:ring-2",
-            "focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed",
+          className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all duration-150 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          style={
             isRecording
-              ? "border-red-700/60 text-red-400 bg-red-950/30 hover:bg-red-950/50"
-              : "border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60",
-          ].join(" ")}
+              ? {
+                  background: "rgba(239,68,68,0.08)",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  color: "#f87171",
+                }
+              : {
+                  background: "rgba(139,92,246,0.07)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                  color: "rgba(167,139,250,0.9)",
+                }
+          }
         >
           {isTranscribing ? (
             <>
@@ -177,16 +185,17 @@ function TranscribeControls(_: { workflow: Workflow }) {
             </>
           )}
         </button>
-
         {lastText && (
           <button
             onClick={handleCopy}
             disabled={busy}
             title="Copy last transcription"
-            className="w-10 h-10 flex items-center justify-center rounded-xl border border-zinc-700/60
-                       text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/60
-                       transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+            className="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "rgba(255,255,255,0.4)",
+            }}
           >
             {copied ? (
               <Check size={14} className="text-emerald-400" />
@@ -254,20 +263,29 @@ function ReadingListControls({ onClick }: { onClick: () => void }) {
 
   return (
     <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-      {/* Import from Reminders */}
       <button
         onClick={handleImport}
         disabled={importState === "running"}
-        className={[
-          "w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium",
-          "transition-all duration-150 border focus:outline-none focus:ring-2",
-          "focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed",
+        className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all duration-150 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        style={
           importState === "done"
-            ? "border-emerald-700/60 text-emerald-400 bg-emerald-950/30"
+            ? {
+                background: "rgba(16,185,129,0.08)",
+                border: "1px solid rgba(16,185,129,0.2)",
+                color: "#34d399",
+              }
             : importState === "error"
-              ? "border-red-700/60 text-red-400 bg-red-950/30"
-              : "border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60",
-        ].join(" ")}
+              ? {
+                  background: "rgba(239,68,68,0.08)",
+                  border: "1px solid rgba(239,68,68,0.2)",
+                  color: "#f87171",
+                }
+              : {
+                  background: "rgba(139,92,246,0.07)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                  color: "rgba(167,139,250,0.9)",
+                }
+        }
       >
         <RefreshCw
           size={13}
@@ -278,7 +296,6 @@ function ReadingListControls({ onClick }: { onClick: () => void }) {
           : (importMsg ?? "Get from Reminders")}
       </button>
 
-      {/* Paste URL */}
       <form onSubmit={handleAddUrl} className="flex gap-1.5">
         <input
           type="url"
@@ -293,34 +310,44 @@ function ReadingListControls({ onClick }: { onClick: () => void }) {
                 : "Paste a URL…"
           }
           disabled={addState === "running"}
-          className={[
-            "flex-1 rounded-xl px-3 py-2 text-xs bg-zinc-800/60 border outline-none",
-            "placeholder:text-zinc-600 text-zinc-200 transition-colors",
-            "focus:border-zinc-500 disabled:opacity-50",
-            addState === "error"
-              ? "border-red-700/60 placeholder:text-red-500"
-              : addState === "done"
-                ? "border-emerald-700/60 placeholder:text-emerald-500"
-                : "border-zinc-700/60",
-          ].join(" ")}
+          className="flex-1 rounded-xl px-3 py-2 text-xs outline-none transition-colors disabled:opacity-50"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border:
+              addState === "error"
+                ? "1px solid rgba(239,68,68,0.3)"
+                : addState === "done"
+                  ? "1px solid rgba(16,185,129,0.3)"
+                  : "1px solid rgba(255,255,255,0.08)",
+            color: "rgba(255,255,255,0.7)",
+            fontFamily: "inherit",
+          }}
         />
         <button
           type="submit"
           disabled={!url.trim() || addState === "running"}
-          className="w-9 h-9 flex items-center justify-center rounded-xl border border-zinc-700/60
-                     text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/60
-                     transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+          className="w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "rgba(255,255,255,0.4)",
+          }}
           title="Add URL"
         >
           <Plus size={14} />
         </button>
       </form>
 
-      {/* View list link */}
       <button
         onClick={onClick}
-        className="w-full text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors py-0.5"
+        className="w-full text-[11px] transition-colors py-0.5"
+        style={{ color: "rgba(255,255,255,0.25)" }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.color = "rgba(167,139,250,0.7)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.color = "rgba(255,255,255,0.25)")
+        }
       >
         View reading list →
       </button>
@@ -346,7 +373,6 @@ export function WorkflowCard({
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
     if (isScaffold) {
-      // Scaffold needs the description modal first — open the card modal.
       onClick(workflow.id);
       return;
     }
@@ -361,21 +387,43 @@ export function WorkflowCard({
       tabIndex={0}
       onClick={() => onClick(workflow.id)}
       onKeyDown={(e) => e.key === "Enter" && onClick(workflow.id)}
-      className="group relative flex flex-col rounded-2xl bg-zinc-900 border border-zinc-800/60
-                 overflow-hidden transition-all duration-200 cursor-pointer
-                 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 hover:border-zinc-700/80
-                 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+      className="group relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer focus:outline-none"
+      style={{
+        background: "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget;
+        el.style.background = "rgba(255,255,255,0.04)";
+        el.style.border = "1px solid rgba(139,92,246,0.2)";
+        el.style.transform = "translateY(-2px)";
+        el.style.boxShadow =
+          "0 0 30px rgba(139,92,246,0.08), 0 0 60px rgba(139,92,246,0.04), 0 16px 40px rgba(0,0,0,0.3)";
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget;
+        el.style.background = "rgba(255,255,255,0.025)";
+        el.style.border = "1px solid rgba(255,255,255,0.06)";
+        el.style.transform = "translateY(0)";
+        el.style.boxShadow = "none";
+      }}
     >
+      {/* Top accent — glowing line in workflow color */}
       <div
-        className="h-[3px] w-full shrink-0"
-        style={{ backgroundColor: workflow.color }}
+        className="h-[2px] w-full shrink-0"
+        style={{
+          background: `linear-gradient(to right, transparent, ${workflow.color}, transparent)`,
+          opacity: 0.8,
+        }}
       />
 
       <div className="flex flex-col flex-1 p-5 gap-3">
         <div className="flex items-start gap-3">
           <span
             className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0"
-            style={{ backgroundColor: `${workflow.color}22` }}
+            style={{ backgroundColor: `${workflow.color}18` }}
           >
             <Icon
               size={18}
@@ -385,27 +433,33 @@ export function WorkflowCard({
           </span>
           <div className="min-w-0 flex-1 pt-0.5">
             <div className="flex items-start justify-between gap-2">
-              <p className="font-semibold text-zinc-100 leading-snug truncate">
+              <p
+                className="font-semibold leading-snug truncate"
+                style={{ color: "rgba(255,255,255,0.9)" }}
+              >
                 {workflow.name}
               </p>
               {clusterName && (
                 <span
-                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize
-                             bg-zinc-800 border-zinc-700 text-zinc-400 leading-none mt-0.5"
-                  style={
-                    clusterColor
-                      ? {
-                          borderColor: `${clusterColor}40`,
-                          color: clusterColor,
-                        }
-                      : undefined
-                  }
+                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full capitalize leading-none mt-0.5"
+                  style={{
+                    background: clusterColor
+                      ? `${clusterColor}15`
+                      : "rgba(255,255,255,0.06)",
+                    border: `1px solid ${clusterColor ? `${clusterColor}28` : "rgba(255,255,255,0.1)"}`,
+                    color: clusterColor
+                      ? `${clusterColor}cc`
+                      : "rgba(255,255,255,0.4)",
+                  }}
                 >
                   {clusterName}
                 </span>
               )}
             </div>
-            <p className="text-sm text-zinc-300 mt-1 truncate leading-relaxed">
+            <p
+              className="text-sm mt-1 truncate leading-relaxed"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
               {workflow.summary ?? workflow.description}
             </p>
           </div>
@@ -431,23 +485,49 @@ export function WorkflowCard({
           <button
             onClick={handleAction}
             disabled={loading}
-            className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                       border border-zinc-700/60 text-zinc-300
-                       hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+            className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            style={{
+              background: "rgba(139,92,246,0.08)",
+              border: "1px solid rgba(139,92,246,0.2)",
+              color: "rgba(167,139,250,0.9)",
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.background = "rgba(139,92,246,0.14)";
+                e.currentTarget.style.border =
+                  "1px solid rgba(139,92,246,0.35)";
+                e.currentTarget.style.color = "rgba(196,181,253,1)";
+                e.currentTarget.style.boxShadow =
+                  "0 0 16px rgba(139,92,246,0.12)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(139,92,246,0.08)";
+              e.currentTarget.style.border = "1px solid rgba(139,92,246,0.2)";
+              e.currentTarget.style.color = "rgba(167,139,250,0.9)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
           >
             {loading ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+              <>
+                <Loader2 size={14} className="animate-spin" />
                 {isRun ? "Starting…" : "Opening…"}
-              </span>
+              </>
             ) : isRun ? (
-              "Run ▶"
+              <>
+                <Play size={13} fill="currentColor" />
+                Run
+              </>
             ) : isScaffold ? (
-              "Create ↗"
+              <>
+                <GitBranch size={13} />
+                Create
+              </>
             ) : (
-              "Open in Claude ↗"
+              <>
+                <ExternalLink size={13} />
+                Open in Claude
+              </>
             )}
           </button>
         )}

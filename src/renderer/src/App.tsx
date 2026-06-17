@@ -335,7 +335,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         clusters={registry.clusters}
         selected={selectedCluster}
@@ -348,36 +348,59 @@ export default function App() {
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <header className="drag-region flex items-center gap-4 px-6 pt-10 pb-5 shrink-0">
-          <div className="flex items-center gap-2 mr-auto">
-            <h1 className="text-base font-semibold text-zinc-100 tracking-tight capitalize">
+          <div className="flex items-center gap-2.5 mr-auto">
+            <h1
+              className="text-base font-semibold tracking-tight capitalize"
+              style={{ color: "rgba(255,255,255,0.88)" }}
+            >
               {activeCluster ? activeCluster.name : "All workflows"}
             </h1>
-            <span className="text-xs text-zinc-600 tabular-nums">
+            <span
+              className="text-xs tabular-nums"
+              style={{ color: "rgba(255,255,255,0.2)" }}
+            >
               {filtered.length}
             </span>
           </div>
           <div className="no-drag flex items-center gap-2">
             {/* View mode toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-800 overflow-hidden">
+            <div
+              className="flex items-center rounded-lg overflow-hidden"
+              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+            >
               <button
                 onClick={() => setViewMode("grid")}
                 title="Grid view"
-                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                className="px-2.5 py-1.5 transition-all duration-150"
+                style={
                   viewMode === "grid"
-                    ? "bg-zinc-700 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-                }`}
+                    ? {
+                        background: "rgba(139,92,246,0.15)",
+                        color: "rgba(167,139,250,1)",
+                      }
+                    : {
+                        background: "transparent",
+                        color: "rgba(255,255,255,0.25)",
+                      }
+                }
               >
                 <LayoutGrid size={14} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
                 title="List view"
-                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                className="px-2.5 py-1.5 transition-all duration-150"
+                style={
                   viewMode === "list"
-                    ? "bg-zinc-700 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-                }`}
+                    ? {
+                        background: "rgba(139,92,246,0.15)",
+                        color: "rgba(167,139,250,1)",
+                      }
+                    : {
+                        background: "transparent",
+                        color: "rgba(255,255,255,0.25)",
+                      }
+                }
               >
                 <List size={14} />
               </button>
@@ -387,7 +410,14 @@ export default function App() {
         </header>
 
         {openError && (
-          <div className="mx-6 mb-3 px-4 py-2.5 rounded-lg bg-red-950/60 border border-red-800/50 text-red-300 text-sm animate-fade-in">
+          <div
+            className="mx-6 mb-3 px-4 py-2.5 rounded-lg text-sm animate-fade-in"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.2)",
+              color: "#f87171",
+            }}
+          >
             {openError}
           </div>
         )}
@@ -396,7 +426,10 @@ export default function App() {
           {registry.workflows.length === 0 ? (
             <EmptyState />
           ) : filtered.length === 0 ? (
-            <p className="text-zinc-500 text-sm mt-8 text-center">
+            <p
+              className="text-sm mt-8 text-center"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+            >
               No workflows match &ldquo;{query}&rdquo;
             </p>
           ) : viewMode === "grid" ? (

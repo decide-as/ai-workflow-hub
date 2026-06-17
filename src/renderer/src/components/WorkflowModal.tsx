@@ -98,7 +98,7 @@ function MetaRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="flex items-center gap-1.5 text-[11px] text-zinc-500 w-28 shrink-0 pt-0.5 leading-none">
+      <span className="flex items-center gap-1.5 text-[11px] w-28 shrink-0 pt-0.5 leading-none" style={{ color: "rgba(255,255,255,0.28)" }}>
         {icon}
         {label}
       </span>
@@ -109,7 +109,10 @@ function MetaRow({
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-2.5">
+    <p
+      className="text-[9px] font-medium uppercase mb-2.5"
+      style={{ letterSpacing: "0.15em", color: "rgba(255,255,255,0.22)" }}
+    >
       {children}
     </p>
   );
@@ -180,12 +183,12 @@ function ScaffoldPanel({
 
       {/* Branch picker */}
       <div className="space-y-1.5">
-        <label className="text-[11px] text-zinc-500 flex items-center gap-1.5">
+        <label className="text-[11px] flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
           <GitBranch size={10} />
           Branch
         </label>
         {loadingBranches ? (
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <div className="flex items-center gap-2 text-xs" style={{ color: "rgba(255,255,255,0.28)" }}>
             <Loader2 size={12} className="animate-spin" />
             Loading branches…
           </div>
@@ -196,9 +199,13 @@ function ScaffoldPanel({
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="w-full appearance-none bg-zinc-800/60 border border-zinc-700/60 rounded-lg
-                         px-3 py-2 text-xs text-zinc-200 pr-8
-                         focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              className="w-full appearance-none rounded-lg px-3 py-2 text-xs pr-8 outline-none"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "rgba(255,255,255,0.75)",
+                fontFamily: "inherit",
+              }}
             >
               {branches.map((b) => (
                 <option key={b} value={b}>
@@ -208,7 +215,7 @@ function ScaffoldPanel({
             </select>
             <ChevronDown
               size={12}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.3)" }}
             />
           </div>
         )}
@@ -216,7 +223,7 @@ function ScaffoldPanel({
 
       {/* Description textarea */}
       <div className="space-y-1.5">
-        <label className="text-[11px] text-zinc-500">
+        <label className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
           What do you want to build?
         </label>
         <textarea
@@ -224,18 +231,33 @@ function ScaffoldPanel({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="A FastAPI service that wraps the OpenAI API, with JWT auth, PostgreSQL, and a CI pipeline…"
           rows={5}
-          className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg px-3 py-2
-                     text-xs text-zinc-200 placeholder-zinc-600 resize-none
-                     focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          className="w-full rounded-lg px-3 py-2 text-xs resize-none outline-none transition-all"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "rgba(255,255,255,0.75)",
+            fontFamily: "inherit",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.border = "1px solid rgba(139,92,246,0.35)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+          }}
         />
       </div>
 
       {/* Command preview */}
       <div className="space-y-1">
-        <p className="text-[10px] text-zinc-600">Will run</p>
+        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.22)" }}>Will run</p>
         <code
-          className="block text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40
-                         px-2 py-1.5 rounded-lg break-all"
+          className="block text-[11px] px-2 py-1.5 rounded-lg break-all"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            color: "rgba(255,255,255,0.35)",
+            fontFamily: "ui-monospace, monospace",
+          }}
         >
           {cfg.command}
         </code>
@@ -250,12 +272,23 @@ function ScaffoldPanel({
           !description.trim() ||
           loadingBranches
         }
-        className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                   text-zinc-100 border border-zinc-700/60
-                   hover:border-zinc-500 hover:bg-zinc-800/60
-                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900
-                   disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ "--tw-ring-color": workflow.color } as React.CSSProperties}
+        className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        style={{
+          background: "rgba(139,92,246,0.12)",
+          border: "1px solid rgba(139,92,246,0.3)",
+          color: "rgba(196,181,253,0.95)",
+          boxShadow: "0 0 20px rgba(139,92,246,0.08)",
+        }}
+        onMouseEnter={(e) => {
+          if (!submitting) {
+            e.currentTarget.style.background = "rgba(139,92,246,0.2)";
+            e.currentTarget.style.boxShadow = "0 0 30px rgba(139,92,246,0.2)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(139,92,246,0.12)";
+          e.currentTarget.style.boxShadow = "0 0 20px rgba(139,92,246,0.08)";
+        }}
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
@@ -302,25 +335,37 @@ export function WorkflowModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="absolute inset-0"
+        style={{ background: "rgba(3,7,18,0.7)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+      />
 
       <div
-        className="relative z-10 w-full max-w-xl mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
-                   shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
-        style={{ maxHeight: "calc(100vh - 80px)" }}
+        className="relative z-10 w-full max-w-xl mx-6 rounded-2xl animate-slide-up flex flex-col"
+        style={{
+          maxHeight: "calc(100vh - 80px)",
+          background: "rgba(13,17,23,0.95)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: "0 0 60px rgba(0,0,0,0.6), 0 0 40px rgba(139,92,246,0.06)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Color stripe */}
+        {/* Gradient top stripe */}
         <div
-          className="h-1 w-full rounded-t-2xl shrink-0"
-          style={{ backgroundColor: workflow.color }}
+          className="h-[2px] w-full rounded-t-2xl shrink-0"
+          style={{
+            background: `linear-gradient(to right, transparent, ${workflow.color}, transparent)`,
+            opacity: 0.9,
+          }}
         />
 
         {/* Header */}
         <div className="flex items-start gap-4 px-6 pt-5 pb-4 shrink-0">
           <span
             className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
-            style={{ backgroundColor: `${workflow.color}22` }}
+            style={{ backgroundColor: `${workflow.color}18` }}
           >
             <Icon
               size={22}
@@ -331,25 +376,37 @@ export function WorkflowModal({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base font-semibold text-zinc-100 leading-snug">
+              <h2
+                className="text-base font-semibold leading-snug"
+                style={{ color: "rgba(255,255,255,0.9)" }}
+              >
                 {workflow.name}
               </h2>
               {workflow.status && <StatusPill status={workflow.status} />}
             </div>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               {cluster && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px]"
+                  style={{ color: "rgba(255,255,255,0.3)" }}
+                >
                   <Layers size={10} />
                   <span className="capitalize">{cluster.name}</span>
                 </span>
               )}
               {workflow.version && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-zinc-600">
+                <span
+                  className="inline-flex items-center gap-1 text-[11px]"
+                  style={{ color: "rgba(255,255,255,0.22)" }}
+                >
                   <GitBranch size={10} />v{workflow.version}
                 </span>
               )}
               {workflow.complexity && (
-                <span className="text-[11px] text-zinc-600 capitalize">
+                <span
+                  className="text-[11px] capitalize"
+                  style={{ color: "rgba(255,255,255,0.22)" }}
+                >
                   {workflow.complexity}
                 </span>
               )}
@@ -358,8 +415,16 @@ export function WorkflowModal({
 
           <button
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
-                       text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+              e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgba(255,255,255,0.3)";
+            }}
           >
             <X size={16} />
           </button>
@@ -368,11 +433,14 @@ export function WorkflowModal({
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-5">
           {/* Description */}
-          <p className="text-sm text-zinc-300 leading-relaxed">
+          <p
+            className="text-sm leading-relaxed"
+            style={{ color: "rgba(255,255,255,0.5)" }}
+          >
             {workflow.description}
           </p>
 
-          <div className="h-px bg-zinc-800" />
+          <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
           {/* ── Scaffold panel (replaces the standard action area) ─── */}
           {isScaffold && workflow.scaffold ? (
@@ -389,21 +457,21 @@ export function WorkflowModal({
                 <div className="space-y-2.5">
                   {workflow.trigger_type && (
                     <MetaRow icon={<Zap size={11} />} label="Trigger">
-                      <span className="text-xs text-zinc-300 capitalize">
+                      <span className="text-xs capitalize" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {workflow.trigger_type}
                       </span>
                     </MetaRow>
                   )}
                   {workflow.schedule && (
                     <MetaRow icon={<Clock size={11} />} label="Schedule">
-                      <span className="text-xs text-zinc-300">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {workflow.schedule}
                       </span>
                     </MetaRow>
                   )}
                   {workflow.owner && (
                     <MetaRow icon={<User size={11} />} label="Owner">
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
                         {workflow.owner}
                       </span>
                     </MetaRow>
@@ -411,7 +479,7 @@ export function WorkflowModal({
                 </div>
               </div>
 
-              <div className="h-px bg-zinc-800" />
+              <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
               {/* ── Run History ──────────────────────────────────── */}
               <div>
@@ -420,7 +488,7 @@ export function WorkflowModal({
                   {workflow.last_run_at && (
                     <MetaRow icon={<RefreshCw size={11} />} label="Last run">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs text-zinc-300">
+                        <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                           {formatDate(workflow.last_run_at)}
                         </span>
                         {workflow.last_run_status && (
@@ -431,7 +499,7 @@ export function WorkflowModal({
                   )}
                   {workflow.run_count != null && (
                     <MetaRow icon={<Activity size={11} />} label="Total runs">
-                      <span className="text-xs text-zinc-300">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {workflow.run_count.toLocaleString()}
                       </span>
                     </MetaRow>
@@ -442,10 +510,10 @@ export function WorkflowModal({
                       label="Success rate"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-300">
+                        <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                           {successPct}
                         </span>
-                        <div className="flex-1 max-w-[80px] h-1 rounded-full bg-zinc-800 overflow-hidden">
+                        <div className="flex-1 max-w-[80px] h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
                           <div
                             className="h-full rounded-full"
                             style={{
@@ -465,7 +533,7 @@ export function WorkflowModal({
                 </div>
               </div>
 
-              <div className="h-px bg-zinc-800" />
+              <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
               {/* ── Performance & Cost ───────────────────────────── */}
               <div>
@@ -473,21 +541,21 @@ export function WorkflowModal({
                 <div className="space-y-2.5">
                   {workflow.estimated_duration_seconds != null && (
                     <MetaRow icon={<Timer size={11} />} label="Duration">
-                      <span className="text-xs text-zinc-300">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                         {formatDuration(workflow.estimated_duration_seconds)}
                       </span>
                     </MetaRow>
                   )}
                   {workflow.estimated_cost_usd != null && (
                     <MetaRow icon={<DollarSign size={11} />} label="Est. cost">
-                      <span className="text-xs text-zinc-300">
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>
                         ${workflow.estimated_cost_usd.toFixed(2)} per run
                       </span>
                     </MetaRow>
                   )}
                   {workflow.model && (
                     <MetaRow icon={<Cpu size={11} />} label="Model">
-                      <code className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40 px-1.5 py-0.5 rounded">
+                      <code className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", fontFamily: "ui-monospace, monospace" }}>
                         {workflow.model}
                       </code>
                     </MetaRow>
@@ -499,13 +567,13 @@ export function WorkflowModal({
               {((workflow.inputs?.length ?? 0) > 0 ||
                 (workflow.outputs?.length ?? 0) > 0) && (
                 <>
-                  <div className="h-px bg-zinc-800" />
+                  <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
                   <div>
                     <SectionHeader>Inputs & Outputs</SectionHeader>
                     <div className="space-y-3">
                       {workflow.inputs && workflow.inputs.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
+                          <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>
                             <ArrowDownToLine size={10} />
                             <span>Inputs</span>
                           </div>
@@ -515,13 +583,13 @@ export function WorkflowModal({
                                 key={inp.name}
                                 className="flex items-start gap-2 text-xs"
                               >
-                                <code className="text-zinc-300 font-mono shrink-0">
+                                <code className="shrink-0" style={{ color: "rgba(255,255,255,0.65)", fontFamily: "ui-monospace, monospace" }}>
                                   {inp.name}
                                 </code>
-                                <span className="text-zinc-600 shrink-0">
+                                <span className="shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>
                                   {inp.required ? "·required" : "·optional"}
                                 </span>
-                                <span className="text-zinc-500 truncate">
+                                <span className="truncate" style={{ color: "rgba(255,255,255,0.28)" }}>
                                   {inp.description}
                                 </span>
                               </div>
@@ -531,7 +599,7 @@ export function WorkflowModal({
                       )}
                       {workflow.outputs && workflow.outputs.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
+                          <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>
                             <ArrowUpFromLine size={10} />
                             <span>Outputs</span>
                           </div>
@@ -541,13 +609,13 @@ export function WorkflowModal({
                                 key={out.name}
                                 className="flex items-start gap-2 text-xs"
                               >
-                                <code className="text-zinc-300 font-mono shrink-0">
+                                <code className="shrink-0" style={{ color: "rgba(255,255,255,0.65)", fontFamily: "ui-monospace, monospace" }}>
                                   {out.name}
                                 </code>
-                                <span className="text-zinc-600 shrink-0">
+                                <span className="shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>
                                   {out.type}
                                 </span>
-                                <span className="text-zinc-500 truncate">
+                                <span className="truncate" style={{ color: "rgba(255,255,255,0.28)" }}>
                                   {out.description}
                                 </span>
                               </div>
@@ -560,7 +628,7 @@ export function WorkflowModal({
                 </>
               )}
 
-              <div className="h-px bg-zinc-800" />
+              <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
               {/* ── Tags & meta ──────────────────────────────────── */}
               <div className="space-y-2.5">
@@ -575,20 +643,20 @@ export function WorkflowModal({
                 )}
                 <MetaRow icon={<FolderOpen size={11} />} label="Repo">
                   <code
-                    className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40
-                                   px-2 py-0.5 rounded-lg break-all leading-relaxed"
+                    className="text-[11px] px-2 py-0.5 rounded-lg break-all leading-relaxed"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)", fontFamily: "ui-monospace, monospace" }}
                   >
                     {workflow.repo_path}
                   </code>
                 </MetaRow>
                 <MetaRow icon={<Calendar size={11} />} label="Added">
-                  <span className="text-xs text-zinc-400">
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
                     {workflow.added}
                   </span>
                 </MetaRow>
               </div>
 
-              <div className="h-px bg-zinc-800" />
+              <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
 
               {/* Action */}
               <button
@@ -597,15 +665,25 @@ export function WorkflowModal({
                   else onOpen(workflow.id);
                   onClose();
                 }}
-                className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                           text-zinc-100 border border-zinc-700/60
-                           hover:border-zinc-500 hover:bg-zinc-800/60
-                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-                style={
-                  { "--tw-ring-color": workflow.color } as React.CSSProperties
-                }
+                className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none flex items-center justify-center gap-2"
+                style={{
+                  background: "rgba(139,92,246,0.12)",
+                  border: "1px solid rgba(139,92,246,0.3)",
+                  color: "rgba(196,181,253,0.95)",
+                  boxShadow: "0 0 20px rgba(139,92,246,0.08)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(139,92,246,0.2)";
+                  e.currentTarget.style.border = "1px solid rgba(139,92,246,0.45)";
+                  e.currentTarget.style.boxShadow = "0 0 30px rgba(139,92,246,0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(139,92,246,0.12)";
+                  e.currentTarget.style.border = "1px solid rgba(139,92,246,0.3)";
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(139,92,246,0.08)";
+                }}
               >
-                {isRun ? "Run ▶" : "Open in Claude ↗"}
+                {isRun ? "Run" : "Open in Claude"}
               </button>
             </>
           )}
