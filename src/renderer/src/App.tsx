@@ -68,7 +68,7 @@ declare global {
   interface Window {
     api: {
       getRegistry: () => Promise<Registry>;
-      openWorkflow: (id: string) => Promise<OpenResult>;
+      openWorkflow: (id: string, initialPrompt?: string) => Promise<OpenResult>;
       pickFolder: (prompt?: string) => Promise<string | null>;
       runWorkflow: (
         id: string,
@@ -148,8 +148,8 @@ export default function App() {
     return result;
   }
 
-  async function handleOpen(id: string) {
-    const result = await window.api.openWorkflow(id);
+  async function handleOpen(id: string, initialPrompt?: string) {
+    const result = await window.api.openWorkflow(id, initialPrompt);
     if (!result.success) {
       setOpenError(errorMessage(result.errorKind, result.error));
       if (errorTimer.current) clearTimeout(errorTimer.current);

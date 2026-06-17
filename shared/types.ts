@@ -156,6 +156,10 @@ export interface Workflow {
   action?: WorkflowAction;
   runner?: WorkflowRunner;
   scaffold?: ScaffoldConfig;
+  // When true on a 'claude'-action workflow, an inline voice recorder is shown
+  // alongside the Open button. After transcription the text is automatically
+  // passed as the initial prompt when opening Claude.
+  transcribe_to_claude?: boolean;
   // Present when the workflow can be installed as a recurring launchd job.
   scheduled_job?: ScheduledJob;
 }

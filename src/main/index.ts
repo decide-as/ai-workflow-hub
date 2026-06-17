@@ -79,7 +79,7 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry());
-  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string) => {
+  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string, initialPrompt?: string) => {
     const reg = getRegistry();
     const workflow = reg.workflows.find((w) => w.id === id);
     if (!workflow) return { success: false, error: "Workflow not found" };
@@ -87,7 +87,7 @@ app.whenReady().then(() => {
     const repoPath = isAbsolute(workflow.repo_path)
       ? workflow.repo_path
       : join(getBaseDir(), workflow.repo_path);
-    const result = openInTerminal(repoPath);
+    const result = openInTerminal(repoPath, initialPrompt);
     writeActivityLog({
       timestamp: new Date().toISOString(),
       workflow_id: workflow.id,

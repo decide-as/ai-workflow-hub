@@ -13,8 +13,9 @@ workflows:
     color: "#0ea5e9"
     icon: Plane
     cluster_id: finance
+    transcribe_to_claude: true
     added: "2026-06-16"
-    updated: "2026-06-16"
+    updated: "2026-06-17"
     status: active
     trigger_type: manual
     complexity: moderate
