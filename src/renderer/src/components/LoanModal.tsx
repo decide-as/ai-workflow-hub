@@ -54,7 +54,11 @@ export function LoanModal({ workflow, onClose }: Props) {
 
   useEffect(() => {
     window.api.loanGetStakeholders().then((result) => {
-      if (result.success && result.lenders?.length && result.borrowers?.length) {
+      if (
+        result.success &&
+        result.lenders?.length &&
+        result.borrowers?.length
+      ) {
         setLenders(result.lenders);
         setBorrowers(result.borrowers);
         setGiving(result.lenders[0].name);
@@ -210,7 +214,9 @@ export function LoanModal({ workflow, onClose }: Props) {
           {phase === "generating" && (
             <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
               <Loader2 size={24} className="animate-spin text-zinc-500" />
-              <p className="text-sm">Fetching interest rate and generating PDF…</p>
+              <p className="text-sm">
+                Fetching interest rate and generating PDF…
+              </p>
             </div>
           )}
 
