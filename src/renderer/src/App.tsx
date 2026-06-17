@@ -28,6 +28,7 @@ import {
 } from "./components/RunModal";
 import { TranscribeModal } from "./components/TranscribeModal";
 import { ReadingListModal } from "./components/ReadingListModal";
+import { CalendarModal } from "./components/CalendarModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -108,6 +109,15 @@ declare global {
       readingListImport: () => Promise<ReadingListImportResult>;
       readingListAddUrl: (url: string) => Promise<ReadingListAddResult>;
       readingListGetEntries: (limit?: number) => Promise<ReadingListEntry[]>;
+      execOsascript: (
+        script: string,
+      ) => Promise<{ success: boolean; output: string; error?: string }>;
+      readClipboardImage: () => Promise<string | null>;
+      generateCalendarScript: (
+        text: string,
+        imageDataUrl: string | null,
+        today: string,
+      ) => Promise<{ success: boolean; script: string; error?: string }>;
     };
   }
 }
@@ -128,6 +138,9 @@ export default function App() {
   );
   const [readingListWorkflow, setReadingListWorkflow] =
     useState<Workflow | null>(null);
+  const [calendarWorkflow, setCalendarWorkflow] = useState<Workflow | null>(
+    null,
+  );
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -303,6 +316,8 @@ export default function App() {
       setTranscribeWorkflow(w);
     } else if (w?.action === "reading-list") {
       setReadingListWorkflow(w);
+    } else if (w?.action === "calendar") {
+      setCalendarWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -463,6 +478,13 @@ export default function App() {
         <ReadingListModal
           workflow={readingListWorkflow}
           onClose={() => setReadingListWorkflow(null)}
+        />
+      )}
+
+      {calendarWorkflow && (
+        <CalendarModal
+          workflow={calendarWorkflow}
+          onClose={() => setCalendarWorkflow(null)}
         />
       )}
 
