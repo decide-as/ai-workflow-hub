@@ -9,4 +9,7 @@ export const IPC = {
   SCHEDULE_ENABLE: "schedule-enable",
   SCHEDULE_DISABLE: "schedule-disable",
   READ_LOG: "read-log",
+  LIST_BRANCHES: "list-branches",
+  SCAFFOLD_WORKFLOW: "scaffold-workflow",
+  WRITE_ACTIVITY_LOG: "write-activity-log",
 } as const;
