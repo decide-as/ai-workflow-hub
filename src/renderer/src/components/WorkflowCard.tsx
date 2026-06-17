@@ -17,7 +17,7 @@ interface Props {
   workflow: Workflow;
   clusterName?: string;
   clusterColor?: string;
-  onOpen: (id: string) => void;
+  onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
 }
@@ -32,7 +32,11 @@ function formatCountdown(secs: number): string {
 
 type RecordState = "idle" | "recording" | "transcribing";
 
-function TranscribeControls(_: { workflow: Workflow }) {
+function TranscribeControls({
+  onTranscribed,
+}: {
+  onTranscribed?: (text: string) => void;
+}) {
   const [state, setState] = useState<RecordState>("idle");
   const [remaining, setRemaining] = useState(MAX_SECONDS);
   const [lastText, setLastText] = useState<string | null>(null);
@@ -82,6 +86,7 @@ function TranscribeControls(_: { workflow: Workflow }) {
           await window.api.copyToClipboard(text);
           await window.api.saveTranscription(text);
           setLastText(text);
+          onTranscribed?.(text);
         } catch (err) {
           setError(err instanceof Error ? err.message : "Transcription failed");
         } finally {
@@ -343,6 +348,7 @@ export function WorkflowCard({
   const isTranscribe = workflow.action === "transcribe";
   const isCalendar = workflow.action === "calendar";
   const isReadingList = workflow.action === "reading-list";
+  const hasTranscribeToClaude = !isTranscribe && workflow.transcribe_to_claude;
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
@@ -354,6 +360,10 @@ export function WorkflowCard({
     setLoading(true);
     await (isRun ? onRun(workflow.id) : onOpen(workflow.id));
     setTimeout(() => setLoading(false), 800);
+  }
+
+  async function handleTranscribed(text: string) {
+    await onOpen(workflow.id, text);
   }
 
   return (
@@ -425,34 +435,49 @@ export function WorkflowCard({
         <div className="flex-1" />
 
         {isTranscribe ? (
-          <TranscribeControls workflow={workflow} />
+          <TranscribeControls />
         ) : isReadingList ? (
           <ReadingListControls onClick={() => onClick(workflow.id)} />
         ) : (
-          <button
-            onClick={handleAction}
-            disabled={loading}
-            className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                       border border-zinc-700/60 text-zinc-300
-                       hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-          >
-            {loading ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-                {isRun ? "Starting…" : "Opening…"}
-              </span>
-            ) : isRun ? (
-              "Run ▶"
-            ) : isScaffold ? (
-              "Create ↗"
-            ) : isCalendar ? (
-              "Create event →"
-            ) : (
-              "Open in Claude ↗"
+          <div className="space-y-2">
+            <button
+              onClick={handleAction}
+              disabled={loading}
+              className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
+                         border border-zinc-700/60 text-zinc-300
+                         hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+                  {isRun ? "Starting…" : "Opening…"}
+                </span>
+              ) : isRun ? (
+                "Run ▶"
+              ) : isScaffold ? (
+                "Create ↗"
+              ) : isCalendar ? (
+                "Create event →"
+              ) : (
+                "Open in Claude ↗"
+              )}
+            </button>
+
+            {hasTranscribeToClaude && (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-px bg-zinc-800" />
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-wider">
+                    or transcribe
+                  </span>
+                  <div className="flex-1 h-px bg-zinc-800" />
+                </div>
+                <TranscribeControls onTranscribed={handleTranscribed} />
+              </>
             )}
-          </button>
+          </div>
         )}
       </div>
     </div>

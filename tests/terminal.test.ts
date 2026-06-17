@@ -9,6 +9,7 @@ vi.mock("fs", () => ({
   existsSync: vi.fn(),
   writeFileSync: vi.fn(),
   unlinkSync: vi.fn(),
+  chmodSync: vi.fn(),
 }));
 
 import { execSync, spawnSync } from "child_process";
@@ -146,5 +147,11 @@ describe("openInTerminal()", () => {
     const result = openInTerminal("/valid/repo");
     expect(result.success).toBe(false);
     expect(result.errorKind).toBe("unknown");
+  });
+
+  it("succeeds when initialPrompt is provided", () => {
+    mockSpawnSync.mockReturnValue(makeSpawnResult(0));
+    const result = openInTerminal("/valid/repo", "Please summarise the receipts");
+    expect(result.success).toBe(true);
   });
 });
