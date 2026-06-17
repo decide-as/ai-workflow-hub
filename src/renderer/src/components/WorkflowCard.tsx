@@ -15,7 +15,6 @@ import {
   ScrollText,
 } from "lucide-react";
 import type { Workflow, ScheduleStatus } from "../../../../shared/types";
-import { TagBadge } from "./TagBadge";
 import { LogModal } from "./LogModal";
 import { resolveIcon } from "../lib/icons";
 
@@ -421,13 +420,9 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
           <InlineReadingListControls onOpen={() => onClick(workflow.id)} />
         )}
 
-        {/* ── Footer: tags + action ─── */}
+        {/* ── Footer: action ─── */}
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0 overflow-hidden">
-            {workflow.tags.slice(0, 3).map((tag) => (
-              <TagBadge key={tag} tag={tag} />
-            ))}
-          </div>
+          <div className="flex-1" />
           {isTranscribe ? (
             <InlineRecordButton workflow={workflow} />
           ) : isReadingList ? (
