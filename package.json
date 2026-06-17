@@ -2,16 +2,37 @@
   "name": "workflow-hub",
   "version": "0.1.0",
   "description": "Desktop app for managing and launching AI workflow sessions",
+  "author": "Christian Braathen",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron-vite dev",
+    "dist": "electron-vite build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
     "test": "node --experimental-vm-modules node_modules/.bin/vitest run",
     "lint": "eslint src/ cli/ clustering/ shared/ tests/",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "ai-hub": "tsx cli/index.ts"
+  },
+  "build": {
+    "appId": "as.decide.workflow-hub",
+    "productName": "Workflow Hub",
+    "icon": "resources/icon.icns",
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ],
+      "icon": "resources/icon.icns"
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
+    }
   },
   "dependencies": {
     "@electron-toolkit/tsconfig": "^2.0.0",
@@ -35,6 +56,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "electron": "^31.7.7",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^2.3.0",
     "eslint": "^9.15.0",
     "playwright": "^1.60.0",

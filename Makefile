@@ -1,4 +1,4 @@
-.PHONY: install test lint format clean coverage quality check-sync ci-local ci-local-fast
+.PHONY: install test lint format clean coverage quality check-sync ci-local ci-local-fast dist
 
 install:
 	npm install
@@ -9,6 +9,9 @@ dev:
 
 build:
 	npm run build
+
+dist:
+	npm run dist
 
 test:
 	npm test
