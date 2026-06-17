@@ -141,9 +141,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                   >
                     {lenders.map((s) => (
                       <option key={s.name} value={s.name}>
-                        {s.type === "company"
-                          ? `${s.name} (${s.account})`
-                          : s.name}
+                        {s.name}
                       </option>
                     ))}
                   </select>
