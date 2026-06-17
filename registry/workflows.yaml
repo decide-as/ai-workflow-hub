@@ -282,6 +282,32 @@ workflows:
         Start by writing the answers.yaml, show it to me for a quick review, and
         then run the command.
 
+  - id: f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
+    name: Reading List
+    summary: Capture, store, and browse reading resources.
+    description: >
+      Save URLs from your macOS Reminders reading list or paste them directly.
+      Imports from the "Leseliste" and "Prioritert leseliste" lists in Reminders
+      and stores every URL in a local SQLite database inside the workflow folder.
+      Click the card to browse saved links.
+    tags: [reading, bookmarks, resources, knowledge]
+    repo_path: workflows/reading-list
+    color: "#f97316"
+    icon: BookOpen
+    cluster_id: knowledge
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: reading-list
+    outputs:
+      - name: reading_list_db
+        type: json
+        description: SQLite database at workflows/reading-list/data/reading_list.db
+
 clusters:
   - id: finance
     name: Finance
@@ -306,3 +332,8 @@ clusters:
     tags: [scaffold, developer-tools, setup]
     workflow_ids:
       - a4f82c3e-7b19-4d05-9e61-1c3f85de2047
+  - id: knowledge
+    name: Knowledge
+    tags: [reading, bookmarks, resources, knowledge]
+    workflow_ids:
+      - f6be9ab2-7165-414c-bd89-0d3af1c5ab7b

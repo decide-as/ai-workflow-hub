@@ -16,4 +16,7 @@ export const IPC = {
   COPY_TO_CLIPBOARD: "copy-to-clipboard",
   GET_TRANSCRIPTION_LOG: "get-transcription-log",
   SAVE_TRANSCRIPTION: "save-transcription",
+  READING_LIST_IMPORT: "reading-list-import",
+  READING_LIST_ADD_URL: "reading-list-add-url",
+  READING_LIST_GET_ENTRIES: "reading-list-get-entries",
 } as const;

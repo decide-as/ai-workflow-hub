@@ -11,6 +11,9 @@ import type {
   BranchListResult,
   ActivityEntry,
   TranscriptionEntry,
+  ReadingListEntry,
+  ReadingListImportResult,
+  ReadingListAddResult,
 } from "../../../shared/types";
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
@@ -24,6 +27,7 @@ import {
   type OptionValues,
 } from "./components/RunModal";
 import { TranscribeModal } from "./components/TranscribeModal";
+import { ReadingListModal } from "./components/ReadingListModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -96,6 +100,9 @@ declare global {
       copyToClipboard: (text: string) => Promise<void>;
       getTranscriptionLog: () => Promise<TranscriptionEntry[]>;
       saveTranscription: (text: string) => Promise<TranscriptionEntry>;
+      readingListImport: () => Promise<ReadingListImportResult>;
+      readingListAddUrl: (url: string) => Promise<ReadingListAddResult>;
+      readingListGetEntries: (limit?: number) => Promise<ReadingListEntry[]>;
     };
   }
 }
@@ -114,6 +121,8 @@ export default function App() {
   const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
     null,
   );
+  const [readingListWorkflow, setReadingListWorkflow] =
+    useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -287,6 +296,8 @@ export default function App() {
     const w = registry.workflows.find((w) => w.id === id) ?? null;
     if (w?.action === "transcribe") {
       setTranscribeWorkflow(w);
+    } else if (w?.action === "reading-list") {
+      setReadingListWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -440,6 +451,13 @@ export default function App() {
         <TranscribeModal
           workflow={transcribeWorkflow}
           onClose={() => setTranscribeWorkflow(null)}
+        />
+      )}
+
+      {readingListWorkflow && (
+        <ReadingListModal
+          workflow={readingListWorkflow}
+          onClose={() => setReadingListWorkflow(null)}
         />
       )}
 
