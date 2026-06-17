@@ -11,14 +11,15 @@ import type {
   ReadingListEntry,
   ReadingListImportResult,
   ReadingListAddResult,
+  VoucherFolderResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
   openWorkflow: (id: string, initialPrompt?: string): Promise<OpenResult> =>
     ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id, initialPrompt),
-  pickFolder: (prompt?: string): Promise<string | null> =>
-    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
+  pickFolder: (prompt?: string, defaultPath?: string): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt, defaultPath),
   runWorkflow: (
     id: string,
     folder: string,
@@ -80,4 +81,9 @@ contextBridge.exposeInMainWorld("api", {
     today: string,
   ): Promise<{ success: boolean; script: string; error?: string }> =>
     ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrl, today),
+  createVoucherFolders: (
+    files: Array<{ name: string; dataUrl: string }>,
+    outputDir: string,
+  ): Promise<VoucherFolderResult> =>
+    ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
 });

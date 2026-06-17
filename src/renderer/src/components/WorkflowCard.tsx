@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 import { resolveIcon } from "../lib/icons";
+import { BookkeepingControls } from "./BookkeepingControls";
 
 interface Props {
   workflow: Workflow;
@@ -393,9 +394,11 @@ export function WorkflowCard({
           </div>
         </div>
 
-        {/* Footer: reading-list inline form, or plain action CTA */}
+        {/* Footer: reading-list inline form, bookkeeping controls, or plain action CTA */}
         {isReadingList ? (
           <ReadingListFooter onClick={() => onClick(workflow.id)} />
+        ) : workflow.action === "bookkeeping" ? (
+          <BookkeepingControls workflow={workflow} />
         ) : (
           <div className="flex items-center">
             <div className="flex-1" />

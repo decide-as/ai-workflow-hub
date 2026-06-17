@@ -24,13 +24,21 @@ export interface WorkflowOutput {
 //   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
 //   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
 //   'calendar'     — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
+//   'bookkeeping'  — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
 export type WorkflowAction =
   | "claude"
   | "run"
   | "scaffold"
   | "transcribe"
   | "reading-list"
-  | "calendar";
+  | "calendar"
+  | "bookkeeping";
+
+// Configuration for the 'bookkeeping' action type.
+export interface BookkeepingConfig {
+  // Default folder where voucher sub-folders are created. Can be overridden per-run.
+  default_output_dir: string;
+}
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {
@@ -164,6 +172,7 @@ export interface Workflow {
   action?: WorkflowAction;
   runner?: WorkflowRunner;
   scaffold?: ScaffoldConfig;
+  bookkeeping?: BookkeepingConfig;
   // When true on a 'claude'-action workflow, an inline voice recorder is shown
   // alongside the Open button. After transcription the text is automatically
   // passed as the initial prompt when opening Claude.
@@ -232,6 +241,13 @@ export interface ReadingListImportResult {
 export interface ReadingListAddResult {
   success: boolean;
   id?: string;
+  error?: string;
+}
+
+export interface VoucherFolderResult {
+  success: boolean;
+  output: string;
+  folders: string[];
   error?: string;
 }
 
