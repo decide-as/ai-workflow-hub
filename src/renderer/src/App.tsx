@@ -57,8 +57,8 @@ function buildExtraArgs(
 
 function workflowSolutionType(w: Workflow): SolutionType {
   if (w.scheduled_job) return "scheduled";
-  if (w.action === "run") return "run";
-  if (w.action === "scaffold") return "claude"; // treated as claude-type in sidebar counts
+  if (w.action === "run" || w.action === "reading-list" || w.action === "transcribe") return "routine";
+  if (w.action === "scaffold") return "claude";
   return "claude";
 }
 
@@ -318,7 +318,7 @@ export default function App() {
       acc[workflowSolutionType(w)]++;
       return acc;
     },
-    { scheduled: 0, claude: 0, run: 0 } as Record<SolutionType, number>,
+    { scheduled: 0, claude: 0, routine: 0 } as Record<SolutionType, number>,
   );
 
   // Only show workspace badges when viewing all workspaces (no filter active)
