@@ -4,7 +4,7 @@ title: Native macOS App Packaging via electron-builder
 owner: Christian Braathen
 created: 2026-06-17
 updated: 2026-06-17
-status: draft
+status: implemented
 priority: P0
 related_docs: []
 ---
