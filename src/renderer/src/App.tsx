@@ -8,6 +8,8 @@ import type {
   RunResult,
   WorkflowRunner,
   ScheduleStatus,
+  BranchListResult,
+  ActivityEntry,
   TranscriptionEntry,
 } from "../../../shared/types";
 import { WorkflowCard } from "./components/WorkflowCard";
@@ -52,6 +54,7 @@ function buildExtraArgs(
 function workflowSolutionType(w: Workflow): SolutionType {
   if (w.scheduled_job) return "scheduled";
   if (w.action === "run") return "run";
+  if (w.action === "scaffold") return "claude"; // treated as claude-type in sidebar counts
   return "claude";
 }
 
@@ -78,6 +81,16 @@ declare global {
       scheduleEnable: (id: string) => Promise<ScheduleStatus>;
       scheduleDisable: (id: string) => Promise<ScheduleStatus>;
       readLog: (logPath: string) => Promise<string>;
+      listBranches: (
+        repo: string,
+        defaultBranch?: string,
+      ) => Promise<BranchListResult>;
+      scaffoldWorkflow: (
+        id: string,
+        branch: string,
+        description: string,
+      ) => Promise<OpenResult>;
+      writeActivityLog: (entry: ActivityEntry) => Promise<{ success: boolean }>;
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void;
       transcribeAudio: (audioBuffer: ArrayBuffer) => Promise<string>;
       copyToClipboard: (text: string) => Promise<void>;
@@ -257,6 +270,19 @@ export default function App() {
       });
   }
 
+  async function handleScaffold(
+    id: string,
+    branch: string,
+    description: string,
+  ) {
+    const result = await window.api.scaffoldWorkflow(id, branch, description);
+    if (!result.success) {
+      setOpenError(errorMessage(result.errorKind, result.error));
+      if (errorTimer.current) clearTimeout(errorTimer.current);
+      errorTimer.current = setTimeout(() => setOpenError(null), 6000);
+    }
+  }
+
   function handleCardClick(id: string) {
     const w = registry.workflows.find((w) => w.id === id) ?? null;
     if (w?.action === "transcribe") {
@@ -406,6 +432,7 @@ export default function App() {
           onClose={() => setActiveWorkflow(null)}
           onOpen={handleOpen}
           onRun={handleRun}
+          onScaffold={handleScaffold}
         />
       )}
 

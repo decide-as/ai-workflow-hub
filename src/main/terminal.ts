@@ -1,11 +1,12 @@
 import { execSync, spawnSync } from "child_process";
-import { existsSync, writeFileSync, unlinkSync } from "fs";
+import { existsSync, writeFileSync, unlinkSync, chmodSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import type { OpenResult, OpenErrorKind } from "../../shared/types";
 
-function escapePath(p: string): string {
-  return p.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+// Escape a string for embedding inside a double-quoted osascript string literal.
+function escapeForOsascript(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 export function isIterm2Running(): boolean {
@@ -51,7 +52,44 @@ function classifyError(stderr: string): {
   return { error: stderr || "osascript failed", errorKind: "unknown" };
 }
 
-export function openInTerminal(repoPath: string): OpenResult {
+// When an initialPrompt is given we write it to a sidecar .txt file and
+// generate a small bash launcher script that reads it with $(<file).
+// This avoids double-escaping the prompt through both bash and osascript
+// string layers. The launcher file is intentionally NOT cleaned up here —
+// it runs asynchronously after osascript returns.
+function makeLauncherCommand(repoPath: string, initialPrompt?: string): string {
+  if (!initialPrompt) {
+    // The command is embedded inside a double-quoted osascript string literal,
+    // so the path's inner quotes must be backslash-escaped (\").
+    return `cd \\"${escapeForOsascript(repoPath)}\\" && claude`;
+  }
+
+  const id = Date.now();
+  const promptFile = join(tmpdir(), `ai-hub-prompt-${id}.txt`);
+  const shScript = join(tmpdir(), `ai-hub-launch-${id}.sh`);
+
+  writeFileSync(promptFile, initialPrompt, "utf-8");
+  writeFileSync(
+    shScript,
+    [
+      "#!/bin/bash",
+      `cd '${repoPath.replace(/'/g, "'\\''")}'`,
+      `PROMPT=$(cat '${promptFile.replace(/'/g, "'\\''")}')`,
+      "",
+      `exec claude "$PROMPT"`,
+    ].join("\n"),
+    "utf-8",
+  );
+  chmodSync(shScript, 0o755);
+
+  // The osascript just needs to run this file path.
+  return escapeForOsascript(shScript);
+}
+
+export function openInTerminal(
+  repoPath: string,
+  initialPrompt?: string,
+): OpenResult {
   if (!existsSync(repoPath)) {
     return {
       success: false,
@@ -68,18 +106,21 @@ export function openInTerminal(repoPath: string): OpenResult {
     };
   }
 
-  const escaped = escapePath(repoPath);
   const useITerm = isIterm2Running();
+  const cmd = makeLauncherCommand(repoPath, initialPrompt);
 
+  // For the simple (no prompt) case, cmd is a shell inline like
+  // `cd "/repo" && claude`. For the prompt case, cmd is a path to a .sh file.
+  // Both work identically inside `write text` / `do script`.
   const script = useITerm
     ? `tell application "iTerm2"
   create window with default profile
   tell current session of current window
-    write text "cd \\"${escaped}\\" && claude"
+    write text "${cmd}"
   end tell
 end tell`
     : `tell application "Terminal"
-  do script "cd \\"${escaped}\\" && claude"
+  do script "${cmd}"
   activate
 end tell`;
 
