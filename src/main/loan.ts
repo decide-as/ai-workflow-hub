@@ -30,17 +30,16 @@ export function getLoanStakeholders(): LoanStakeholdersResult {
 }
 
 async function fetchSkjermingsrente(): Promise<string> {
-  try {
-    const res = await fetch(
-      "https://www.skatteetaten.no/satser/skjermingsrente-for-ekstra-skatt-pa-lan/",
-    );
-    const html = await res.text();
-    const m = html.match(/(\d+[.,]\d+)\s*%/);
-    if (m) return m[1].replace(".", ",");
-  } catch {
-    // fall through to default
-  }
-  return "3,25";
+  const res = await fetch(
+    "https://www.skatteetaten.no/satser/skjermingsrente-for-ekstra-skatt-pa-lan/",
+  );
+  if (!res.ok)
+    throw new Error(`Skatteetaten svarte med ${res.status} — kan ikke hente skjermingsrente`);
+  const html = await res.text();
+  const m = html.match(/(\d+[.,]\d+)\s*%/);
+  if (!m)
+    throw new Error("Fant ikke skjermingsrente på skatteetaten.no — sjekk siden manuelt");
+  return m[1].replace(".", ",");
 }
 
 function formatNok(amount: number): string {
