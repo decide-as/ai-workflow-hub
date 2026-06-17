@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import type { Workflow, Cluster, BranchListResult } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
+import { SchedulePanel } from "./SchedulePanel";
 import { resolveIcon } from "../lib/icons";
 
 interface Props {
@@ -282,6 +283,17 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
             <ScaffoldPanel workflow={workflow} onScaffold={onScaffold} onClose={onClose} />
           ) : (
             <>
+              {/* Live schedule status */}
+              {workflow.scheduled_job && (
+                <>
+                  <div>
+                    <p className="modal-section-label">Schedule</p>
+                    <SchedulePanel workflow={workflow} />
+                  </div>
+                  <div className="divider" />
+                </>
+              )}
+
               {/* Operational */}
               <div>
                 <p className="modal-section-label">Operational</p>

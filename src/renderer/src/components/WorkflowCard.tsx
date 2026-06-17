@@ -10,11 +10,8 @@ import {
   Play,
   ExternalLink,
   GitBranch,
-  Clock,
-  ScrollText,
 } from "lucide-react";
-import type { Workflow, ScheduleStatus } from "../../../../shared/types";
-import { LogModal } from "./LogModal";
+import type { Workflow } from "../../../../shared/types";
 import { resolveIcon } from "../lib/icons";
 
 interface Props {
@@ -31,111 +28,6 @@ function formatCountdown(secs: number): string {
   const m = Math.floor(secs / 60);
   const s = secs % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function formatRun(iso: string): string {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-
-// ── Schedule footer — left side info + right side controls, all one row ───────
-
-function ScheduleFooter({
-  workflow,
-  actionSlot,
-}: {
-  workflow: Workflow;
-  actionSlot: React.ReactNode;
-}) {
-  const job = workflow.scheduled_job!;
-  const [status, setStatus] = useState<ScheduleStatus | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [showLog, setShowLog] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    function refresh() {
-      window.api.scheduleStatus(workflow.id).then((s) => { if (alive) setStatus(s); });
-    }
-    refresh();
-    const timer = setInterval(refresh, 30_000);
-    return () => { alive = false; clearInterval(timer); };
-  }, [workflow.id]);
-
-  const active = !!status?.loaded;
-  const checking = status == null;
-
-  async function toggle(e: React.MouseEvent) {
-    e.stopPropagation();
-    setBusy(true);
-    const next = active
-      ? await window.api.scheduleDisable(workflow.id)
-      : await window.api.scheduleEnable(workflow.id);
-    setStatus(next);
-    setBusy(false);
-  }
-
-  return (
-    <>
-      <div
-        className="flex items-center gap-2 min-w-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Left: schedule info */}
-        <div className="flex items-center gap-1.5 text-[11px] min-w-0 flex-1 overflow-hidden">
-          <Clock size={11} className="shrink-0" style={{ color: workflow.color }} />
-          <span className="font-medium shrink-0" style={{ color: "var(--c-text-secondary)" }}>
-            {job.cadence}
-          </span>
-          <span
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{ background: active ? "#7a9e7e" : "var(--c-text-subtle)" }}
-          />
-          {active && status?.lastRunAt && (
-            <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>
-              {formatRun(status.lastRunAt)}
-            </span>
-          )}
-          {!active && !checking && (
-            <span style={{ color: "var(--c-text-subtle)" }}>inactive</span>
-          )}
-        </div>
-
-        {/* Right: controls + action */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowLog(true); }}
-            className="card-schedule-btn flex items-center gap-1"
-          >
-            <ScrollText size={10} />Logs
-          </button>
-          <button
-            onClick={toggle}
-            disabled={busy || checking}
-            className="card-schedule-btn"
-            style={
-              active
-                ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" }
-                : { borderColor: `${workflow.color}55`, color: workflow.color }
-            }
-          >
-            {busy ? "…" : active ? "Disable" : "Enable"}
-          </button>
-          {actionSlot}
-        </div>
-      </div>
-
-      {showLog && (
-        <LogModal
-          workflowName={workflow.name}
-          logPath={status?.logPath ?? null}
-          color={workflow.color}
-          onClose={() => setShowLog(false)}
-        />
-      )}
-    </>
-  );
 }
 
 // ── Compact inline record button ──────────────────────────────────────────────
@@ -347,9 +239,7 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isTranscribe = workflow.action === "transcribe";
   const isReadingList = workflow.action === "reading-list";
-  const hasSchedule = !!workflow.scheduled_job;
 
-  // Action button rendered standalone or injected into ScheduleFooter
   const actionBtn = isTranscribe ? (
     <InlineRecordButton workflow={workflow} />
   ) : (
@@ -384,11 +274,9 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
           </div>
         </div>
 
-        {/* Footer: schedule info + action on same row, or just action */}
+        {/* Footer: reading-list inline form, or plain action CTA */}
         {isReadingList ? (
           <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
-        ) : hasSchedule ? (
-          <ScheduleFooter workflow={workflow} actionSlot={actionBtn} />
         ) : (
           <div className="flex items-center">
             <div className="flex-1" />
