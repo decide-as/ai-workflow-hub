@@ -1,3 +1,16 @@
+import { config as dotenvConfig } from 'dotenv'
+import { execSync } from 'child_process'
+import { resolve, dirname } from 'path'
+
+// Load .env from the main repo root. Works from both the main checkout and any
+// worktree because --git-common-dir always returns the shared .git directory.
+try {
+  const raw = execSync('git rev-parse --git-common-dir', { encoding: 'utf8' }).trim()
+  dotenvConfig({ path: resolve(dirname(resolve(raw)), '.env') })
+} catch {
+  // Packaged app or outside git — fall back to the existing process.env.
+}
+
 import { app, BrowserWindow, shell, ipcMain, clipboard } from 'electron'
 import { isAbsolute, join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
