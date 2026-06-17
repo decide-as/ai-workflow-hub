@@ -111,6 +111,60 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
+  - id: d288500b-64f0-4323-9298-030050bfe4ac
+    name: Loan Agreement Generator
+    summary: Lender + borrower + amount → a print-ready Norwegian loan agreement.
+    description: >
+      Pick a lender and borrower (Christian Braathen, Decide AS, or Bæredyktig AS),
+      enter the loan amount in NOK, and confirm the date and signing location.
+      Claude opens the upon Django app, fetches the current skjermingsrente
+      (shielding interest rate) from skatteetaten.no, and renders a Norwegian-language
+      loan agreement ready for browser print-to-PDF. Both parties' positions are
+      auto-derived (e.g. "Styreleder, Decide AS").
+    tags: [finance, legal, loan, agreement, contracts]
+    repo_path: /Users/christianbraathen/Repositories/upon
+    color: "#6366f1"
+    icon: FileText
+    cluster_id: finance
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: giving_stakeholder
+        type: string
+        description: The party lending money (Christian Braathen, Decide AS, or Bæredyktig AS)
+        required: true
+        example: Christian Braathen
+      - name: receiving_stakeholder
+        type: string
+        description: The party borrowing money (Christian Braathen, Decide AS, or Bæredyktig AS)
+        required: true
+        example: Decide AS
+      - name: amount
+        type: number
+        description: Loan amount in NOK
+        required: true
+        example: "500000"
+      - name: date
+        type: date
+        description: Agreement date (defaults to today)
+        required: false
+        example: "2026-06-17"
+      - name: location
+        type: string
+        description: Signing location (defaults to Oslo)
+        required: false
+        example: Oslo
+    outputs:
+      - name: loan_agreement
+        type: file
+        description: >
+          Print-ready Norwegian loan agreement (HTML → browser print-to-PDF)
+          with auto-fetched interest rate, party names, positions, and account numbers.
   - id: 145bb544-5270-4288-9afd-1284a7edcce7
     name: Voice Transcriber
     summary: Record speech → text, auto-copied to clipboard.
@@ -351,11 +405,12 @@ workflows:
 clusters:
   - id: finance
     name: Finance
-    tags: [finance, expense, reimbursement, accounting, bank]
+    tags: [finance, expense, reimbursement, accounting, bank, legal, loan]
     workflow_ids:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
+      - d288500b-64f0-4323-9298-030050bfe4ac
   - id: utilities
     name: Utilities
     tags: [files, organization, utility, voice, transcription, calendar]
