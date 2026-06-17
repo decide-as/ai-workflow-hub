@@ -29,12 +29,23 @@ LOG_DIR="$HOME/Library/Logs/workflow-hub"
 LOG="$LOG_DIR/$LABEL.log"
 DOMAIN="gui/$(id -u)"
 
+# Previous label used before the project was renamed from ai-workflow-hub.
+LEGACY_LABEL="as.decide.ai-workflow-hub.file-organizer"
+LEGACY_LOG="$HOME/Library/Logs/ai-workflow-hub/$LEGACY_LABEL.log"
+
 py_bin() { command -v python3 || command -v python || echo /usr/bin/python3; }
 
 cmd_enable() {
   local python
   python="$(py_bin)"
   mkdir -p "$(dirname "$PLIST")" "$LOG_DIR"
+
+  # Retire the legacy job from the pre-rename era if it is still loaded.
+  if launchctl print "$DOMAIN/$LEGACY_LABEL" >/dev/null 2>&1; then
+    launchctl bootout "$DOMAIN/$LEGACY_LABEL" 2>/dev/null || true
+    rm -f "$HOME/Library/LaunchAgents/$LEGACY_LABEL.plist"
+    echo "retired legacy job $LEGACY_LABEL"
+  fi
   cat > "$PLIST" <<PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -77,14 +88,21 @@ cmd_disable() {
 }
 
 cmd_status() {
-  local installed=false loaded=false last_run=null
+  local installed=false loaded=false last_run=null effective_log="$LOG"
   [ -f "$PLIST" ] && installed=true
   launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 && loaded=true
+
+  # Use the current log if it exists; fall back to the legacy log from
+  # the pre-rename era so the Logs button shows history before Enable is clicked.
   if [ -f "$LOG" ]; then
     last_run="\"$(stat -f %Sm -t %Y-%m-%dT%H:%M:%S "$LOG")\""
+  elif [ -f "$LEGACY_LOG" ]; then
+    effective_log="$LEGACY_LOG"
+    last_run="\"$(stat -f %Sm -t %Y-%m-%dT%H:%M:%S "$LEGACY_LOG")\""
   fi
+
   printf '{"installed":%s,"loaded":%s,"lastRunAt":%s,"target":"%s","intervalSeconds":%s,"minAgeDays":%s,"logPath":"%s"}\n' \
-    "$installed" "$loaded" "$last_run" "$TARGET" "$INTERVAL" "$MIN_AGE_DAYS" "$LOG"
+    "$installed" "$loaded" "$last_run" "$TARGET" "$INTERVAL" "$MIN_AGE_DAYS" "$effective_log"
 }
 
 case "${1:-}" in

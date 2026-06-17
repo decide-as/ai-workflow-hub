@@ -24,7 +24,12 @@ import {
 } from "./registry";
 import { openInTerminal } from "./terminal";
 import { pickFolder, runScript } from "./runner";
-import { getScheduleStatus, enableSchedule, disableSchedule } from "./schedule";
+import {
+  getScheduleStatus,
+  enableSchedule,
+  disableSchedule,
+  readLog,
+} from "./schedule";
 import {
   transcribeAudio,
   getTranscriptionLog,
@@ -111,6 +116,8 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC.SCHEDULE_DISABLE, (_, id: string) =>
     withWorkflow(id, disableSchedule),
   );
+
+  ipcMain.handle(IPC.READ_LOG, (_, logPath: string) => readLog(logPath));
 
   ipcMain.handle(
     IPC.RUN_WORKFLOW,

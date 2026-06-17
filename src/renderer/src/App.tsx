@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
 import type {
   Registry,
   Workflow,
@@ -12,7 +13,7 @@ import type {
 import { ClusterSection } from "./components/ClusterSection";
 import { SearchBar } from "./components/SearchBar";
 import { EmptyState } from "./components/EmptyState";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar, type SolutionType } from "./components/Sidebar";
 import { WorkflowModal } from "./components/WorkflowModal";
 import {
   RunModal,
@@ -21,11 +22,14 @@ import {
 } from "./components/RunModal";
 import { TranscribeModal } from "./components/TranscribeModal";
 
-// Seed each runner option's UI state from its defaults; optional options start off.
+// Seed each runner option's UI state from its defaults.
+// Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
 function initOptionValues(runner?: WorkflowRunner): OptionValues {
   const out: OptionValues = {};
   for (const o of runner?.options ?? []) {
-    out[o.key] = { enabled: !o.optional, value: o.default };
+    const enabledByDefault =
+      !o.optional || (typeof o.default === "number" && o.default > 0);
+    out[o.key] = { enabled: enabledByDefault, value: o.default };
   }
   return out;
 }
@@ -44,6 +48,12 @@ function buildExtraArgs(
   return args;
 }
 
+function workflowSolutionType(w: Workflow): SolutionType {
+  if (w.scheduled_job) return "scheduled";
+  if (w.action === "run") return "run";
+  return "claude";
+}
+
 declare global {
   interface Window {
     api: {
@@ -60,6 +70,7 @@ declare global {
       scheduleStatus: (id: string) => Promise<ScheduleStatus>;
       scheduleEnable: (id: string) => Promise<ScheduleStatus>;
       scheduleDisable: (id: string) => Promise<ScheduleStatus>;
+      readLog: (logPath: string) => Promise<string>;
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void;
       transcribeAudio: (audioBuffer: ArrayBuffer) => Promise<string>;
       copyToClipboard: (text: string) => Promise<void>;
@@ -76,6 +87,8 @@ export default function App() {
   });
   const [query, setQuery] = useState("");
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
   const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
@@ -99,6 +112,9 @@ export default function App() {
     let result = workflows;
     if (selectedCluster) {
       result = result.filter((w) => w.cluster_id === selectedCluster);
+    }
+    if (selectedType) {
+      result = result.filter((w) => workflowSolutionType(w) === selectedType);
     }
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -141,9 +157,36 @@ export default function App() {
     const workflow = registry.workflows.find((w) => w.id === id);
     if (!workflow) return;
     const folder = await window.api.pickFolder(workflow.runner?.pick_prompt);
-    if (!folder) return; // user cancelled the folder picker
+    if (!folder) return;
 
     const options = initOptionValues(workflow.runner);
+    const hasOptions = (workflow.runner?.options?.length ?? 0) > 0;
+
+    if (hasOptions) {
+      setRunState({
+        workflow,
+        folder,
+        phase: "configure",
+        result: null,
+        applied: false,
+        options,
+      });
+    } else {
+      await startDryRun(workflow, folder, options);
+    }
+  }
+
+  async function handleConfigure(options: OptionValues) {
+    if (!runState) return;
+    const { workflow, folder } = runState;
+    await startDryRun(workflow, folder, options);
+  }
+
+  async function startDryRun(
+    workflow: Workflow,
+    folder: string,
+    options: OptionValues,
+  ) {
     setRunState({
       workflow,
       folder,
@@ -153,12 +196,11 @@ export default function App() {
       options,
     });
     const result = await window.api.runWorkflow(
-      id,
+      workflow.id,
       folder,
       false,
       buildExtraArgs(workflow.runner, options),
     );
-    // If preview isn't supported, a successful first run is already the final run.
     const previewSupported = workflow.runner?.preview ?? true;
     setRunState((prev) =>
       prev
@@ -239,6 +281,14 @@ export default function App() {
       null)
     : null;
 
+  const typeCounts = registry.workflows.reduce(
+    (acc, w) => {
+      acc[workflowSolutionType(w)]++;
+      return acc;
+    },
+    { scheduled: 0, claude: 0, run: 0 } as Record<SolutionType, number>,
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#09090b]">
       <Sidebar
@@ -246,6 +296,9 @@ export default function App() {
         selected={selectedCluster}
         onSelect={setSelectedCluster}
         totalCount={registry.workflows.length}
+        selectedType={selectedType}
+        onSelectType={setSelectedType}
+        typeCounts={typeCounts}
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -258,7 +311,32 @@ export default function App() {
               {filtered.length}
             </span>
           </div>
-          <div className="no-drag">
+          <div className="no-drag flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex items-center rounded-lg border border-zinc-800 overflow-hidden">
+              <button
+                onClick={() => setViewMode("grid")}
+                title="Grid view"
+                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                  viewMode === "grid"
+                    ? "bg-zinc-700 text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                }`}
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                title="List view"
+                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                  viewMode === "list"
+                    ? "bg-zinc-700 text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                }`}
+              >
+                <List size={14} />
+              </button>
+            </div>
             <SearchBar value={query} onChange={setQuery} />
           </div>
         </header>
@@ -286,6 +364,7 @@ export default function App() {
                   onOpen={handleOpen}
                   onRun={handleRun}
                   onClick={handleCardClick}
+                  viewMode={viewMode}
                 />
               ))}
               {unclustered.length > 0 && (
@@ -300,6 +379,7 @@ export default function App() {
                   onOpen={handleOpen}
                   onRun={handleRun}
                   onClick={handleCardClick}
+                  viewMode={viewMode}
                 />
               )}
             </div>
@@ -331,6 +411,7 @@ export default function App() {
           onApply={handleApply}
           onReveal={(target) => window.api.revealPath(target)}
           onOptionsChange={handleOptionsChange}
+          onConfigure={handleConfigure}
           onClose={() => setRunState(null)}
         />
       )}

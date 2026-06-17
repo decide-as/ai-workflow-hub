@@ -1,7 +1,22 @@
-# Markdown and config files in workflow directories — prose formatting is manual
-workflows/
+# Infrastructure and documentation
 .claude/
 docs/
+workflows/
 changelog.d/
 CHANGELOG.md
+ARCHITECTURE.md
+CLAUDE.md
+SKILLS.md
+SECURITY.md
+README.md
+
+# Config/data files
+*.yaml
+*.yml
+*.json
 *.md
+
+# Build artifacts
+dist/
+out/
+node_modules/

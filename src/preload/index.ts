@@ -29,6 +29,8 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.SCHEDULE_ENABLE, id),
   scheduleDisable: (id: string): Promise<ScheduleStatus> =>
     ipcRenderer.invoke(IPC.SCHEDULE_DISABLE, id),
+  readLog: (logPath: string): Promise<string> =>
+    ipcRenderer.invoke(IPC.READ_LOG, logPath),
   onRegistryUpdated: (cb: (reg: Registry) => void): (() => void) => {
     const handler = (_: unknown, reg: Registry) => cb(reg);
     ipcRenderer.on(IPC.REGISTRY_UPDATED, handler);

@@ -8,6 +8,7 @@ export const IPC = {
   SCHEDULE_STATUS: "schedule-status",
   SCHEDULE_ENABLE: "schedule-enable",
   SCHEDULE_DISABLE: "schedule-disable",
+  READ_LOG: "read-log",
   TRANSCRIBE_AUDIO: "transcribe-audio",
   COPY_TO_CLIPBOARD: "copy-to-clipboard",
   GET_TRANSCRIPTION_LOG: "get-transcription-log",

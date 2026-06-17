@@ -1,5 +1,6 @@
 import type { Cluster, Workflow } from "../../../../shared/types";
 import { WorkflowCard } from "./WorkflowCard";
+import { WorkflowRow } from "./WorkflowRow";
 
 function hashColor(str: string): string {
   let h = 0;
@@ -14,6 +15,7 @@ interface Props {
   onRun: (id: string) => void;
   onClick: (id: string) => void;
   showLabel?: boolean;
+  viewMode?: "grid" | "list";
 }
 
 export function ClusterSection({
@@ -23,6 +25,7 @@ export function ClusterSection({
   onRun,
   onClick,
   showLabel = true,
+  viewMode = "grid",
 }: Props) {
   const color = cluster.id === "__other" ? "#52525b" : hashColor(cluster.name);
 
@@ -41,17 +44,32 @@ export function ClusterSection({
         </div>
       )}
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3">
-        {workflows.map((w) => (
-          <WorkflowCard
-            key={w.id}
-            workflow={w}
-            onOpen={onOpen}
-            onRun={onRun}
-            onClick={onClick}
-          />
-        ))}
-      </div>
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3">
+          {workflows.map((w) => (
+            <WorkflowCard
+              key={w.id}
+              workflow={w}
+              onOpen={onOpen}
+              onRun={onRun}
+              onClick={onClick}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {workflows.map((w) => (
+            <WorkflowRow
+              key={w.id}
+              workflow={w}
+              clusterName={cluster.id === "__other" ? undefined : cluster.name}
+              onOpen={onOpen}
+              onRun={onRun}
+              onClick={onClick}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

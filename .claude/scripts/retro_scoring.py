@@ -39,7 +39,13 @@ def find_test_path(feature: dict[str, Any]) -> list[str]:
     stem = Path(src_path).stem
 
     # Non-source artifacts don't have conventional test files
-    if ext in DOCUMENT_EXTENSIONS | TEMPLATE_EXTENSIONS | SCHEMA_EXTENSIONS | SCRIPT_EXTENSIONS:
+    if (
+        ext
+        in DOCUMENT_EXTENSIONS
+        | TEMPLATE_EXTENSIONS
+        | SCHEMA_EXTENSIONS
+        | SCRIPT_EXTENSIONS
+    ):
         return []
 
     if ext == ".py":
@@ -183,14 +189,23 @@ def compute_scores(
             # Signal 3: Test coverage
             test_lines = test_line_counts[fid].get(sha, 0)
             source_lines = line_counts[fid].get(sha, 0)
-            test_score = min(test_lines / source_lines, 1.0) if source_lines > 0 and test_lines > 0 else 0.0
+            test_score = (
+                min(test_lines / source_lines, 1.0)
+                if source_lines > 0 and test_lines > 0
+                else 0.0
+            )
 
             # Signal 4: Documentation
             docs = doc_counts[fid].get(sha, 0)
             doc_score = docs / peak_docs if exists else 0.0
 
             # Composite score
-            raw = (W_EXISTENCE * exists + W_SIZE * size_score + W_TEST * test_score + W_DOCS * doc_score) * 10.0
+            raw = (
+                W_EXISTENCE * exists
+                + W_SIZE * size_score
+                + W_TEST * test_score
+                + W_DOCS * doc_score
+            ) * 10.0
 
             raw_scores[fid][sha] = raw
 

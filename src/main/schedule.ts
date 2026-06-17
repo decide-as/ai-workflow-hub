@@ -1,4 +1,6 @@
 import { spawnSync } from "child_process";
+import { existsSync, readFileSync } from "fs";
+import { homedir } from "os";
 import { isAbsolute, join } from "path";
 import { getBaseDir } from "./registry";
 import type { Workflow, ScheduleStatus } from "../../shared/types";
@@ -42,6 +44,7 @@ export function parseStatusJson(stdout: string): ScheduleStatus {
       loaded: !!j.loaded,
       lastRunAt: j.lastRunAt ?? null,
       lastExitCode: null,
+      logPath: j.logPath ?? null,
     };
   } catch {
     return {
@@ -49,6 +52,18 @@ export function parseStatusJson(stdout: string): ScheduleStatus {
       loaded: false,
       error: "Could not read schedule status.",
     };
+  }
+}
+
+// Read the launchd log file for a scheduled workflow. Returns '' if not found.
+// Path is scoped to the user's home directory to prevent accidental misuse of the IPC channel.
+export function readLog(logPath: string): string {
+  try {
+    if (!logPath || !logPath.startsWith(homedir())) return "";
+    if (!existsSync(logPath)) return "";
+    return readFileSync(logPath, "utf-8");
+  } catch {
+    return "";
   }
 }
 
