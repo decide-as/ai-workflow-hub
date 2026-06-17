@@ -22,9 +22,14 @@ export function WorkflowRow({
   const [loading, setLoading] = useState(false);
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
+  const isCalendar = workflow.action === "calendar";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
+    if (isCalendar) {
+      onClick(workflow.id);
+      return;
+    }
     setLoading(true);
     await (isRun ? onRun(workflow.id) : onOpen(workflow.id));
     setTimeout(() => setLoading(false), 800);
@@ -104,6 +109,11 @@ export function WorkflowRow({
           <>
             <Play size={11} fill="currentColor" />
             Run
+          </>
+        ) : isCalendar ? (
+          <>
+            <ExternalLink size={11} />
+            Create
           </>
         ) : (
           <>

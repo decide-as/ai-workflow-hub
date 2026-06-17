@@ -19,4 +19,7 @@ export const IPC = {
   READING_LIST_IMPORT: "reading-list-import",
   READING_LIST_ADD_URL: "reading-list-add-url",
   READING_LIST_GET_ENTRIES: "reading-list-get-entries",
+  EXEC_OSASCRIPT: "exec-osascript",
+  READ_CLIPBOARD_IMAGE: "read-clipboard-image",
+  GENERATE_CALENDAR_SCRIPT: "generate-calendar-script",
 } as const;

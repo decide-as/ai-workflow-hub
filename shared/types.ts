@@ -23,12 +23,14 @@ export interface WorkflowOutput {
 //   'scaffold'     — clone an external repo, pick a branch, open Claude with a seeded prompt.
 //   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
 //   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
+//   'calendar'     — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
 export type WorkflowAction =
   | "claude"
   | "run"
   | "scaffold"
   | "transcribe"
-  | "reading-list";
+  | "reading-list"
+  | "calendar";
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {
@@ -162,6 +164,10 @@ export interface Workflow {
   action?: WorkflowAction;
   runner?: WorkflowRunner;
   scaffold?: ScaffoldConfig;
+  // When true on a 'claude'-action workflow, an inline voice recorder is shown
+  // alongside the Open button. After transcription the text is automatically
+  // passed as the initial prompt when opening Claude.
+  transcribe_to_claude?: boolean;
   // Present when the workflow can be installed as a recurring launchd job.
   scheduled_job?: ScheduledJob;
 }

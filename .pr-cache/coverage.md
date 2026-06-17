@@ -1,16 +1,12 @@
 ### Coverage Report
 
-**Status:** PASS — 46/46 tests passing
+**Tests:** 46/46 passed (6 test files)
 
-This is a Node/TypeScript Electron project with a `basic` quality gate. The test suite covers all backend modules (registry, runner, schedule, clustering, terminal, CLI).
+No Python coverage gate — Node/TypeScript project (`quality_gate: basic`, no coverage measurement configured).
 
-| Module | Tests | Status |
-|--------|-------|--------|
-| registry | 3 | PASS |
-| runner | 14 | PASS |
-| schedule | 9 | PASS |
-| clustering | 6 | PASS |
-| terminal | 10 | PASS |
-| cli | 4 | PASS |
-
-No Python coverage threshold applies. All tests pass.
+| Check | Status |
+|-------|--------|
+| ESLint | PASS |
+| Prettier | PASS |
+| TypeScript (`tsc --noEmit`) | PASS |
+| Vitest (46 tests) | PASS |

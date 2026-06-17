@@ -17,7 +17,8 @@ import { resolveIcon } from "../lib/icons";
 interface Props {
   workflow: Workflow;
   clusterName?: string;
-  onOpen: (id: string) => void;
+  clusterColor?: string;
+  onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
 }
@@ -34,11 +35,16 @@ function formatCountdown(secs: number): string {
 
 type RecordState = "idle" | "recording" | "transcribing";
 
-function InlineRecordButton(_: { workflow: Workflow }) {
+function TranscribeControls({
+  onTranscribed,
+}: {
+  onTranscribed?: (text: string) => void;
+}) {
   const [state, setState] = useState<RecordState>("idle");
   const [remaining, setRemaining] = useState(MAX_SECONDS);
   const [copied, setCopied] = useState(false);
   const [lastText, setLastText] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -82,6 +88,9 @@ function InlineRecordButton(_: { workflow: Workflow }) {
           await window.api.copyToClipboard(text);
           await window.api.saveTranscription(text);
           setLastText(text);
+          onTranscribed?.(text);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Transcription failed");
         } finally {
           setState("idle");
           setRemaining(MAX_SECONDS);
@@ -178,17 +187,18 @@ function InlineActionButton({
   onClick,
 }: {
   workflow: Workflow;
-  onOpen: (id: string) => void;
+  onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const isRun = workflow.action === "run";
   const isScaffold = workflow.action === "scaffold";
+  const isCalendar = workflow.action === "calendar";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isScaffold) {
+    if (isScaffold || isCalendar) {
       onClick(workflow.id);
       return;
     }
@@ -332,7 +342,7 @@ export function WorkflowCard({
   const isReadingList = workflow.action === "reading-list";
 
   const actionBtn = isTranscribe ? (
-    <InlineRecordButton workflow={workflow} />
+    <TranscribeControls />
   ) : (
     <InlineActionButton
       workflow={workflow}

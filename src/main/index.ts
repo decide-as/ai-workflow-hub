@@ -42,6 +42,11 @@ import {
   addUrl as readingListAddUrl,
   getEntries as readingListGetEntries,
 } from "./reading-list";
+import {
+  execOsascript,
+  readClipboardImage,
+  generateCalendarScript,
+} from "./calendar";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -84,7 +89,7 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry());
-  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string) => {
+  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string, initialPrompt?: string) => {
     const reg = getRegistry();
     const workflow = reg.workflows.find((w) => w.id === id);
     if (!workflow) return { success: false, error: "Workflow not found" };
@@ -92,7 +97,7 @@ app.whenReady().then(() => {
     const repoPath = isAbsolute(workflow.repo_path)
       ? workflow.repo_path
       : join(getBaseDir(), workflow.repo_path);
-    const result = openInTerminal(repoPath);
+    const result = openInTerminal(repoPath, initialPrompt);
     writeActivityLog({
       timestamp: new Date().toISOString(),
       workflow_id: workflow.id,
@@ -228,6 +233,18 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.READING_LIST_GET_ENTRIES, (_, limit?: number) =>
     readingListGetEntries(getBaseDir(), limit),
+  );
+
+  ipcMain.handle(IPC.EXEC_OSASCRIPT, (_, script: string) =>
+    execOsascript(script),
+  );
+
+  ipcMain.handle(IPC.READ_CLIPBOARD_IMAGE, () => readClipboardImage());
+
+  ipcMain.handle(
+    IPC.GENERATE_CALENDAR_SCRIPT,
+    (_, text: string, imageDataUrl: string | null, today: string) =>
+      generateCalendarScript(text, imageDataUrl, today),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

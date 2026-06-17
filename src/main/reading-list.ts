@@ -41,15 +41,13 @@ export function addUrl(baseDir: string, url: string): ReadingListAddResult {
   }
 }
 
-export function getEntries(
-  baseDir: string,
-  limit = -1,
-): ReadingListEntry[] | { error: string } {
+export function getEntries(baseDir: string, limit = -1): ReadingListEntry[] {
   try {
     const script = join(scriptsDir(baseDir), "get_entries.py");
     const output = runPython(script, [String(limit)]);
-    return JSON.parse(output) as ReadingListEntry[];
-  } catch (err) {
-    return { error: String(err) };
+    const parsed = JSON.parse(output);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
 }

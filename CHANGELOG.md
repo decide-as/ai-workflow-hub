@@ -6,6 +6,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-06-17
+
+### Added
+
+- Calendar Event Creator workflow: describe events in text, record voice, or paste a transit/flight screenshot — Claude generates AppleScript and runs it directly in Apple Calendar.
+- New `calendar` workflow action type with `CalendarModal` component for the generate-review-execute flow.
+- Main-process IPC handlers for `exec-osascript`, `read-clipboard-image`, and `generate-calendar-script`.
+- `src/main/calendar.ts` with AppleScript conventions: programmatic date building, Oslo timezone, emoji titles, per-calendar alarm rules, walking legs in descriptions.
+
+## [0.11.0] - 2026-06-17
+
+### Added
+
+- Add `transcribe_to_claude` flag to workflow registry — when set on a `claude`-action workflow, an inline voice recorder appears on the card below the "Open in Claude" button, separated by an "or transcribe" divider.
+- After transcription completes, the text is automatically passed as the initial prompt when opening Claude, seeding the session with the spoken content (clipboard copy still occurs as well).
+- Extend `openWorkflow` IPC call through the full stack (handler, preload bridge, type declarations, `handleOpen`) to accept an optional `initialPrompt` parameter; the no-prompt path is unchanged.
+
+## [0.10.0] - 2026-06-17
+
+### Added
+
+- Reading List workflow card with inline controls: "Get from Reminders" button imports URLs from the "Leseliste" and "Prioritert leseliste" macOS Reminders lists, and a URL paste input lets users add links directly. Both import from and add to a local SQLite database at `workflows/reading-list/data/reading_list.db`.
+- `ReadingListModal` for browsing all saved URLs, sorted by timestamp descending (entries without a timestamp sort last).
+- Three IPC channels (`reading-list-import`, `reading-list-add-url`, `reading-list-get-entries`) bridging the renderer to Python scripts via `spawnSync`.
+- Workflow registry rule (`.claude/rules/workflow-registry.md`) enforcing required fields on all registry entries.
+
+### Changed
+
+- Sidebar type `"run"` renamed to `"routine"` — label changes from "Script" to "Routine" in the filter panel. The `routine` type now covers `run`, `reading-list`, and `transcribe` actions.
+
 ## [0.9.0] - 2026-06-17
 
 ### Added

@@ -15,8 +15,8 @@ import type {
 
 contextBridge.exposeInMainWorld("api", {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
-  openWorkflow: (id: string): Promise<OpenResult> =>
-    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id),
+  openWorkflow: (id: string, initialPrompt?: string): Promise<OpenResult> =>
+    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id, initialPrompt),
   pickFolder: (prompt?: string): Promise<string | null> =>
     ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
   runWorkflow: (
@@ -68,4 +68,16 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.READING_LIST_ADD_URL, url),
   readingListGetEntries: (limit?: number): Promise<ReadingListEntry[]> =>
     ipcRenderer.invoke(IPC.READING_LIST_GET_ENTRIES, limit),
+  execOsascript: (
+    script: string,
+  ): Promise<{ success: boolean; output: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.EXEC_OSASCRIPT, script),
+  readClipboardImage: (): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.READ_CLIPBOARD_IMAGE),
+  generateCalendarScript: (
+    text: string,
+    imageDataUrl: string | null,
+    today: string,
+  ): Promise<{ success: boolean; script: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrl, today),
 });

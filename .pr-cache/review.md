@@ -1,28 +1,18 @@
 ### Code Review
 
-**Stage:** MVP | **Scope:** Changed files in this PR
+**Stage:** MVP | **Scope:** 6 changed files + 1 test file
 
-**Verdict:** WORLD-CLASS FOR THIS STAGE
+**Verdict for current stage:** WORLD-CLASS FOR THIS STAGE
 
-**Ready to advance:** NOT READY FOR NEXT STAGE (alpha would require broader test coverage of UI components)
+**Ready to advance?:** NOT READY FOR NEXT STAGE
 
-**Summary:** Four feature additions (list view, log modal, type filter, configure phase) are well-structured, correctly wired end-to-end, and cleanly separated. Two issues found and fixed during review.
+**Summary:** Feature is correctly wired end-to-end. `initialPrompt` threads cleanly through the full stack (IPC handler → preload bridge → App type declaration → `handleOpen` → `WorkflowCard`) with no behavioural change to the zero-arg path. Security posture is sound — transcribed text is written to a temp file and read via `$(cat '...')` inside a single-quoted bash variable, correctly handling arbitrary content including quotes, newlines, and shell metacharacters. UI separation (divider + "or transcribe" label) is clean and unambiguous. Two minor issues found and resolved: typo `hasTranscribeToClaud` → `hasTranscribeToClaude`, and unused `workflow` prop removed from `TranscribeControls`. Test coverage added for the `initialPrompt` path.
 
-#### Issues found and resolved
+**Blocking issues in scope:** None.
 
-- **[fixed] LogModal run indices** — `#1` displayed the oldest run instead of the most recent after `.reverse()`. Fixed: re-number after reversing so `#1 = most recent`.
-- **[fixed] `readLog` IPC path scope** — Handler accepted arbitrary renderer-supplied paths. Fixed: scoped to `homedir()` to make trust boundary explicit.
+**Advancement blockers (for Alpha):**
+- No tests cover the IPC wiring in `index.ts` directly (only `openInTerminal` is unit-tested). Acceptable at MVP; add integration test for Alpha.
 
-#### Confirmed correct
+**Out-of-scope issues noticed:** None.
 
-- **Polling cleanup** — `alive` flag + `clearInterval` in `useEffect` return prevents stale state after unmount.
-- **Slider state threading** — `optValues` initializes from `state.options`; `onConfigure(optValues)` passes current slider state through `handleConfigure` → `startDryRun` → `buildExtraArgs` correctly.
-- **Legacy label migration** — `cmd_enable` checks `launchctl print` before `bootout`; idempotent if legacy job already removed.
-- **No XSS** — LogModal renders all values as JSX children, escaped by React.
-
-#### Advisory (not blocking for MVP)
-
-- SchedulePanel hides `lastRunAt` when disabled — could show it unconditionally when available.
-
-#### Out-of-scope issues noticed
-None.
+**Next improvements:** IPC handler integration test for `OPEN_WORKFLOW` + `initialPrompt` forwarding.

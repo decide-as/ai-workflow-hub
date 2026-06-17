@@ -294,6 +294,28 @@ workflows:
         Start by writing the answers.yaml, show it to me for a quick review, and
         then run the command.
 
+  - id: f3a91c2d-8e47-4b05-bc12-7d6f0e3a9c84
+    name: Calendar Event Creator
+    summary: Text, voice, or screenshot → Apple Calendar events via AppleScript.
+    description: >
+      Describe an event in plain text, record it with your voice, or paste a
+      transit/flight screenshot. Claude generates the correct AppleScript for
+      Apple Calendar (programmatic date building, Oslo timezone, emoji titles,
+      alarms, walking legs in descriptions) and runs it directly — no copy-paste
+      needed.
+    tags: [calendar, productivity, applescript, transit, oslo]
+    repo_path: .
+    color: "#34d399"
+    icon: CalendarDays
+    cluster_id: utilities
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: calendar
   - id: f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
     name: Reading List
     summary: Capture, store, and browse reading resources.
@@ -336,10 +358,11 @@ clusters:
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
   - id: utilities
     name: Utilities
-    tags: [files, organization, utility, voice, transcription]
+    tags: [files, organization, utility, voice, transcription, calendar]
     workflow_ids:
       - 145bb544-5270-4288-9afd-1284a7edcce7
       - c339825f-f476-4a4d-a96c-8a4aa989fe36
+      - f3a91c2d-8e47-4b05-bc12-7d6f0e3a9c84
   - id: content
     name: Content
     tags: [content, linkedin, writing, marketing]
