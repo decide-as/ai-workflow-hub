@@ -1,6 +1,6 @@
-# Architecture — Ai-Workflow-Hub
+# Architecture — Workflow-Hub
 
-> This document describes the high-level architecture of Ai-Workflow-Hub.
+> This document describes the high-level architecture of Workflow-Hub.
 > Update it as the system evolves — it helps both humans and AI understand
 > the codebase before making changes.
 

@@ -22,7 +22,7 @@ const WF = {
   added: '2026-06-17',
   updated: '2026-06-17',
   scheduled_job: {
-    label: 'as.decide.ai-workflow-hub.file-organizer',
+    label: 'as.decide.workflow-hub.file-organizer',
     target: '~/Downloads',
     cadence: 'Every hour',
     interval_seconds: 3600,
@@ -85,7 +85,7 @@ describe('schedule commands', () => {
   it('passes the job config to schedule.sh as env vars', () => {
     getScheduleStatus(WF)
     const env = mockSpawn.mock.calls[0][2]?.env as NodeJS.ProcessEnv
-    expect(env.FO_LABEL).toBe('as.decide.ai-workflow-hub.file-organizer')
+    expect(env.FO_LABEL).toBe('as.decide.workflow-hub.file-organizer')
     expect(env.FO_INTERVAL).toBe('3600')
     expect(env.FO_MIN_AGE_DAYS).toBe('7')
   })

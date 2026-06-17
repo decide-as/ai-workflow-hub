@@ -52,7 +52,7 @@ scripts/schedule.sh status    # JSON: installed / loaded / lastRunAt
 Configure via env vars (the app passes these from the registry's `scheduled_job`):
 `FO_TARGET`, `FO_INTERVAL` (seconds), `FO_MIN_AGE_DAYS`, `FO_LABEL`. Scheduled runs
 use `--execute` (no preview) and log to
-`~/Library/Logs/ai-workflow-hub/<label>.log`.
+`~/Library/Logs/workflow-hub/<label>.log`.
 
 > The plist records the **absolute path** of `organize.py` at enable time. If you
 > move the repo (or enable from a temporary git worktree), disable and re-enable

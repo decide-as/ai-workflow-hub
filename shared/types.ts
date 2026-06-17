@@ -45,7 +45,7 @@ export interface WorkflowRunnerOption {
 // A launchd-backed scheduled run of the workflow's script. Display metadata
 // lives here; the actual install/load is done by the workflow's schedule.sh.
 export interface ScheduledJob {
-  // launchd label, e.g. as.decide.ai-workflow-hub.file-organizer.
+  // launchd label, e.g. as.decide.workflow-hub.file-organizer.
   label: string
   // Folder the job operates on (~ is expanded). Shown in the UI.
   target: string

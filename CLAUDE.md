@@ -1,4 +1,4 @@
-# Ai-Workflow-Hub
+# Workflow-Hub
 
 Desktop app for managing and launching AI workflow sessions
 

@@ -3,16 +3,16 @@
 <br />
 
 <div align="center">
-  <a href="https://github.com/decide-as/ai-workflow-hub">
+  <a href="https://github.com/decide-as/workflow-hub">
     <img src="assets/logo.png" alt="Logo" height="150">
   </a>
 
-<h3 align="center">Ai-Workflow-Hub</h3>
+<h3 align="center">Workflow-Hub</h3>
 
   <p align="center">
     Desktop app for managing and launching AI workflow sessions
     <br />
-    <a href="https://github.com/decide-as/ai-workflow-hub"><strong>Explore »</strong></a>
+    <a href="https://github.com/decide-as/workflow-hub"><strong>Explore »</strong></a>
   </p>
 
 ![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.4.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
@@ -73,8 +73,8 @@ Desktop app for managing and launching AI workflow sessions
 ### Installation
 
 ```bash
-git clone https://github.com/decide-as/ai-workflow-hub
-cd ai-workflow-hub
+git clone https://github.com/decide-as/workflow-hub
+cd workflow-hub
 npm install
 ```
 
@@ -217,7 +217,7 @@ flowchart LR
 ## Project Structure
 
 ```
-ai-workflow-hub/
+workflow-hub/
 ├── scripts/                # Source code
 ├── tests/                  # Test suite
 ├── assets/                 # Project assets (logo, images)
@@ -238,7 +238,7 @@ ai-workflow-hub/
 - [ ] Feature 2
 - [ ] Feature 3
 
-See the [open issues](https://github.com/decide-as/ai-workflow-hub/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/decide-as/workflow-hub/issues) for a full list of proposed features and known issues.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -278,6 +278,6 @@ All Rights Reserved. This software may not be used, copied, modified, or distrib
 
  — [github.com/decide-as](https://github.com/decide-as)
 
-Project Link: [https://github.com/decide-as/ai-workflow-hub](https://github.com/decide-as/ai-workflow-hub)
+Project Link: [https://github.com/decide-as/workflow-hub](https://github.com/decide-as/workflow-hub)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

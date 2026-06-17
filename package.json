@@ -1,5 +1,5 @@
 {
-  "name": "ai-workflow-hub",
+  "name": "workflow-hub",
   "version": "0.1.0",
   "description": "Desktop app for managing and launching AI workflow sessions",
   "main": "./out/main/index.js",

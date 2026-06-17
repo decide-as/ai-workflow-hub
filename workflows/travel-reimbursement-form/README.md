@@ -5,7 +5,7 @@ plus a bookkeeping summary, driven entirely by Claude.
 
 ## How it works
 
-Opening this workflow from the AI Workflow Hub launches a Claude session in this
+Opening this workflow from the Workflow Hub launches a Claude session in this
 folder. Claude reads `CLAUDE.md` + `.claude/rules/` and runs the whole job:
 
 1. Asks two up-front questions — use `standardsatser` (allowance rates)? and the

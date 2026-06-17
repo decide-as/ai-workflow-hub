@@ -12,7 +12,7 @@
 #   FO_TARGET        folder to organize           (default: ~/Downloads)
 #   FO_INTERVAL      seconds between runs          (default: 3600)
 #   FO_MIN_AGE_DAYS  only move files older than N   (default: 7; 0 = everything)
-#   FO_LABEL         launchd label                 (default: as.decide.ai-workflow-hub.file-organizer)
+#   FO_LABEL         launchd label                 (default: as.decide.workflow-hub.file-organizer)
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,10 +22,10 @@ TARGET="${FO_TARGET:-$HOME/Downloads}"
 TARGET="${TARGET/#\~/$HOME}"
 INTERVAL="${FO_INTERVAL:-3600}"
 MIN_AGE_DAYS="${FO_MIN_AGE_DAYS:-7}"
-LABEL="${FO_LABEL:-as.decide.ai-workflow-hub.file-organizer}"
+LABEL="${FO_LABEL:-as.decide.workflow-hub.file-organizer}"
 
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-LOG_DIR="$HOME/Library/Logs/ai-workflow-hub"
+LOG_DIR="$HOME/Library/Logs/workflow-hub"
 LOG="$LOG_DIR/$LABEL.log"
 DOMAIN="gui/$(id -u)"
 
