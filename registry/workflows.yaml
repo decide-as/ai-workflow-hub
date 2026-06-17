@@ -294,6 +294,63 @@ workflows:
         Start by writing the answers.yaml, show it to me for a quick review, and
         then run the command.
 
+  - id: 8d330ef0-6304-49ba-aa70-f259555a0b56
+    name: Web Scraper
+    summary: Paste a URL → Claude scrapes and extracts content.
+    description: >
+      Paste any URL — web article, Instagram post, LinkedIn post, YouTube video,
+      or PDF — and Claude opens the scrapers repo, runs the right platform scraper
+      automatically, and returns structured metadata, extracted text, and downloaded
+      media. Powered by ScrapingBee + Gemini; uses yt-dlp for YouTube and
+      cookie-based fallbacks for authenticated content.
+    tags: [scraping, research, web, data-extraction]
+    repo_path: /Users/christianbraathen/Repositories/scrapers
+    color: "#06b6d4"
+    icon: Globe
+    cluster_id: research
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: scaffold
+    inputs:
+      - name: url
+        type: string
+        description: The URL to scrape (web article, Instagram, LinkedIn, YouTube, or PDF)
+        required: true
+        example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    outputs:
+      - name: scraped_content
+        type: json
+        description: >
+          Structured metadata (title, author, date, text, keywords, insights) plus
+          downloaded media in the outputs/ directory of the scrapers repo.
+    scaffold:
+      repo: /Users/christianbraathen/Repositories/scrapers
+      branch_default: master
+      command: scrapers "<url>"
+      initial_prompt_template: |
+        I want to scrape the following URL:
+
+        {description}
+
+        Please do the following:
+        1. Detect the platform automatically (Instagram, LinkedIn, YouTube, or general web/PDF).
+        2. Run the appropriate scraper:
+           - Instagram: `python -m scrapers.instagram.scraper --url "<url>"`
+           - LinkedIn: `python -m scrapers.linkedin.scraper --url "<url>"`
+           - YouTube: `python -m scrapers.youtube.scraper --url "<url>"`
+           - General / PDF / anything else: `python -m scrapers.general.scraper --url "<url>"`
+           - Or use the unified entry point: `scrapers "<url>"`
+        3. Show me the extracted metadata (title, author, date, summary, keywords).
+        4. If media was downloaded, tell me where it was saved.
+
+        Start by running the scraper. If authentication is needed (e.g. for Instagram),
+        try with `--use-cookies` before giving up.
+
   - id: f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
     name: Reading List
     summary: Capture, store, and browse reading resources.
@@ -350,6 +407,11 @@ clusters:
     tags: [scaffold, developer-tools, setup]
     workflow_ids:
       - a4f82c3e-7b19-4d05-9e61-1c3f85de2047
+  - id: research
+    name: Research
+    tags: [scraping, research, web, data-extraction]
+    workflow_ids:
+      - 8d330ef0-6304-49ba-aa70-f259555a0b56
   - id: knowledge
     name: Knowledge
     tags: [reading, bookmarks, resources, knowledge]
