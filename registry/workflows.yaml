@@ -348,8 +348,8 @@ workflows:
       - name: scraped_content
         type: json
         description: >
-          Structured metadata (title, author, date, text, keywords, insights) plus
-          downloaded media in the outputs/ directory of the scrapers repo.
+          Structured metadata (title, author, date, text, keywords, insights) written
+          to workflow-hub-data/web-scraper/data/structured/, media downloads to data/downloads/.
     scaffold:
       repo: /Users/christianbraathen/Repositories/scrapers
       branch_default: master

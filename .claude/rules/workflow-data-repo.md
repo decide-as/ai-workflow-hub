@@ -43,26 +43,30 @@ folder in `workflow-hub-data`. Do not leave outputs in:
 - The external repo being opened (unless that repo itself is the canonical store
   and its `outputs/` is symlinked from here)
 
-## Symlinking for scaffold/external-repo workflows
+## Routing output for scaffold/external-repo workflows
 
 When a workflow uses `action: scaffold` (or otherwise opens Claude in an
-external repo), outputs land inside that repo's working directory. Symlink the
-relevant output directory back into `workflow-hub-data/<slug>/data/` so all
-workflow data is accessible from one place:
+external repo), route the external tool's output directly to `workflow-hub-data/<slug>/data/`
+using the tool's output directory flag. This keeps all workflow data in one place
+without symlinks:
 
 ```bash
-# Example: web-scraper → scrapers repo outputs
+# Preferred: pass --output-dir directly to the tool
+scrapers "<url>" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/<slug>/data
+
+# Fallback (if the tool has no output-dir flag): symlink the output dir
 ln -s /path/to/external-repo/outputs \
       /Users/christianbraathen/Repositories/workflow-hub-data/<slug>/data/outputs
 ```
 
-Add the symlink to `workflow-hub-data` (not to the primary repo). Record the
-symlink target in the folder's `README.md`.
+Embed the `--output-dir` path in the workflow's `initial_prompt_template` so
+Claude runs the tool with the correct destination automatically. Document the
+routing approach in the folder's `README.md`.
 
 ## Checklist when registering a new workflow
 
 - [ ] `workflow-hub-data/<slug>/` folder exists and is committed
-- [ ] `workflow-hub-data/<slug>/data/.gitkeep` is present
+- [ ] `workflow-hub-data/<slug>/data/.gitkeep` is present (or real subdirs if layout is known)
 - [ ] `workflow-hub-data/<slug>/README.md` describes what data is stored and where
-- [ ] For scaffold/external workflows: symlink from `data/` to the external output dir
+- [ ] For scaffold/external workflows: `--output-dir` routing embedded in `initial_prompt_template`, or symlink added as fallback
 - [ ] `workflow-hub-data` commit is referenced in the PR description
