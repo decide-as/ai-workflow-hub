@@ -32,7 +32,7 @@ If you discover a security vulnerability, please report it responsibly:
 
 The following are in scope for security reports:
 
-- Vulnerabilities in `ai_workflow_hub` source code
+- Vulnerabilities in `workflow_hub` source code
 - Secrets or credentials accidentally included in the repository
 - Subprocess injection or command execution vulnerabilities
 - Dependency vulnerabilities in direct dependencies

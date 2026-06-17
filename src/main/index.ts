@@ -41,7 +41,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('as.decide.ai-workflow-hub')
+  electronApp.setAppUserModelId('as.decide.workflow-hub')
   app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window))
 
   ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry())

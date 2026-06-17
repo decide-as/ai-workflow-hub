@@ -151,7 +151,7 @@ workflows:
           min: 0
           optional: true
     scheduled_job:
-      label: as.decide.ai-workflow-hub.file-organizer
+      label: as.decide.workflow-hub.file-organizer
       target: ~/Downloads
       cadence: Every hour
       interval_seconds: 3600

@@ -1,6 +1,6 @@
 # Identity
-name: ai-workflow-hub
-display_name: AI Workflow Hub
+name: workflow-hub
+display_name: Workflow Hub
 version: 0.4.0
 description: >
   Desktop Electron app for managing and launching AI workflow sessions.
@@ -11,7 +11,7 @@ author:
   name: Christian Braathen
   github: decide-as
 license: All Rights Reserved
-repository: https://github.com/decide-as/ai-workflow-hub
+repository: https://github.com/decide-as/workflow-hub
 
 # Classification
 visibility: personal

@@ -6,7 +6,7 @@ line — driven entirely by Claude.
 
 ## How it works
 
-Opening this workflow from the AI Workflow Hub launches a Claude session in this
+Opening this workflow from the Workflow Hub launches a Claude session in this
 folder. Claude reads `CLAUDE.md` + `.claude/rules/` and runs the whole job:
 
 1. Confirms the **company** being claimed against and the **claim date** (today by

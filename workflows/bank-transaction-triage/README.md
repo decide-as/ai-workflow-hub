@@ -8,7 +8,7 @@ it decides what each transaction is and feeds the reimbursable ones into the
 
 ## How it works
 
-Opening this workflow from the AI Workflow Hub launches a Claude session in this
+Opening this workflow from the Workflow Hub launches a Claude session in this
 folder. Claude reads `CLAUDE.md` + `.claude/rules/` and runs the whole job:
 
 1. Normalizes every line from each export to a common schema (`01`).

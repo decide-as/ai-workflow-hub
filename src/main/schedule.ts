@@ -28,7 +28,7 @@ function jobEnv(workflow: Workflow): NodeJS.ProcessEnv {
     FO_TARGET: job?.target ?? '~/Downloads',
     FO_INTERVAL: String(job?.interval_seconds ?? 3600),
     FO_MIN_AGE_DAYS: String(job?.min_age_days ?? 0),
-    FO_LABEL: job?.label ?? 'as.decide.ai-workflow-hub.file-organizer',
+    FO_LABEL: job?.label ?? 'as.decide.workflow-hub.file-organizer',
   }
 }
 
