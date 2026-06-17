@@ -23,7 +23,12 @@ export interface WorkflowOutput {
 //   'scaffold'     — clone an external repo, pick a branch, open Claude with a seeded prompt.
 //   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
 //   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
-export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe" | "reading-list";
+export type WorkflowAction =
+  | "claude"
+  | "run"
+  | "scaffold"
+  | "transcribe"
+  | "reading-list";
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {

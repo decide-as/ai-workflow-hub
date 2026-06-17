@@ -57,7 +57,12 @@ function buildExtraArgs(
 
 function workflowSolutionType(w: Workflow): SolutionType {
   if (w.scheduled_job) return "scheduled";
-  if (w.action === "run" || w.action === "reading-list" || w.action === "transcribe") return "routine";
+  if (
+    w.action === "run" ||
+    w.action === "reading-list" ||
+    w.action === "transcribe"
+  )
+    return "routine";
   if (w.action === "scaffold") return "claude";
   return "claude";
 }

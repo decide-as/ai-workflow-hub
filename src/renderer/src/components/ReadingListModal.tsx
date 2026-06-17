@@ -102,8 +102,8 @@ export function ReadingListModal({ workflow, onClose }: Props) {
           <p className="text-xs leading-relaxed">
             "Get from Reminders" imports from{" "}
             <strong className="text-zinc-300">Leseliste</strong> and{" "}
-            <strong className="text-zinc-300">Prioritert leseliste</strong> only.
-            Duplicate URLs are skipped automatically.
+            <strong className="text-zinc-300">Prioritert leseliste</strong>{" "}
+            only. Duplicate URLs are skipped automatically.
           </p>
         </div>
 

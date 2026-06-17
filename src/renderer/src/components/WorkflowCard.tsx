@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Check, Square, Mic, Loader2, RefreshCw, Plus } from "lucide-react";
+import {
+  Copy,
+  Check,
+  Square,
+  Mic,
+  Loader2,
+  RefreshCw,
+  Plus,
+} from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
 import { SchedulePanel } from "./SchedulePanel";
@@ -208,7 +216,9 @@ function ReadingListControls({ onClick }: { onClick: () => void }) {
     setImportMsg(null);
     const result = await window.api.readingListImport();
     if (result.success) {
-      setImportMsg(`+${result.imported ?? 0} new · ${result.duplicates ?? 0} dupes`);
+      setImportMsg(
+        `+${result.imported ?? 0} new · ${result.duplicates ?? 0} dupes`,
+      );
       setImportState("done");
     } else {
       setImportMsg(result.error ?? "Import failed");
@@ -265,14 +275,11 @@ function ReadingListControls({ onClick }: { onClick: () => void }) {
         />
         {importState === "running"
           ? "Importing…"
-          : importMsg ?? "Get from Reminders"}
+          : (importMsg ?? "Get from Reminders")}
       </button>
 
       {/* Paste URL */}
-      <form
-        onSubmit={handleAddUrl}
-        className="flex gap-1.5"
-      >
+      <form onSubmit={handleAddUrl} className="flex gap-1.5">
         <input
           type="url"
           value={url}
