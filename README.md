@@ -15,7 +15,7 @@
     <a href="https://github.com/decide-as/workflow-hub"><strong>Explore »</strong></a>
   </p>
 
-![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.5.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
+![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.8.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
 
 </div>
 
@@ -83,7 +83,19 @@ npm install
 
 ## Usage
 
-<!-- Describe how to use this project -->
+**Development** — runs with hot reload, lives in the terminal:
+
+```bash
+npm run dev
+```
+
+**Standalone macOS app** — packages as a native `.app` launchable from Spotlight or the Dock:
+
+```bash
+make dist
+```
+
+Open the generated `dist/Workflow Hub-<version>-arm64.dmg`, drag `Workflow Hub.app` into `/Applications`, and launch it like any native Mac app. On first open, right-click → Open to bypass the Gatekeeper prompt (unsigned personal build).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

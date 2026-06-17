@@ -1,7 +1,7 @@
 # Identity
 name: workflow-hub
 display_name: Workflow Hub
-version: 0.5.0
+version: 0.8.0
 description: >
   Desktop Electron app for managing and launching AI workflow sessions.
   Displays registered workflows as clickable cards grouped by auto-detected
@@ -20,7 +20,6 @@ archetype: node-tool
 tags: [electron, desktop, ai, workflows, productivity]
 domain: productivity
 
-
 # Technical
 language: node
 language_version: ">=20"
@@ -31,9 +30,7 @@ install_command: npm install
 run_command: npm run dev
 test_command: npm test
 
-
 # Framework options
-
 
 # Capabilities
 has_api_keys: false
@@ -43,7 +40,6 @@ has_tests: true
 has_lib: false
 has_ui: true
 has_database: false
-
 
 # Distribution
 pypi_package: false
@@ -57,7 +53,6 @@ phase: mvp
 # Permissions
 allow_git_push: false
 allow_auto_merge: false
-
 
 # Quality
 quality_gate: basic
