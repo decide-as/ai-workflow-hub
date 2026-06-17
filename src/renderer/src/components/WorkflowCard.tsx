@@ -302,42 +302,42 @@ function ReadingListFooter({
   }
 
   return (
-    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-      <form onSubmit={handleAdd} className="flex items-center gap-1.5">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onClick={(e) => e.stopPropagation()}
-          placeholder="Paste a URL…"
-          disabled={adding}
-          className="form-input flex-1"
-          style={{ padding: "5px 10px", fontSize: "11px" }}
-        />
-        <button type="submit" disabled={!url.trim() || adding} className="btn btn-sm w-7 h-7 p-0 shrink-0">
-          <Plus size={12} />
-        </button>
-      </form>
-      <div className="flex items-center gap-2">
-        <div className="flex-1" />
-        <button
-          onClick={handleImport}
-          disabled={importState === "running"}
-          className="btn btn-sm"
-          style={
-            importState === "done" ? { borderColor: "rgba(122,158,126,0.4)", color: "#7a9e7e" } :
-            importState === "error" ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" } :
-            {}
-          }
-        >
-          <RefreshCw size={11} className={importState === "running" ? "animate-spin" : ""} />
-          {importMsg ?? "Sync"}
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="btn btn-sm">
-          <ExternalLink size={11} />View
-        </button>
-      </div>
-    </div>
+    <form
+      onSubmit={handleAdd}
+      className="flex items-center gap-1.5"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <input
+        type="url"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        placeholder="Paste a URL…"
+        disabled={adding}
+        className="form-input flex-1"
+        style={{ padding: "5px 10px", fontSize: "11px" }}
+      />
+      <button type="submit" disabled={!url.trim() || adding} className="btn btn-sm w-7 h-7 p-0 shrink-0">
+        <Plus size={12} />
+      </button>
+      <button
+        type="button"
+        onClick={handleImport}
+        disabled={importState === "running"}
+        className="btn btn-sm shrink-0"
+        style={
+          importState === "done" ? { borderColor: "rgba(122,158,126,0.4)", color: "#7a9e7e" } :
+          importState === "error" ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" } :
+          {}
+        }
+      >
+        <RefreshCw size={11} className={importState === "running" ? "animate-spin" : ""} />
+        {importMsg ?? "Sync"}
+      </button>
+      <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} className="btn btn-sm shrink-0">
+        <ExternalLink size={11} />View
+      </button>
+    </form>
   );
 }
 
@@ -384,14 +384,10 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
           </div>
         </div>
 
-        {/* Reading list URL input (above footer) */}
-        {isReadingList && (
-          <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
-        )}
-
         {/* Footer: schedule info + action on same row, or just action */}
-        {!isReadingList && (
-          hasSchedule ? (
+        {isReadingList ? (
+          <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
+        ) : hasSchedule ? (
             <ScheduleFooter workflow={workflow} actionSlot={actionBtn} />
           ) : (
             <div className="flex items-center">
