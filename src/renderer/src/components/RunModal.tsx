@@ -14,7 +14,7 @@ function destFromOutput(output: string, fallback: string): string {
   return m ? m[1].trim() : fallback
 }
 
-export type RunPhase = 'running' | 'preview' | 'applying' | 'done'
+export type RunPhase = 'configure' | 'running' | 'preview' | 'applying' | 'done'
 
 export interface RunState {
   workflow: Workflow
@@ -30,6 +30,7 @@ interface Props {
   onApply: () => void
   onReveal: (target: string) => void
   onOptionsChange: (next: OptionValues) => void
+  onConfigure: (options: OptionValues) => void
   onClose: () => void
 }
 
@@ -37,30 +38,25 @@ function Spinner() {
   return <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
 }
 
-export function RunModal({ state, onApply, onReveal, onOptionsChange, onClose }: Props) {
+export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigure, onClose }: Props) {
   const { workflow, folder, phase, result, applied } = state
   const Icon = resolveIcon(workflow.icon, workflow.tags)
   const busy = phase === 'running' || phase === 'applying'
 
-  // Local mirror so typing in a number field doesn't re-run the preview on every
-  // keystroke — changes are committed (and the preview re-run) on toggle/blur/Enter.
   const [optValues, setOptValues] = useState<OptionValues>(state.options)
   const runnerOptions = workflow.runner?.options ?? []
-  const showOptions = runnerOptions.length > 0 && (phase === 'running' || phase === 'preview')
 
-  function commit(next: OptionValues) {
-    setOptValues(next)
-    onOptionsChange(next)
-  }
+  // onOptionsChange is kept for future use (e.g. re-running preview from summary pill).
+  void onOptionsChange
 
-  // Only allow dismissing when not mid-run, so a click-away can't strand work.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !busy) onClose()
+      if (e.key === 'Escape' && !busy && phase !== 'configure') onClose()
+      if (e.key === 'Escape' && phase === 'configure') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [busy, onClose])
+  }, [busy, phase, onClose])
 
   const phaseLabel =
     phase === 'running' ? 'Scanning folder…'
@@ -70,6 +66,127 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onClose }:
 
   const failed = result != null && !result.success
 
+  // ── Configure phase ────────────────────────────────────────────────────────
+  if (phase === 'configure') {
+    const ageOpt = runnerOptions.find((o) => o.key === 'min_age_days')
+    const ageVal = optValues['min_age_days']
+    const sliderMax = 90
+    const days = ageVal ? ageVal.value : 0
+    const everything = !ageVal?.enabled || days === 0
+
+    function setDays(n: number) {
+      if (!ageVal) return
+      setOptValues((prev) => ({ ...prev, min_age_days: { enabled: n > 0, value: n } }))
+    }
+
+    function ageLabel(n: number) {
+      if (n === 0) return 'Everything — no age filter'
+      if (n === 1) return 'Files older than 1 day'
+      return `Files older than ${n} days`
+    }
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div
+          className="relative z-10 w-full max-w-lg mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
+                     shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="h-1 w-full rounded-t-2xl shrink-0" style={{ backgroundColor: workflow.color }} />
+
+          {/* Header */}
+          <div className="flex items-start gap-4 px-6 pt-5 pb-4">
+            <span
+              className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
+              style={{ backgroundColor: `${workflow.color}22` }}
+            >
+              <Icon size={22} style={{ color: workflow.color }} strokeWidth={1.75} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-semibold text-zinc-100">{workflow.name}</h2>
+              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500">
+                <FolderInput size={11} className="shrink-0" />
+                <span className="truncate font-mono">{folder}</span>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
+                         text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Slider */}
+          {ageOpt && ageVal && (
+            <div className="px-6 pb-6 space-y-4">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-zinc-200">{ageOpt.label}</p>
+                  <span
+                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: everything ? '#52525b33' : `${workflow.color}22`,
+                      color: everything ? '#a1a1aa' : workflow.color,
+                    }}
+                  >
+                    {ageLabel(days)}
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={sliderMax}
+                  step={1}
+                  value={days}
+                  onChange={(e) => setDays(Number(e.target.value))}
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{ accentColor: workflow.color }}
+                />
+
+                <div className="flex justify-between text-[11px] text-zinc-600">
+                  <span>Everything</span>
+                  <span>90 days</span>
+                </div>
+
+                {!everything && (
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">
+                    Files created or modified within the last {days} day{days !== 1 ? 's' : ''} will be skipped.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-zinc-800">
+            <button
+              onClick={onClose}
+              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300
+                         border border-zinc-700/60 hover:text-zinc-100 hover:border-zinc-600
+                         hover:bg-zinc-800/60 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onConfigure(optValues)}
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
+                         text-zinc-950 transition-all hover:brightness-110"
+              style={{ backgroundColor: workflow.color }}
+            >
+              <Play size={14} strokeWidth={2.5} />
+              Preview
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Running / preview / done phases ───────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => !busy && onClose()}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -120,51 +237,19 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onClose }:
           </div>
         </div>
 
-        {/* Options — adjustable filters; changing one re-runs the preview */}
-        {showOptions && (
-          <div className="px-6 pb-3 shrink-0 flex flex-wrap gap-x-4 gap-y-2">
-            {runnerOptions.map((opt) => {
-              const v = optValues[opt.key]
-              if (!v) return null
-              const numDisabled = busy || (opt.optional && !v.enabled)
-              return (
-                <div key={opt.key} className="inline-flex items-center gap-2 text-xs text-zinc-300">
-                  {opt.optional && (
-                    <input
-                      type="checkbox"
-                      checked={v.enabled}
-                      disabled={busy}
-                      onChange={(e) =>
-                        commit({ ...optValues, [opt.key]: { ...v, enabled: e.target.checked } })
-                      }
-                      style={{ accentColor: workflow.color }}
-                    />
-                  )}
-                  <span className={opt.optional && !v.enabled ? 'text-zinc-500' : ''}>{opt.label}</span>
-                  <input
-                    type="number"
-                    min={opt.min}
-                    max={opt.max}
-                    value={v.value}
-                    disabled={numDisabled}
-                    onChange={(e) =>
-                      setOptValues({ ...optValues, [opt.key]: { ...v, value: Number(e.target.value) } })
-                    }
-                    onBlur={() => commit(optValues)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') commit(optValues) }}
-                    className="w-16 rounded-md bg-zinc-800 border border-zinc-700 px-2 py-1 text-zinc-100
-                               tabular-nums disabled:opacity-40 focus:outline-none focus:border-zinc-500"
-                  />
-                  {opt.unit && (
-                    <span className={opt.optional && !v.enabled ? 'text-zinc-600' : 'text-zinc-500'}>
-                      {opt.unit}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+        {/* Age filter pill — reminds user what setting was applied */}
+        {(phase === 'running' || phase === 'preview') && (() => {
+          const v = optValues['min_age_days']
+          const days = v?.enabled && v.value > 0 ? v.value : 0
+          return (
+            <div className="px-6 pb-3 shrink-0">
+              <span className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1
+                               border border-zinc-700/60 text-zinc-400">
+                {days === 0 ? 'All files (no age filter)' : `Files older than ${days} day${days !== 1 ? 's' : ''}`}
+              </span>
+            </div>
+          )
+        })()}
 
         {/* Output */}
         <div className="overflow-y-auto flex-1 px-6 pb-4">

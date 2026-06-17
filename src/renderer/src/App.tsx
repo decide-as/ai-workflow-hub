@@ -10,11 +10,13 @@ import { Sidebar, type SolutionType } from './components/Sidebar'
 import { WorkflowModal } from './components/WorkflowModal'
 import { RunModal, type RunState, type OptionValues } from './components/RunModal'
 
-// Seed each runner option's UI state from its defaults; optional options start off.
+// Seed each runner option's UI state from its defaults.
+// Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
 function initOptionValues(runner?: WorkflowRunner): OptionValues {
   const out: OptionValues = {}
   for (const o of runner?.options ?? []) {
-    out[o.key] = { enabled: !o.optional, value: o.default }
+    const enabledByDefault = !o.optional || (typeof o.default === 'number' && o.default > 0)
+    out[o.key] = { enabled: enabledByDefault, value: o.default }
   }
   return out
 }
@@ -123,12 +125,29 @@ export default function App() {
     const workflow = registry.workflows.find((w) => w.id === id)
     if (!workflow) return
     const folder = await window.api.pickFolder(workflow.runner?.pick_prompt)
-    if (!folder) return // user cancelled the folder picker
+    if (!folder) return
 
     const options = initOptionValues(workflow.runner)
+    const hasOptions = (workflow.runner?.options?.length ?? 0) > 0
+
+    if (hasOptions) {
+      setRunState({ workflow, folder, phase: 'configure', result: null, applied: false, options })
+    } else {
+      await startDryRun(workflow, folder, options)
+    }
+  }
+
+  async function handleConfigure(options: OptionValues) {
+    if (!runState) return
+    const { workflow, folder } = runState
+    await startDryRun(workflow, folder, options)
+  }
+
+  async function startDryRun(workflow: Workflow, folder: string, options: OptionValues) {
     setRunState({ workflow, folder, phase: 'running', result: null, applied: false, options })
-    const result = await window.api.runWorkflow(id, folder, false, buildExtraArgs(workflow.runner, options))
-    // If preview isn't supported, a successful first run is already the final run.
+    const result = await window.api.runWorkflow(
+      workflow.id, folder, false, buildExtraArgs(workflow.runner, options),
+    )
     const previewSupported = workflow.runner?.preview ?? true
     setRunState((prev) =>
       prev
@@ -302,6 +321,7 @@ export default function App() {
           onApply={handleApply}
           onReveal={(target) => window.api.revealPath(target)}
           onOptionsChange={handleOptionsChange}
+          onConfigure={handleConfigure}
           onClose={() => setRunState(null)}
         />
       )}
