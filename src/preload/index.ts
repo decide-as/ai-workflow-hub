@@ -15,8 +15,8 @@ import type {
 
 contextBridge.exposeInMainWorld("api", {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
-  openWorkflow: (id: string): Promise<OpenResult> =>
-    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id),
+  openWorkflow: (id: string, initialPrompt?: string): Promise<OpenResult> =>
+    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id, initialPrompt),
   pickFolder: (prompt?: string): Promise<string | null> =>
     ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
   runWorkflow: (
