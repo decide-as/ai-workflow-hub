@@ -27,7 +27,6 @@ type RecordState = "idle" | "recording" | "transcribing";
 function TranscribeControls({
   onTranscribed,
 }: {
-  workflow: Workflow;
   onTranscribed?: (text: string) => void;
 }) {
   const [state, setState] = useState<RecordState>("idle");
@@ -211,7 +210,7 @@ export function WorkflowCard({
   const isRun = workflow.action === "run";
   const isScaffold = workflow.action === "scaffold";
   const isTranscribe = workflow.action === "transcribe";
-  const hasTranscribeToClaud = !isTranscribe && workflow.transcribe_to_claude;
+  const hasTranscribeToClaude = !isTranscribe && workflow.transcribe_to_claude;
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
@@ -298,7 +297,7 @@ export function WorkflowCard({
         <div className="flex-1" />
 
         {isTranscribe ? (
-          <TranscribeControls workflow={workflow} />
+          <TranscribeControls />
         ) : (
           <div className="space-y-2">
             <button
@@ -324,7 +323,7 @@ export function WorkflowCard({
               )}
             </button>
 
-            {hasTranscribeToClaud && (
+            {hasTranscribeToClaude && (
               <>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-px bg-zinc-800" />
