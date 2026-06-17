@@ -2,6 +2,7 @@
 .claude/
 docs/
 workflows/
+changelog.d/
 CHANGELOG.md
 ARCHITECTURE.md
 CLAUDE.md
