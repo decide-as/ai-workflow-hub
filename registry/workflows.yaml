@@ -331,25 +331,25 @@ workflows:
     scaffold:
       repo: /Users/christianbraathen/Repositories/scrapers
       branch_default: master
-      command: scrapers "<url>"
+      command: scrapers "<url>" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
       initial_prompt_template: |
         I want to scrape the following URL:
 
         {description}
 
         Please do the following:
-        1. Detect the platform automatically (Instagram, LinkedIn, YouTube, or general web/PDF).
-        2. Run the appropriate scraper:
-           - Instagram: `python -m scrapers.instagram.scraper --url "<url>"`
-           - LinkedIn: `python -m scrapers.linkedin.scraper --url "<url>"`
-           - YouTube: `python -m scrapers.youtube.scraper --url "<url>"`
-           - General / PDF / anything else: `python -m scrapers.general.scraper --url "<url>"`
-           - Or use the unified entry point: `scrapers "<url>"`
-        3. Show me the extracted metadata (title, author, date, summary, keywords).
-        4. If media was downloaded, tell me where it was saved.
+        1. Run the unified scraper, routing all output to the workflow data folder:
 
-        Start by running the scraper. If authentication is needed (e.g. for Instagram),
-        try with `--use-cookies` before giving up.
+           scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
+
+        2. If that fails due to authentication (e.g. Instagram), retry with --use-cookies:
+
+           scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data --use-cookies
+
+        3. Show me the extracted metadata (title, author, date, summary, keywords).
+        4. Tell me the full path of any files written.
+
+        Start by running the scraper command above.
 
   - id: f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
     name: Reading List
