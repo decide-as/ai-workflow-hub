@@ -11,6 +11,9 @@ import type {
   ReadingListEntry,
   ReadingListImportResult,
   ReadingListAddResult,
+  LoanFormData,
+  LoanStakeholdersResult,
+  LoanGenerateResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -80,4 +83,8 @@ contextBridge.exposeInMainWorld("api", {
     today: string,
   ): Promise<{ success: boolean; script: string; error?: string }> =>
     ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrl, today),
+  loanGetStakeholders: (): Promise<LoanStakeholdersResult> =>
+    ipcRenderer.invoke(IPC.LOAN_GET_STAKEHOLDERS),
+  loanGenerate: (data: LoanFormData): Promise<LoanGenerateResult> =>
+    ipcRenderer.invoke(IPC.LOAN_GENERATE, data),
 });

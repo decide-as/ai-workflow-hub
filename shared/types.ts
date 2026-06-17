@@ -24,13 +24,40 @@ export interface WorkflowOutput {
 //   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
 //   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
 //   'calendar'     — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
+//   'loan'         — structured form modal that generates a Norwegian loan agreement HTML and opens it in browser.
 export type WorkflowAction =
   | "claude"
   | "run"
   | "scaffold"
   | "transcribe"
   | "reading-list"
-  | "calendar";
+  | "calendar"
+  | "loan";
+
+export interface LoanStakeholder {
+  name: string;
+  account: string;
+  type: "person" | "company";
+}
+
+export interface LoanFormData {
+  givingStakeholder: string;
+  receivingStakeholder: string;
+  amount: number;
+  date: string;
+  location: string;
+}
+
+export interface LoanStakeholdersResult {
+  success: boolean;
+  stakeholders?: LoanStakeholder[];
+  error?: string;
+}
+
+export interface LoanGenerateResult {
+  success: boolean;
+  error?: string;
+}
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {

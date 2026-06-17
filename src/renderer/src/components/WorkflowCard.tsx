@@ -348,11 +348,12 @@ export function WorkflowCard({
   const isTranscribe = workflow.action === "transcribe";
   const isCalendar = workflow.action === "calendar";
   const isReadingList = workflow.action === "reading-list";
+  const isLoan = workflow.action === "loan";
   const hasTranscribeToClaude = !isTranscribe && workflow.transcribe_to_claude;
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isScaffold || isCalendar) {
+    if (isScaffold || isCalendar || isLoan) {
       // These actions need their own modal — open it via the card click handler.
       onClick(workflow.id);
       return;
@@ -460,6 +461,8 @@ export function WorkflowCard({
                 "Create ↗"
               ) : isCalendar ? (
                 "Create event →"
+              ) : isLoan ? (
+                "New →"
               ) : (
                 "Open in Claude ↗"
               )}
