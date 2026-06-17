@@ -10,7 +10,12 @@ interface Props {
 function formatRun(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function SchedulePanel({ workflow }: Props) {
@@ -22,11 +27,16 @@ export function SchedulePanel({ workflow }: Props) {
   useEffect(() => {
     let alive = true;
     function refresh() {
-      window.api.scheduleStatus(workflow.id).then((s) => { if (alive) setStatus(s); });
+      window.api.scheduleStatus(workflow.id).then((s) => {
+        if (alive) setStatus(s);
+      });
     }
     refresh();
     const timer = setInterval(refresh, 30_000);
-    return () => { alive = false; clearInterval(timer); };
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
   }, [workflow.id]);
 
   if (!job) return null;
@@ -51,14 +61,33 @@ export function SchedulePanel({ workflow }: Props) {
 
   return (
     <>
-      <div className="schedule-panel space-y-2" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="schedule-panel space-y-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Cadence · target */}
-        <div className="flex items-center gap-1.5 text-xs min-w-0" style={{ color: "var(--c-text-secondary)" }}>
-          <Clock size={12} className="shrink-0" style={{ color: workflow.color }} />
+        <div
+          className="flex items-center gap-1.5 text-xs min-w-0"
+          style={{ color: "var(--c-text-secondary)" }}
+        >
+          <Clock
+            size={12}
+            className="shrink-0"
+            style={{ color: workflow.color }}
+          />
           <span className="font-medium">{job.cadence}</span>
           <span style={{ color: "var(--c-text-subtle)" }}>·</span>
-          <FolderInput size={11} className="shrink-0" style={{ color: "var(--c-text-subtle)" }} />
-          <span className="font-mono truncate" style={{ color: "var(--c-text-muted)" }}>{job.target}</span>
+          <FolderInput
+            size={11}
+            className="shrink-0"
+            style={{ color: "var(--c-text-subtle)" }}
+          />
+          <span
+            className="font-mono truncate"
+            style={{ color: "var(--c-text-muted)" }}
+          >
+            {job.target}
+          </span>
         </div>
 
         {/* Status + buttons */}
@@ -67,18 +96,31 @@ export function SchedulePanel({ workflow }: Props) {
             <span
               className={`schedule-status-dot ${active ? "is-active" : "is-inactive"}`}
             />
-            <span style={{ color: active ? "#7a9e7e" : "var(--c-text-subtle)" }}>
-              {checking ? "Checking…" : active ? "Scheduled (active)" : "Not scheduled"}
+            <span
+              style={{ color: active ? "#7a9e7e" : "var(--c-text-subtle)" }}
+            >
+              {checking
+                ? "Checking…"
+                : active
+                  ? "Scheduled (active)"
+                  : "Not scheduled"}
             </span>
             {active && status?.lastRunAt && (
-              <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>
+              <span
+                className="truncate"
+                style={{ color: "var(--c-text-subtle)" }}
+              >
                 · last run {formatRun(status.lastRunAt)}
               </span>
             )}
           </span>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <button onClick={openLog} title="View run log" className="btn btn-sm inline-flex items-center gap-1">
+            <button
+              onClick={openLog}
+              title="View run log"
+              className="btn btn-sm inline-flex items-center gap-1"
+            >
               <ScrollText size={11} />
               Logs
             </button>
@@ -87,7 +129,14 @@ export function SchedulePanel({ workflow }: Props) {
               onClick={toggle}
               disabled={busy || checking}
               className={active ? "btn btn-danger" : "btn btn-sm"}
-              style={!active ? { borderColor: `${workflow.color}66`, color: workflow.color } : undefined}
+              style={
+                !active
+                  ? {
+                      borderColor: `${workflow.color}66`,
+                      color: workflow.color,
+                    }
+                  : undefined
+              }
             >
               {busy ? "…" : active ? "Disable" : "Enable"}
             </button>
@@ -95,7 +144,10 @@ export function SchedulePanel({ workflow }: Props) {
         </div>
 
         {status?.error && (
-          <p className="text-[11px] leading-snug" style={{ color: "rgba(230,130,130,0.9)" }}>
+          <p
+            className="text-[11px] leading-snug"
+            style={{ color: "rgba(230,130,130,0.9)" }}
+          >
             {status.error}
           </p>
         )}

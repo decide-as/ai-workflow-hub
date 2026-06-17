@@ -26,7 +26,11 @@ import {
   Play,
   ExternalLink,
 } from "lucide-react";
-import type { Workflow, Cluster, BranchListResult } from "../../../../shared/types";
+import type {
+  Workflow,
+  Cluster,
+  BranchListResult,
+} from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
 import { SchedulePanel } from "./SchedulePanel";
 import { resolveIcon } from "../lib/icons";
@@ -41,11 +45,18 @@ interface Props {
 }
 
 function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string; Icon: typeof Activity }> = {
-    active:   { label: "Active",   color: "#7a9e7e", Icon: CheckCircle2 },
-    inactive: { label: "Inactive", color: "var(--c-text-subtle)", Icon: MinusCircle },
-    error:    { label: "Error",    color: "rgba(220,100,100,0.9)", Icon: XCircle },
-    draft:    { label: "Draft",    color: "var(--c-accent)", Icon: AlertCircle },
+  const map: Record<
+    string,
+    { label: string; color: string; Icon: typeof Activity }
+  > = {
+    active: { label: "Active", color: "#7a9e7e", Icon: CheckCircle2 },
+    inactive: {
+      label: "Inactive",
+      color: "var(--c-text-subtle)",
+      Icon: MinusCircle,
+    },
+    error: { label: "Error", color: "rgba(220,100,100,0.9)", Icon: XCircle },
+    draft: { label: "Draft", color: "var(--c-accent)", Icon: AlertCircle },
   };
   const cfg = map[status] ?? map.draft;
   return (
@@ -61,22 +72,42 @@ function StatusPill({ status }: { status: string }) {
 
 function RunStatusDot({ s }: { s: string }) {
   const color =
-    s === "success" ? "#7a9e7e" :
-    s === "failure" ? "rgba(220,100,100,0.9)" :
-    s === "partial" ? "var(--c-accent)" :
-    "var(--c-text-subtle)";
+    s === "success"
+      ? "#7a9e7e"
+      : s === "failure"
+        ? "rgba(220,100,100,0.9)"
+        : s === "partial"
+          ? "var(--c-accent)"
+          : "var(--c-text-subtle)";
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs" style={{ color }}>
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+    <span
+      className="inline-flex items-center gap-1.5 text-xs"
+      style={{ color }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
       {s.charAt(0).toUpperCase() + s.slice(1)}
     </span>
   );
 }
 
-function MetaRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function MetaRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3">
-      <span className="meta-label">{icon}{label}</span>
+      <span className="meta-label">
+        {icon}
+        {label}
+      </span>
       <div className="flex-1 min-w-0 meta-value">{children}</div>
     </div>
   );
@@ -88,7 +119,11 @@ function formatDuration(secs: number) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 // ── Scaffold panel ────────────────────────────────────────────────────────────
@@ -106,7 +141,9 @@ function ScaffoldPanel({
   const [branches, setBranches] = useState<string[]>([]);
   const [branchError, setBranchError] = useState<string | null>(null);
   const [loadingBranches, setLoadingBranches] = useState(true);
-  const [selectedBranch, setSelectedBranch] = useState(cfg.branch_default ?? "");
+  const [selectedBranch, setSelectedBranch] = useState(
+    cfg.branch_default ?? "",
+  );
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -117,7 +154,8 @@ function ScaffoldPanel({
       .then((result: BranchListResult) => {
         if (result.success) {
           setBranches(result.branches);
-          if (!selectedBranch && result.branches.length > 0) setSelectedBranch(result.branches[0]);
+          if (!selectedBranch && result.branches.length > 0)
+            setSelectedBranch(result.branches[0]);
         } else {
           setBranchError(result.error ?? "Could not list branches");
         }
@@ -138,15 +176,25 @@ function ScaffoldPanel({
       <p className="modal-section-label">Scaffold new project</p>
 
       <div className="space-y-1.5">
-        <label className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--c-text-muted)" }}>
-          <GitBranch size={10} />Branch
+        <label
+          className="flex items-center gap-1.5 text-[11px]"
+          style={{ color: "var(--c-text-muted)" }}
+        >
+          <GitBranch size={10} />
+          Branch
         </label>
         {loadingBranches ? (
-          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--c-text-muted)" }}>
-            <Loader2 size={12} className="animate-spin" />Loading branches…
+          <div
+            className="flex items-center gap-2 text-xs"
+            style={{ color: "var(--c-text-muted)" }}
+          >
+            <Loader2 size={12} className="animate-spin" />
+            Loading branches…
           </div>
         ) : branchError ? (
-          <p className="text-xs" style={{ color: "rgba(220,100,100,0.9)" }}>{branchError}</p>
+          <p className="text-xs" style={{ color: "rgba(220,100,100,0.9)" }}>
+            {branchError}
+          </p>
         ) : (
           <div className="relative">
             <select
@@ -154,9 +202,17 @@ function ScaffoldPanel({
               onChange={(e) => setSelectedBranch(e.target.value)}
               className="form-input form-select"
             >
-              {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+              {branches.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
             </select>
-            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--c-text-muted)" }} />
+            <ChevronDown
+              size={12}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: "var(--c-text-muted)" }}
+            />
           </div>
         )}
       </div>
@@ -175,20 +231,30 @@ function ScaffoldPanel({
       </div>
 
       <div className="space-y-1">
-        <p className="text-[10px]" style={{ color: "var(--c-text-subtle)" }}>Will run</p>
+        <p className="text-[10px]" style={{ color: "var(--c-text-subtle)" }}>
+          Will run
+        </p>
         <code className="code-block">{cfg.command}</code>
       </div>
 
       <button
         onClick={handleSubmit}
-        disabled={submitting || !selectedBranch || !description.trim() || loadingBranches}
+        disabled={
+          submitting ||
+          !selectedBranch ||
+          !description.trim() ||
+          loadingBranches
+        }
         className="btn btn-primary"
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
-            <Loader2 size={14} className="animate-spin" />Cloning & opening…
+            <Loader2 size={14} className="animate-spin" />
+            Cloning & opening…
           </span>
-        ) : "Scaffold ↗"}
+        ) : (
+          "Scaffold ↗"
+        )}
       </button>
     </div>
   );
@@ -196,21 +262,36 @@ function ScaffoldPanel({
 
 // ── Main modal ────────────────────────────────────────────────────────────────
 
-export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onScaffold }: Props) {
+export function WorkflowModal({
+  workflow,
+  cluster,
+  onClose,
+  onOpen,
+  onRun,
+  onScaffold,
+}: Props) {
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
   const isScaffold = workflow.action === "scaffold";
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const successPct = workflow.success_rate != null ? `${Math.round(workflow.success_rate * 100)}%` : null;
+  const successPct =
+    workflow.success_rate != null
+      ? `${Math.round(workflow.success_rate * 100)}%`
+      : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={onClose}
+    >
       {/* Backdrop */}
       <div className="modal-overlay absolute inset-0" />
 
@@ -222,7 +303,9 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
         {/* Accent stripe */}
         <div
           className="h-px w-full rounded-t-[18px] shrink-0"
-          style={{ background: `linear-gradient(90deg, transparent, ${workflow.color}99, transparent)` }}
+          style={{
+            background: `linear-gradient(90deg, transparent, ${workflow.color}99, transparent)`,
+          }}
         />
 
         {/* Header */}
@@ -231,29 +314,46 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
             className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
             style={{ backgroundColor: `${workflow.color}18` }}
           >
-            <Icon size={22} style={{ color: workflow.color }} strokeWidth={1.75} />
+            <Icon
+              size={22}
+              style={{ color: workflow.color }}
+              strokeWidth={1.75}
+            />
           </span>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-[15px] font-semibold leading-snug" style={{ color: "var(--c-text)" }}>
+              <h2
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: "var(--c-text)" }}
+              >
                 {workflow.name}
               </h2>
               {workflow.status && <StatusPill status={workflow.status} />}
             </div>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               {cluster && (
-                <span className="inline-flex items-center gap-1.5 text-[11px]" style={{ color: "var(--c-text-muted)" }}>
-                  <Layers size={10} /><span className="capitalize">{cluster.name}</span>
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px]"
+                  style={{ color: "var(--c-text-muted)" }}
+                >
+                  <Layers size={10} />
+                  <span className="capitalize">{cluster.name}</span>
                 </span>
               )}
               {workflow.version && (
-                <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--c-text-subtle)" }}>
+                <span
+                  className="inline-flex items-center gap-1 text-[11px]"
+                  style={{ color: "var(--c-text-subtle)" }}
+                >
                   <GitBranch size={10} />v{workflow.version}
                 </span>
               )}
               {workflow.complexity && (
-                <span className="text-[11px] capitalize" style={{ color: "var(--c-text-subtle)" }}>
+                <span
+                  className="text-[11px] capitalize"
+                  style={{ color: "var(--c-text-subtle)" }}
+                >
                   {workflow.complexity}
                 </span>
               )}
@@ -264,8 +364,14 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
             onClick={onClose}
             className="btn shrink-0 w-8 h-8"
             style={{ color: "var(--c-text-muted)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(169,146,125,0.06)"; e.currentTarget.style.color = "var(--c-text)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--c-text-muted)"; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(169,146,125,0.06)";
+              e.currentTarget.style.color = "var(--c-text)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--c-text-muted)";
+            }}
           >
             <X size={15} />
           </button>
@@ -273,14 +379,21 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-5">
-          <p className="text-sm leading-relaxed" style={{ color: "var(--c-text-muted)" }}>
+          <p
+            className="text-sm leading-relaxed"
+            style={{ color: "var(--c-text-muted)" }}
+          >
             {workflow.description}
           </p>
 
           <div className="divider" />
 
           {isScaffold && workflow.scaffold ? (
-            <ScaffoldPanel workflow={workflow} onScaffold={onScaffold} onClose={onClose} />
+            <ScaffoldPanel
+              workflow={workflow}
+              onScaffold={onScaffold}
+              onClose={onClose}
+            />
           ) : (
             <>
               {/* Live schedule status */}
@@ -300,7 +413,9 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                 <div className="space-y-2.5">
                   {workflow.trigger_type && (
                     <MetaRow icon={<Zap size={11} />} label="Trigger">
-                      <span className="capitalize">{workflow.trigger_type}</span>
+                      <span className="capitalize">
+                        {workflow.trigger_type}
+                      </span>
                     </MetaRow>
                   )}
                   {workflow.schedule && (
@@ -326,7 +441,9 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                     <MetaRow icon={<RefreshCw size={11} />} label="Last run">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span>{formatDate(workflow.last_run_at)}</span>
-                        {workflow.last_run_status && <RunStatusDot s={workflow.last_run_status} />}
+                        {workflow.last_run_status && (
+                          <RunStatusDot s={workflow.last_run_status} />
+                        )}
                       </div>
                     </MetaRow>
                   )}
@@ -336,18 +453,26 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                     </MetaRow>
                   )}
                   {successPct && (
-                    <MetaRow icon={<TrendingUp size={11} />} label="Success rate">
+                    <MetaRow
+                      icon={<TrendingUp size={11} />}
+                      label="Success rate"
+                    >
                       <div className="flex items-center gap-2">
                         <span>{successPct}</span>
-                        <div className="flex-1 max-w-[80px] h-1 rounded-full overflow-hidden" style={{ background: "var(--c-border)" }}>
+                        <div
+                          className="flex-1 max-w-[80px] h-1 rounded-full overflow-hidden"
+                          style={{ background: "var(--c-border)" }}
+                        >
                           <div
                             className="h-full rounded-full"
                             style={{
                               width: successPct,
                               backgroundColor:
-                                workflow.success_rate! >= 0.95 ? "#7a9e7e" :
-                                workflow.success_rate! >= 0.8 ? "var(--c-accent)" :
-                                "rgba(200,100,100,0.8)",
+                                workflow.success_rate! >= 0.95
+                                  ? "#7a9e7e"
+                                  : workflow.success_rate! >= 0.8
+                                    ? "var(--c-accent)"
+                                    : "rgba(200,100,100,0.8)",
                             }}
                           />
                         </div>
@@ -382,7 +507,8 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
               </div>
 
               {/* Inputs & Outputs */}
-              {((workflow.inputs?.length ?? 0) > 0 || (workflow.outputs?.length ?? 0) > 0) && (
+              {((workflow.inputs?.length ?? 0) > 0 ||
+                (workflow.outputs?.length ?? 0) > 0) && (
                 <>
                   <div className="divider" />
                   <div>
@@ -390,17 +516,34 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                     <div className="space-y-3">
                       {workflow.inputs && workflow.inputs.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: "var(--c-text-muted)" }}>
-                            <ArrowDownToLine size={10} /><span>Inputs</span>
+                          <div
+                            className="flex items-center gap-1.5 text-[11px] mb-1.5"
+                            style={{ color: "var(--c-text-muted)" }}
+                          >
+                            <ArrowDownToLine size={10} />
+                            <span>Inputs</span>
                           </div>
                           <div className="space-y-1">
                             {workflow.inputs.map((inp) => (
-                              <div key={inp.name} className="flex items-start gap-2 text-xs">
-                                <code className="code-inline shrink-0">{inp.name}</code>
-                                <span className="shrink-0" style={{ color: "var(--c-text-subtle)" }}>
+                              <div
+                                key={inp.name}
+                                className="flex items-start gap-2 text-xs"
+                              >
+                                <code className="code-inline shrink-0">
+                                  {inp.name}
+                                </code>
+                                <span
+                                  className="shrink-0"
+                                  style={{ color: "var(--c-text-subtle)" }}
+                                >
                                   {inp.required ? "·required" : "·optional"}
                                 </span>
-                                <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>{inp.description}</span>
+                                <span
+                                  className="truncate"
+                                  style={{ color: "var(--c-text-subtle)" }}
+                                >
+                                  {inp.description}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -408,15 +551,34 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                       )}
                       {workflow.outputs && workflow.outputs.length > 0 && (
                         <div>
-                          <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: "var(--c-text-muted)" }}>
-                            <ArrowUpFromLine size={10} /><span>Outputs</span>
+                          <div
+                            className="flex items-center gap-1.5 text-[11px] mb-1.5"
+                            style={{ color: "var(--c-text-muted)" }}
+                          >
+                            <ArrowUpFromLine size={10} />
+                            <span>Outputs</span>
                           </div>
                           <div className="space-y-1">
                             {workflow.outputs.map((out) => (
-                              <div key={out.name} className="flex items-start gap-2 text-xs">
-                                <code className="code-inline shrink-0">{out.name}</code>
-                                <span className="shrink-0" style={{ color: "var(--c-text-subtle)" }}>{out.type}</span>
-                                <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>{out.description}</span>
+                              <div
+                                key={out.name}
+                                className="flex items-start gap-2 text-xs"
+                              >
+                                <code className="code-inline shrink-0">
+                                  {out.name}
+                                </code>
+                                <span
+                                  className="shrink-0"
+                                  style={{ color: "var(--c-text-subtle)" }}
+                                >
+                                  {out.type}
+                                </span>
+                                <span
+                                  className="truncate"
+                                  style={{ color: "var(--c-text-subtle)" }}
+                                >
+                                  {out.description}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -434,7 +596,9 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
                 {workflow.tags.length > 0 && (
                   <MetaRow icon={<Tag size={11} />} label="Tags">
                     <div className="flex flex-wrap gap-1.5">
-                      {workflow.tags.map((t) => <TagBadge key={t} tag={t} />)}
+                      {workflow.tags.map((t) => (
+                        <TagBadge key={t} tag={t} />
+                      ))}
                     </div>
                   </MetaRow>
                 )}
@@ -450,10 +614,24 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun, onSca
 
               {/* Primary action */}
               <button
-                onClick={() => { if (isRun) onRun(workflow.id); else onOpen(workflow.id); onClose(); }}
+                onClick={() => {
+                  if (isRun) onRun(workflow.id);
+                  else onOpen(workflow.id);
+                  onClose();
+                }}
                 className="btn btn-primary"
               >
-                {isRun ? <><Play size={14} fill="currentColor" />Run</> : <><ExternalLink size={13} />Open in Claude</>}
+                {isRun ? (
+                  <>
+                    <Play size={14} fill="currentColor" />
+                    Run
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink size={13} />
+                    Open in Claude
+                  </>
+                )}
               </button>
             </>
           )}

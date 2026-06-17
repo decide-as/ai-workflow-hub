@@ -12,7 +12,13 @@ interface Props {
   onClick: (id: string) => void;
 }
 
-export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: Props) {
+export function WorkflowRow({
+  workflow,
+  clusterName,
+  onOpen,
+  onRun,
+  onClick,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
@@ -35,7 +41,9 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
       {/* Left accent bar — per-workflow color */}
       <div
         className="row-accent"
-        style={{ background: `linear-gradient(to bottom, ${workflow.color}, ${workflow.color}44)` }}
+        style={{
+          background: `linear-gradient(to bottom, ${workflow.color}, ${workflow.color}44)`,
+        }}
       />
 
       {/* Icon */}
@@ -52,20 +60,30 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
           <p className="row-name truncate">{workflow.name}</p>
           {clusterName && <span className="cluster-badge">{clusterName}</span>}
           {workflow.scheduled_job && (
-            <span className="inline-flex items-center gap-1 text-[10px] shrink-0" style={{ color: "var(--c-text-subtle)" }}>
+            <span
+              className="inline-flex items-center gap-1 text-[10px] shrink-0"
+              style={{ color: "var(--c-text-subtle)" }}
+            >
               <Clock size={10} style={{ color: workflow.color }} />
               {workflow.scheduled_job.cadence}
             </span>
           )}
         </div>
-        <p className="row-desc truncate">{workflow.summary ?? workflow.description}</p>
+        <p className="row-desc truncate">
+          {workflow.summary ?? workflow.description}
+        </p>
       </div>
 
       {/* Tags */}
       {workflow.tags.length > 0 && (
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          {workflow.tags.slice(0, 3).map((tag) => <TagBadge key={tag} tag={tag} />)}
-          <span className="text-[11px] w-5 text-right shrink-0" style={{ color: "var(--c-text-subtle)" }}>
+          {workflow.tags.slice(0, 3).map((tag) => (
+            <TagBadge key={tag} tag={tag} />
+          ))}
+          <span
+            className="text-[11px] w-5 text-right shrink-0"
+            style={{ color: "var(--c-text-subtle)" }}
+          >
             {workflow.tags.length > 3 ? `+${workflow.tags.length - 3}` : ""}
           </span>
         </div>
@@ -78,11 +96,20 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
         className="btn btn-sm shrink-0 w-24"
       >
         {loading ? (
-          <><Loader2 size={11} className="animate-spin" />{isRun ? "Starting…" : "Opening…"}</>
+          <>
+            <Loader2 size={11} className="animate-spin" />
+            {isRun ? "Starting…" : "Opening…"}
+          </>
         ) : isRun ? (
-          <><Play size={11} fill="currentColor" />Run</>
+          <>
+            <Play size={11} fill="currentColor" />
+            Run
+          </>
         ) : (
-          <><ExternalLink size={11} />Open</>
+          <>
+            <ExternalLink size={11} />
+            Open
+          </>
         )}
       </button>
     </div>

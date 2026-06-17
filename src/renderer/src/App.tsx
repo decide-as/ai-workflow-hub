@@ -119,7 +119,9 @@ export default function App() {
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     const stored = localStorage.getItem("theme");
     if (stored === "dark" || stored === "light") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   });
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
@@ -371,13 +373,18 @@ export default function App() {
             >
               {activeCluster ? activeCluster.name : "All workflows"}
             </h1>
-            <span className="text-xs tabular-nums" style={{ color: "var(--c-text-subtle)" }}>
+            <span
+              className="text-xs tabular-nums"
+              style={{ color: "var(--c-text-subtle)" }}
+            >
               {filtered.length}
             </span>
           </div>
           <div className="no-drag flex items-center gap-2">
             {(() => {
-              const tw = registry.workflows.find((w) => w.action === "transcribe");
+              const tw = registry.workflows.find(
+                (w) => w.action === "transcribe",
+              );
               return tw ? <HeaderRecordButton workflow={tw} /> : null;
             })()}
             <div className="view-toggle">
@@ -403,7 +410,11 @@ export default function App() {
                 localStorage.setItem("theme", next);
                 setTheme(next);
               }}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
               className="view-toggle-btn"
               style={{ borderRadius: "var(--radius-sm)", padding: "5px 8px" }}
             >
@@ -422,7 +433,10 @@ export default function App() {
           {registry.workflows.length === 0 ? (
             <EmptyState />
           ) : filtered.length === 0 ? (
-            <p className="text-sm mt-8 text-center" style={{ color: "var(--c-text-subtle)" }}>
+            <p
+              className="text-sm mt-8 text-center"
+              style={{ color: "var(--c-text-subtle)" }}
+            >
               No workflows match &ldquo;{query}&rdquo;
             </p>
           ) : viewMode === "grid" ? (

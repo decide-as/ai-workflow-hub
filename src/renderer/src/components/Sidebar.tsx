@@ -17,8 +17,8 @@ interface TypeOption {
 
 const TYPE_OPTIONS: TypeOption[] = [
   { id: "scheduled", label: "Scheduled", Icon: Clock },
-  { id: "claude",    label: "Claude",    Icon: MessageSquare },
-  { id: "routine",   label: "Routine",   Icon: Play },
+  { id: "claude", label: "Claude", Icon: MessageSquare },
+  { id: "routine", label: "Routine", Icon: Play },
 ];
 
 interface Props {
@@ -100,7 +100,11 @@ export function Sidebar({
                 onClick={() => onSelectType(active ? null : t.id)}
                 className={`sidebar-item ${active ? "is-active" : ""}`}
               >
-                <t.Icon size={13} className="shrink-0 transition-opacity" style={{ opacity: active ? 1 : 0.45 }} />
+                <t.Icon
+                  size={13}
+                  className="shrink-0 transition-opacity"
+                  style={{ opacity: active ? 1 : 0.45 }}
+                />
                 <span className="flex-1 truncate">{t.label}</span>
                 <span className="sidebar-count">{typeCounts[t.id]}</span>
               </button>
