@@ -10,16 +10,9 @@ interface Props {
 function formatRun(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-// Compact schedule status + Enable/Disable control for a launchd-backed workflow.
-// Status is refreshed every 30 s so the "last run" time stays current.
 export function SchedulePanel({ workflow }: Props) {
   const job = workflow.scheduled_job;
   const [status, setStatus] = useState<ScheduleStatus | null>(null);
@@ -29,16 +22,11 @@ export function SchedulePanel({ workflow }: Props) {
   useEffect(() => {
     let alive = true;
     function refresh() {
-      window.api.scheduleStatus(workflow.id).then((s) => {
-        if (alive) setStatus(s);
-      });
+      window.api.scheduleStatus(workflow.id).then((s) => { if (alive) setStatus(s); });
     }
     refresh();
     const timer = setInterval(refresh, 30_000);
-    return () => {
-      alive = false;
-      clearInterval(timer);
-    };
+    return () => { alive = false; clearInterval(timer); };
   }, [workflow.id]);
 
   if (!job) return null;
@@ -63,52 +51,34 @@ export function SchedulePanel({ workflow }: Props) {
 
   return (
     <>
-      <div
-        className="rounded-xl border border-zinc-800 bg-zinc-950/40 px-3 py-2.5 space-y-2"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="schedule-panel space-y-2" onClick={(e) => e.stopPropagation()}>
         {/* Cadence · target */}
-        <div className="flex items-center gap-1.5 text-xs min-w-0">
-          <Clock
-            size={12}
-            className="shrink-0"
-            style={{ color: workflow.color }}
-          />
-          <span className="font-medium text-zinc-200">{job.cadence}</span>
-          <span className="text-zinc-600">·</span>
-          <FolderInput size={11} className="shrink-0 text-zinc-500" />
-          <span className="font-mono text-zinc-400 truncate">{job.target}</span>
+        <div className="flex items-center gap-1.5 text-xs min-w-0" style={{ color: "var(--c-text-secondary)" }}>
+          <Clock size={12} className="shrink-0" style={{ color: workflow.color }} />
+          <span className="font-medium">{job.cadence}</span>
+          <span style={{ color: "var(--c-text-subtle)" }}>·</span>
+          <FolderInput size={11} className="shrink-0" style={{ color: "var(--c-text-subtle)" }} />
+          <span className="font-mono truncate" style={{ color: "var(--c-text-muted)" }}>{job.target}</span>
         </div>
 
         {/* Status + buttons */}
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 text-[11px] min-w-0">
             <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: active ? "#10b981" : "#52525b" }}
+              className={`schedule-status-dot ${active ? "is-active" : "is-inactive"}`}
             />
-            <span className={active ? "text-emerald-400" : "text-zinc-500"}>
-              {checking
-                ? "Checking…"
-                : active
-                  ? "Scheduled (active)"
-                  : "Not scheduled"}
+            <span style={{ color: active ? "#7a9e7e" : "var(--c-text-subtle)" }}>
+              {checking ? "Checking…" : active ? "Scheduled (active)" : "Not scheduled"}
             </span>
             {active && status?.lastRunAt && (
-              <span className="text-zinc-600 truncate">
+              <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>
                 · last run {formatRun(status.lastRunAt)}
               </span>
             )}
           </span>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={openLog}
-              title="View run log"
-              className="text-[11px] font-medium px-2 py-1 rounded-md border border-zinc-700/60
-                         text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition-colors
-                         focus:outline-none inline-flex items-center gap-1"
-            >
+            <button onClick={openLog} title="View run log" className="btn btn-sm inline-flex items-center gap-1">
               <ScrollText size={11} />
               Logs
             </button>
@@ -116,16 +86,8 @@ export function SchedulePanel({ workflow }: Props) {
             <button
               onClick={toggle}
               disabled={busy || checking}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-md border transition-colors
-                         disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
-              style={
-                active
-                  ? { borderColor: "#7f1d1d", color: "#fca5a5" }
-                  : {
-                      borderColor: `${workflow.color}66`,
-                      color: workflow.color,
-                    }
-              }
+              className={active ? "btn btn-danger" : "btn btn-sm"}
+              style={!active ? { borderColor: `${workflow.color}66`, color: workflow.color } : undefined}
             >
               {busy ? "…" : active ? "Disable" : "Enable"}
             </button>
@@ -133,7 +95,7 @@ export function SchedulePanel({ workflow }: Props) {
         </div>
 
         {status?.error && (
-          <p className="text-[11px] text-red-400 leading-snug">
+          <p className="text-[11px] leading-snug" style={{ color: "rgba(230,130,130,0.9)" }}>
             {status.error}
           </p>
         )}

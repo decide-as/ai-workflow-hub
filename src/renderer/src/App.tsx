@@ -351,56 +351,27 @@ export default function App() {
           <div className="flex items-center gap-2.5 mr-auto">
             <h1
               className="text-base font-semibold tracking-tight capitalize"
-              style={{ color: "rgba(255,255,255,0.88)" }}
+              style={{ color: "var(--c-text)" }}
             >
               {activeCluster ? activeCluster.name : "All workflows"}
             </h1>
-            <span
-              className="text-xs tabular-nums"
-              style={{ color: "rgba(255,255,255,0.2)" }}
-            >
+            <span className="text-xs tabular-nums" style={{ color: "var(--c-text-subtle)" }}>
               {filtered.length}
             </span>
           </div>
           <div className="no-drag flex items-center gap-2">
-            {/* View mode toggle */}
-            <div
-              className="flex items-center rounded-lg overflow-hidden"
-              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-            >
+            <div className="view-toggle">
               <button
                 onClick={() => setViewMode("grid")}
                 title="Grid view"
-                className="px-2.5 py-1.5 transition-all duration-150"
-                style={
-                  viewMode === "grid"
-                    ? {
-                        background: "rgba(139,92,246,0.15)",
-                        color: "rgba(167,139,250,1)",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "rgba(255,255,255,0.25)",
-                      }
-                }
+                className={`view-toggle-btn ${viewMode === "grid" ? "is-active" : ""}`}
               >
                 <LayoutGrid size={14} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
                 title="List view"
-                className="px-2.5 py-1.5 transition-all duration-150"
-                style={
-                  viewMode === "list"
-                    ? {
-                        background: "rgba(139,92,246,0.15)",
-                        color: "rgba(167,139,250,1)",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "rgba(255,255,255,0.25)",
-                      }
-                }
+                className={`view-toggle-btn ${viewMode === "list" ? "is-active" : ""}`}
               >
                 <List size={14} />
               </button>
@@ -410,14 +381,7 @@ export default function App() {
         </header>
 
         {openError && (
-          <div
-            className="mx-6 mb-3 px-4 py-2.5 rounded-lg text-sm animate-fade-in"
-            style={{
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              color: "#f87171",
-            }}
-          >
+          <div className="error-banner mx-6 mb-3 animate-fade-in">
             {openError}
           </div>
         )}
@@ -426,10 +390,7 @@ export default function App() {
           {registry.workflows.length === 0 ? (
             <EmptyState />
           ) : filtered.length === 0 ? (
-            <p
-              className="text-sm mt-8 text-center"
-              style={{ color: "rgba(255,255,255,0.25)" }}
-            >
+            <p className="text-sm mt-8 text-center" style={{ color: "var(--c-text-subtle)" }}>
               No workflows match &ldquo;{query}&rdquo;
             </p>
           ) : viewMode === "grid" ? (
