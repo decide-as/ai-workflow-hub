@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { LayoutGrid, List } from 'lucide-react'
 import type {
   Registry, Workflow, OpenErrorKind, OpenResult, RunResult, WorkflowRunner, ScheduleStatus,
 } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
-import { Sidebar } from './components/Sidebar'
+import { Sidebar, type SolutionType } from './components/Sidebar'
 import { WorkflowModal } from './components/WorkflowModal'
 import { RunModal, type RunState, type OptionValues } from './components/RunModal'
 
@@ -29,6 +30,12 @@ function buildExtraArgs(runner: WorkflowRunner | undefined, values: OptionValues
   return args
 }
 
+function workflowSolutionType(w: Workflow): SolutionType {
+  if (w.scheduled_job) return 'scheduled'
+  if (w.action === 'run') return 'run'
+  return 'claude'
+}
+
 declare global {
   interface Window {
     api: {
@@ -42,6 +49,7 @@ declare global {
       scheduleStatus: (id: string) => Promise<ScheduleStatus>
       scheduleEnable: (id: string) => Promise<ScheduleStatus>
       scheduleDisable: (id: string) => Promise<ScheduleStatus>
+      readLog: (logPath: string) => Promise<string>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
@@ -51,6 +59,8 @@ export default function App() {
   const [registry, setRegistry] = useState<Registry>({ workflows: [], clusters: [] })
   const [query, setQuery] = useState('')
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
+  const [selectedType, setSelectedType] = useState<SolutionType | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [openError, setOpenError] = useState<string | null>(null)
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
   const [runState, setRunState] = useState<RunState | null>(null)
@@ -71,6 +81,9 @@ export default function App() {
     let result = workflows
     if (selectedCluster) {
       result = result.filter((w) => w.cluster_id === selectedCluster)
+    }
+    if (selectedType) {
+      result = result.filter((w) => workflowSolutionType(w) === selectedType)
     }
     if (query.trim()) {
       const q = query.toLowerCase()
@@ -176,6 +189,11 @@ export default function App() {
     ? registry.clusters.find((c) => c.id === activeWorkflow.cluster_id) ?? null
     : null
 
+  const typeCounts = registry.workflows.reduce(
+    (acc, w) => { acc[workflowSolutionType(w)]++; return acc },
+    { scheduled: 0, claude: 0, run: 0 } as Record<SolutionType, number>,
+  )
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#09090b]">
       <Sidebar
@@ -183,6 +201,9 @@ export default function App() {
         selected={selectedCluster}
         onSelect={setSelectedCluster}
         totalCount={registry.workflows.length}
+        selectedType={selectedType}
+        onSelectType={setSelectedType}
+        typeCounts={typeCounts}
       />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -193,7 +214,32 @@ export default function App() {
             </h1>
             <span className="text-xs text-zinc-600 tabular-nums">{filtered.length}</span>
           </div>
-          <div className="no-drag">
+          <div className="no-drag flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex items-center rounded-lg border border-zinc-800 overflow-hidden">
+              <button
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                  viewMode === 'grid'
+                    ? 'bg-zinc-700 text-zinc-100'
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                }`}
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                title="List view"
+                className={`px-2.5 py-1.5 transition-colors duration-100 ${
+                  viewMode === 'list'
+                    ? 'bg-zinc-700 text-zinc-100'
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                }`}
+              >
+                <List size={14} />
+              </button>
+            </div>
             <SearchBar value={query} onChange={setQuery} />
           </div>
         </header>
@@ -221,6 +267,7 @@ export default function App() {
                   onOpen={handleOpen}
                   onRun={handleRun}
                   onClick={handleCardClick}
+                  viewMode={viewMode}
                 />
               ))}
               {unclustered.length > 0 && (
@@ -230,6 +277,7 @@ export default function App() {
                   onOpen={handleOpen}
                   onRun={handleRun}
                   onClick={handleCardClick}
+                  viewMode={viewMode}
                 />
               )}
             </div>
