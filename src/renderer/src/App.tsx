@@ -117,7 +117,9 @@ export default function App() {
   const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [theme, setTheme] = useState<"dark" | "light">(() => {
-    return (localStorage.getItem("theme") as "dark" | "light") ?? "dark";
+    const stored = localStorage.getItem("theme");
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
@@ -131,8 +133,19 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Follow system preference changes when no explicit override is stored
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    function handleChange(e: MediaQueryListEvent) {
+      if (!localStorage.getItem("theme")) {
+        setTheme(e.matches ? "dark" : "light");
+      }
+    }
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
+  }, []);
 
   useEffect(() => {
     window.api.getRegistry().then(setRegistry);
@@ -385,14 +398,16 @@ export default function App() {
             </div>
             <SearchBar value={query} onChange={setQuery} />
             <button
-              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              onClick={() => {
+                const next = theme === "dark" ? "light" : "dark";
+                localStorage.setItem("theme", next);
+                setTheme(next);
+              }}
               title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               className="view-toggle-btn"
               style={{ borderRadius: "var(--radius-sm)", padding: "5px 8px" }}
             >
-              {theme === "dark"
-                ? <Sun size={14} />
-                : <Moon size={14} />}
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
         </header>
