@@ -43,7 +43,7 @@ export function addUrl(baseDir: string, url: string): ReadingListAddResult {
 
 export function getEntries(
   baseDir: string,
-  limit = 100,
+  limit = -1,
 ): ReadingListEntry[] | { error: string } {
   try {
     const script = join(scriptsDir(baseDir), "get_entries.py");
