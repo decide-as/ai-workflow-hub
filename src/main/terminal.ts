@@ -57,10 +57,7 @@ function classifyError(stderr: string): {
 // This avoids double-escaping the prompt through both bash and osascript
 // string layers. The launcher file is intentionally NOT cleaned up here —
 // it runs asynchronously after osascript returns.
-function makeLauncherCommand(
-  repoPath: string,
-  initialPrompt?: string,
-): string {
+function makeLauncherCommand(repoPath: string, initialPrompt?: string): string {
   if (!initialPrompt) {
     // The command is embedded inside a double-quoted osascript string literal,
     // so the path's inner quotes must be backslash-escaped (\").
@@ -77,7 +74,8 @@ function makeLauncherCommand(
     [
       "#!/bin/bash",
       `cd '${repoPath.replace(/'/g, "'\\''")}'`,
-      `PROMPT=$(cat '${promptFile.replace(/'/g, "'\\''")}')`,"",
+      `PROMPT=$(cat '${promptFile.replace(/'/g, "'\\''")}')`,
+      "",
       `exec claude "$PROMPT"`,
     ].join("\n"),
     "utf-8",

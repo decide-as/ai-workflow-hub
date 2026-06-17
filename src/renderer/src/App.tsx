@@ -72,8 +72,15 @@ declare global {
       scheduleEnable: (id: string) => Promise<ScheduleStatus>;
       scheduleDisable: (id: string) => Promise<ScheduleStatus>;
       readLog: (logPath: string) => Promise<string>;
-      listBranches: (repo: string, defaultBranch?: string) => Promise<BranchListResult>;
-      scaffoldWorkflow: (id: string, branch: string, description: string) => Promise<OpenResult>;
+      listBranches: (
+        repo: string,
+        defaultBranch?: string,
+      ) => Promise<BranchListResult>;
+      scaffoldWorkflow: (
+        id: string,
+        branch: string,
+        description: string,
+      ) => Promise<OpenResult>;
       writeActivityLog: (entry: ActivityEntry) => Promise<{ success: boolean }>;
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void;
     };
@@ -247,7 +254,11 @@ export default function App() {
       });
   }
 
-  async function handleScaffold(id: string, branch: string, description: string) {
+  async function handleScaffold(
+    id: string,
+    branch: string,
+    description: string,
+  ) {
     const result = await window.api.scaffoldWorkflow(id, branch, description);
     if (!result.success) {
       setOpenError(errorMessage(result.errorKind, result.error));

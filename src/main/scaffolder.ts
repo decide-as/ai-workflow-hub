@@ -31,7 +31,9 @@ function cacheDir(workflowId: string): string {
 
 // Returns branches sorted: default/master/main first, then alphabetical.
 function sortBranches(branches: string[], defaultBranch?: string): string[] {
-  const priority = [defaultBranch, "master", "main"].filter(Boolean) as string[];
+  const priority = [defaultBranch, "master", "main"].filter(
+    Boolean,
+  ) as string[];
   const rest = branches.filter((b) => !priority.includes(b)).sort();
   const top = priority.filter((b) => branches.includes(b));
   return [...new Set([...top, ...rest])];
@@ -54,7 +56,10 @@ export function listBranches(
         return {
           success: false,
           branches: [],
-          error: result.error?.message || result.stderr?.trim() || "git branch -r failed",
+          error:
+            result.error?.message ||
+            result.stderr?.trim() ||
+            "git branch -r failed",
         };
       }
       branches = result.stdout
@@ -88,7 +93,10 @@ export function listBranches(
         return {
           success: false,
           branches: [],
-          error: result.error?.message || result.stderr?.trim() || "git ls-remote failed",
+          error:
+            result.error?.message ||
+            result.stderr?.trim() ||
+            "git ls-remote failed",
         };
       }
       branches = result.stdout
@@ -104,7 +112,10 @@ export function listBranches(
   }
 }
 
-function cloneOrFetch(repo: string, dest: string): { ok: boolean; error?: string } {
+function cloneOrFetch(
+  repo: string,
+  dest: string,
+): { ok: boolean; error?: string } {
   if (existsSync(join(dest, ".git"))) {
     // Already cloned — fetch latest.
     const r = spawnSync(GIT, ["-C", dest, "fetch", "--prune"], {
@@ -112,7 +123,10 @@ function cloneOrFetch(repo: string, dest: string): { ok: boolean; error?: string
       timeout: 30_000,
     });
     if (r.error || r.status !== 0) {
-      return { ok: false, error: r.error?.message || r.stderr?.trim() || "git fetch failed" };
+      return {
+        ok: false,
+        error: r.error?.message || r.stderr?.trim() || "git fetch failed",
+      };
     }
   } else {
     mkdirSync(dest, { recursive: true });
@@ -121,13 +135,19 @@ function cloneOrFetch(repo: string, dest: string): { ok: boolean; error?: string
       timeout: 60_000,
     });
     if (r.error || r.status !== 0) {
-      return { ok: false, error: r.error?.message || r.stderr?.trim() || "git clone failed" };
+      return {
+        ok: false,
+        error: r.error?.message || r.stderr?.trim() || "git clone failed",
+      };
     }
   }
   return { ok: true };
 }
 
-function checkoutBranch(dest: string, branch: string): { ok: boolean; error?: string } {
+function checkoutBranch(
+  dest: string,
+  branch: string,
+): { ok: boolean; error?: string } {
   // Use `git checkout -B branch origin/branch` to handle both new and existing
   // local tracking branches.
   const r = spawnSync(
@@ -136,7 +156,10 @@ function checkoutBranch(dest: string, branch: string): { ok: boolean; error?: st
     { encoding: "utf-8", timeout: 15_000 },
   );
   if (r.error || r.status !== 0) {
-    return { ok: false, error: r.error?.message || r.stderr?.trim() || "git checkout failed" };
+    return {
+      ok: false,
+      error: r.error?.message || r.stderr?.trim() || "git checkout failed",
+    };
   }
   return { ok: true };
 }
@@ -148,7 +171,11 @@ export function scaffoldWorkflow(
 ): OpenResult {
   const cfg = workflow.scaffold;
   if (!cfg) {
-    return { success: false, error: "Workflow has no scaffold config", errorKind: "unknown" };
+    return {
+      success: false,
+      error: "Workflow has no scaffold config",
+      errorKind: "unknown",
+    };
   }
 
   const dest = cacheDir(workflow.id);
@@ -160,9 +187,16 @@ export function scaffoldWorkflow(
 
   const checkoutResult = checkoutBranch(dest, branch);
   if (!checkoutResult.ok) {
-    return { success: false, error: checkoutResult.error, errorKind: "unknown" };
+    return {
+      success: false,
+      error: checkoutResult.error,
+      errorKind: "unknown",
+    };
   }
 
-  const prompt = cfg.initial_prompt_template.replace("{description}", description);
+  const prompt = cfg.initial_prompt_template.replace(
+    "{description}",
+    description,
+  );
   return openInTerminal(dest, prompt);
 }

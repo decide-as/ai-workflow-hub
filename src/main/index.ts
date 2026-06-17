@@ -143,17 +143,20 @@ app.whenReady().then(() => {
     },
   );
 
-  ipcMain.handle(
-    IPC.LIST_BRANCHES,
-    (_, repo: string, defaultBranch?: string) =>
-      listBranches(repo, defaultBranch),
+  ipcMain.handle(IPC.LIST_BRANCHES, (_, repo: string, defaultBranch?: string) =>
+    listBranches(repo, defaultBranch),
   );
 
   ipcMain.handle(
     IPC.SCAFFOLD_WORKFLOW,
     (_, id: string, branch: string, description: string) => {
       const workflow = getRegistry().workflows.find((w) => w.id === id);
-      if (!workflow) return { success: false, error: "Workflow not found", errorKind: "unknown" };
+      if (!workflow)
+        return {
+          success: false,
+          error: "Workflow not found",
+          errorKind: "unknown",
+        };
       const result = scaffoldWorkflow(workflow, branch, description);
       writeActivityLog({
         timestamp: new Date().toISOString(),
@@ -169,13 +172,10 @@ app.whenReady().then(() => {
     },
   );
 
-  ipcMain.handle(
-    IPC.WRITE_ACTIVITY_LOG,
-    (_, entry: ActivityEntry) => {
-      writeActivityLog(entry);
-      return { success: true };
-    },
-  );
+  ipcMain.handle(IPC.WRITE_ACTIVITY_LOG, (_, entry: ActivityEntry) => {
+    writeActivityLog(entry);
+    return { success: true };
+  });
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
