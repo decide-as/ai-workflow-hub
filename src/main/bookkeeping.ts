@@ -1,12 +1,29 @@
-import { spawnSync } from "child_process";
+import { spawnSync, execFileSync } from "child_process";
 import { existsSync, mkdtempSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
+import { tmpdir, homedir } from "os";
 import type { VoucherFolderResult } from "../../shared/types";
 
-// The real claude binary — the shell wrapper in ~/.zshrc is a function and
-// not available to Node's spawnSync, so we target the binary directly.
-const CLAUDE_BIN = "/Users/christianbraathen/.local/bin/claude";
+// Resolve the real claude binary at runtime. The `claude` shell function in
+// ~/.zshrc is not available to Node's spawnSync, so we find the underlying
+// binary. Candidates are checked in priority order:
+//   1. `which claude` via PATH (covers any install location)
+//   2. ~/.local/bin/claude  (default for npm global installs)
+//   3. /usr/local/bin/claude (Homebrew / system-wide)
+function findClaudeBin(): string | null {
+  try {
+    const found = execFileSync("which", ["claude"], { encoding: "utf8" }).trim();
+    if (found && existsSync(found)) return found;
+  } catch {
+    // `which` failed — fall through to manual candidates
+  }
+  const candidates = [
+    join(homedir(), ".local", "bin", "claude"),
+    "/usr/local/bin/claude",
+    "/opt/homebrew/bin/claude",
+  ];
+  return candidates.find(existsSync) ?? null;
+}
 
 const SYSTEM_INSTRUCTION = `Returner KUN declare -a TRANSAKSJONER=(...) blokken, ingen annen tekst, ingen forklaring, ingen kodeblokk-markers.`;
 
@@ -120,12 +137,14 @@ export async function createVoucherFolders(
     };
   }
 
-  if (!existsSync(CLAUDE_BIN)) {
+  const claudeBin = findClaudeBin();
+  if (!claudeBin) {
     return {
       success: false,
       output: "",
       folders: [],
-      error: `claude binary not found at ${CLAUDE_BIN}`,
+      error:
+        "claude binary not found. Install it with: npm install -g @anthropic-ai/claude-code",
     };
   }
 
@@ -174,7 +193,7 @@ export async function createVoucherFolders(
   const prompt = CLAUDE_PROMPT(filePaths);
 
   const claudeResult = spawnSync(
-    CLAUDE_BIN,
+    claudeBin,
     ["-p", prompt, "--allowedTools", "Read", "--add-dir", tmpDir],
     { encoding: "utf8", timeout: 120_000 },
   );
