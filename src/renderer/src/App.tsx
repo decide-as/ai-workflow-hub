@@ -21,6 +21,7 @@ import { SearchBar } from "./components/SearchBar";
 import { EmptyState } from "./components/EmptyState";
 import { Sidebar, type SolutionType } from "./components/Sidebar";
 import { WorkflowModal } from "./components/WorkflowModal";
+import { HeaderRecordButton } from "./components/HeaderRecordButton";
 import {
   RunModal,
   type RunState,
@@ -137,7 +138,7 @@ export default function App() {
   }, []);
 
   function filterWorkflows(workflows: Workflow[]): Workflow[] {
-    let result = workflows;
+    let result = workflows.filter((w) => w.action !== "transcribe");
     if (selectedCluster) {
       result = result.filter((w) => w.cluster_id === selectedCluster);
     }
@@ -354,6 +355,10 @@ export default function App() {
             </span>
           </div>
           <div className="no-drag flex items-center gap-2">
+            {(() => {
+              const tw = registry.workflows.find((w) => w.action === "transcribe");
+              return tw ? <HeaderRecordButton workflow={tw} /> : null;
+            })()}
             <div className="view-toggle">
               <button
                 onClick={() => setViewMode("grid")}
