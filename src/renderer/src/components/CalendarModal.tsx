@@ -83,7 +83,7 @@ export function CalendarModal({ workflow, onClose }: Props) {
       // Try reading text from clipboard as fallback
       try {
         const clipText = await navigator.clipboard.readText();
-        if (clipText) setText((t) => t ? `${t}\n${clipText}` : clipText);
+        if (clipText) setText((t) => (t ? `${t}\n${clipText}` : clipText));
       } catch {
         // ignore permission errors
       }
@@ -110,7 +110,7 @@ export function CalendarModal({ workflow, onClose }: Props) {
           const blob = new Blob(chunksRef.current, { type: "audio/webm" });
           const buf = await blob.arrayBuffer();
           const transcribed = await window.api.transcribeAudio(buf);
-          setText((t) => t ? `${t}\n${transcribed}` : transcribed);
+          setText((t) => (t ? `${t}\n${transcribed}` : transcribed));
         } catch (err) {
           setErrorMsg(String(err));
         } finally {
@@ -164,7 +164,8 @@ export function CalendarModal({ workflow, onClose }: Props) {
     setRunOutput("");
   }
 
-  const canGenerate = (text.trim().length > 0 || image !== null) && phase === "input";
+  const canGenerate =
+    (text.trim().length > 0 || image !== null) && phase === "input";
   const color = workflow.color ?? "#34d399";
 
   return (
@@ -182,8 +183,12 @@ export function CalendarModal({ workflow, onClose }: Props) {
             📅
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-zinc-100 truncate">{workflow.name}</h2>
-            <p className="text-xs text-zinc-500 truncate">{workflow.summary ?? workflow.description}</p>
+            <h2 className="text-sm font-semibold text-zinc-100 truncate">
+              {workflow.name}
+            </h2>
+            <p className="text-xs text-zinc-500 truncate">
+              {workflow.summary ?? workflow.description}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -251,7 +256,9 @@ export function CalendarModal({ workflow, onClose }: Props) {
                   Paste screenshot
                 </button>
 
-                <span className="text-xs text-zinc-600 ml-1">or Cmd+V anywhere</span>
+                <span className="text-xs text-zinc-600 ml-1">
+                  or Cmd+V anywhere
+                </span>
               </div>
 
               {/* Image preview */}
@@ -292,12 +299,18 @@ export function CalendarModal({ workflow, onClose }: Props) {
           {(phase === "review" || phase === "running") && (
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-zinc-400">Generated script</label>
+                <label className="text-xs font-medium text-zinc-400">
+                  Generated script
+                </label>
                 <button
                   onClick={handleCopy}
                   className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
-                  {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                  {copied ? (
+                    <Check size={12} className="text-green-400" />
+                  ) : (
+                    <Copy size={12} />
+                  )}
                   {copied ? "Copied" : "Copy"}
                 </button>
               </div>
@@ -319,7 +332,9 @@ export function CalendarModal({ workflow, onClose }: Props) {
               <div className="w-10 h-10 rounded-full bg-green-950/60 border border-green-700/40 flex items-center justify-center text-green-400 text-lg mb-1">
                 ✓
               </div>
-              <p className="text-sm font-medium text-zinc-100">Events created</p>
+              <p className="text-sm font-medium text-zinc-100">
+                Events created
+              </p>
               {runOutput && (
                 <p className="text-xs text-zinc-500 mt-1">{runOutput}</p>
               )}
@@ -362,7 +377,11 @@ export function CalendarModal({ workflow, onClose }: Props) {
                 onClick={handleCopy}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 transition-colors"
               >
-                {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                {copied ? (
+                  <Check size={12} className="text-green-400" />
+                ) : (
+                  <Copy size={12} />
+                )}
                 Copy script
               </button>
               <button

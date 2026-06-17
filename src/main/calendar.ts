@@ -19,7 +19,8 @@ export function execOsascript(script: string): OsascriptResult {
     return {
       success: false,
       output: result.stdout ?? "",
-      error: result.stderr?.trim() || `osascript exited with code ${result.status}`,
+      error:
+        result.stderr?.trim() || `osascript exited with code ${result.status}`,
     };
   }
   return { success: true, output: result.stdout?.trim() ?? "" };
@@ -115,12 +116,19 @@ export async function generateCalendarScript(
 ): Promise<{ success: boolean; script: string; error?: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return { success: false, script: "", error: "ANTHROPIC_API_KEY is not set" };
+    return {
+      success: false,
+      script: "",
+      error: "ANTHROPIC_API_KEY is not set",
+    };
   }
 
   type ContentBlock =
     | { type: "text"; text: string }
-    | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
+    | {
+        type: "image";
+        source: { type: "base64"; media_type: string; data: string };
+      };
 
   const userContent: ContentBlock[] = [];
 
@@ -157,7 +165,11 @@ export async function generateCalendarScript(
 
   if (!res.ok) {
     const err = await res.text().catch(() => String(res.status));
-    return { success: false, script: "", error: `Anthropic API error (${res.status}): ${err}` };
+    return {
+      success: false,
+      script: "",
+      error: `Anthropic API error (${res.status}): ${err}`,
+    };
   }
 
   const json = (await res.json()) as {

@@ -42,7 +42,11 @@ import {
   addUrl as readingListAddUrl,
   getEntries as readingListGetEntries,
 } from "./reading-list";
-import { execOsascript, readClipboardImage, generateCalendarScript } from "./calendar";
+import {
+  execOsascript,
+  readClipboardImage,
+  generateCalendarScript,
+} from "./calendar";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 

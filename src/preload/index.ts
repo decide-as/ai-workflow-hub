@@ -68,7 +68,9 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.READING_LIST_ADD_URL, url),
   readingListGetEntries: (limit?: number): Promise<ReadingListEntry[]> =>
     ipcRenderer.invoke(IPC.READING_LIST_GET_ENTRIES, limit),
-  execOsascript: (script: string): Promise<{ success: boolean; output: string; error?: string }> =>
+  execOsascript: (
+    script: string,
+  ): Promise<{ success: boolean; output: string; error?: string }> =>
     ipcRenderer.invoke(IPC.EXEC_OSASCRIPT, script),
   readClipboardImage: (): Promise<string | null> =>
     ipcRenderer.invoke(IPC.READ_CLIPBOARD_IMAGE),

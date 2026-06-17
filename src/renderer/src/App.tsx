@@ -109,7 +109,9 @@ declare global {
       readingListImport: () => Promise<ReadingListImportResult>;
       readingListAddUrl: (url: string) => Promise<ReadingListAddResult>;
       readingListGetEntries: (limit?: number) => Promise<ReadingListEntry[]>;
-      execOsascript: (script: string) => Promise<{ success: boolean; output: string; error?: string }>;
+      execOsascript: (
+        script: string,
+      ) => Promise<{ success: boolean; output: string; error?: string }>;
       readClipboardImage: () => Promise<string | null>;
       generateCalendarScript: (
         text: string,
@@ -136,7 +138,9 @@ export default function App() {
   );
   const [readingListWorkflow, setReadingListWorkflow] =
     useState<Workflow | null>(null);
-  const [calendarWorkflow, setCalendarWorkflow] = useState<Workflow | null>(null);
+  const [calendarWorkflow, setCalendarWorkflow] = useState<Workflow | null>(
+    null,
+  );
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
