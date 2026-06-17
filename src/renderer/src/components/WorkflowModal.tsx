@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   FolderOpen,
@@ -21,8 +21,10 @@ import {
   RefreshCw,
   Timer,
   TrendingUp,
+  ChevronDown,
+  Loader2,
 } from "lucide-react";
-import type { Workflow, Cluster } from "../../../../shared/types";
+import type { Workflow, Cluster, BranchListResult } from "../../../../shared/types";
 import { TagBadge } from "./TagBadge";
 import { resolveIcon } from "../lib/icons";
 
@@ -32,6 +34,7 @@ interface Props {
   onClose: () => void;
   onOpen: (id: string) => void;
   onRun: (id: string) => void;
+  onScaffold: (id: string, branch: string, description: string) => void;
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -67,14 +70,8 @@ function RunStatusDot({ s }: { s: string }) {
           : "#6b7280";
   const label = s.charAt(0).toUpperCase() + s.slice(1);
   return (
-    <span
-      className="inline-flex items-center gap-1.5 text-xs"
-      style={{ color }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: color }}
-      />
+    <span className="inline-flex items-center gap-1.5 text-xs" style={{ color }}>
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
       {label}
     </span>
   );
@@ -121,15 +118,152 @@ function formatDate(iso: string) {
   });
 }
 
+// ── Scaffold panel ────────────────────────────────────────────────────────────
+
+function ScaffoldPanel({
+  workflow,
+  onScaffold,
+  onClose,
+}: {
+  workflow: Workflow;
+  onScaffold: (id: string, branch: string, description: string) => void;
+  onClose: () => void;
+}) {
+  const cfg = workflow.scaffold!;
+  const [branches, setBranches] = useState<string[]>([]);
+  const [branchError, setBranchError] = useState<string | null>(null);
+  const [loadingBranches, setLoadingBranches] = useState(true);
+  const [selectedBranch, setSelectedBranch] = useState(cfg.branch_default ?? "");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setLoadingBranches(true);
+    window.api
+      .listBranches(cfg.repo, cfg.branch_default)
+      .then((result: BranchListResult) => {
+        if (result.success) {
+          setBranches(result.branches);
+          if (!selectedBranch && result.branches.length > 0) {
+            setSelectedBranch(result.branches[0]);
+          }
+        } else {
+          setBranchError(result.error ?? "Could not list branches");
+        }
+      })
+      .finally(() => setLoadingBranches(false));
+  }, [cfg.repo, cfg.branch_default]);
+
+  async function handleSubmit() {
+    if (!selectedBranch || !description.trim()) return;
+    setSubmitting(true);
+    await onScaffold(workflow.id, selectedBranch, description.trim());
+    setSubmitting(false);
+    onClose();
+  }
+
+  return (
+    <div className="space-y-4">
+      <SectionHeader>Scaffold new project</SectionHeader>
+
+      {/* Branch picker */}
+      <div className="space-y-1.5">
+        <label className="text-[11px] text-zinc-500 flex items-center gap-1.5">
+          <GitBranch size={10} />
+          Branch
+        </label>
+        {loadingBranches ? (
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <Loader2 size={12} className="animate-spin" />
+            Loading branches…
+          </div>
+        ) : branchError ? (
+          <p className="text-xs text-red-400">{branchError}</p>
+        ) : (
+          <div className="relative">
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="w-full appearance-none bg-zinc-800/60 border border-zinc-700/60 rounded-lg
+                         px-3 py-2 text-xs text-zinc-200 pr-8
+                         focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            >
+              {branches.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={12}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Description textarea */}
+      <div className="space-y-1.5">
+        <label className="text-[11px] text-zinc-500">
+          What do you want to build?
+        </label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="A FastAPI service that wraps the OpenAI API, with JWT auth, PostgreSQL, and a CI pipeline…"
+          rows={5}
+          className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg px-3 py-2
+                     text-xs text-zinc-200 placeholder-zinc-600 resize-none
+                     focus:outline-none focus:ring-1 focus:ring-zinc-500"
+        />
+      </div>
+
+      {/* Command preview */}
+      <div className="space-y-1">
+        <p className="text-[10px] text-zinc-600">Will run</p>
+        <code className="block text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40
+                         px-2 py-1.5 rounded-lg break-all">
+          {cfg.command}
+        </code>
+      </div>
+
+      {/* Submit */}
+      <button
+        onClick={handleSubmit}
+        disabled={submitting || !selectedBranch || !description.trim() || loadingBranches}
+        className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
+                   text-zinc-100 border border-zinc-700/60
+                   hover:border-zinc-500 hover:bg-zinc-800/60
+                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900
+                   disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{ "--tw-ring-color": workflow.color } as React.CSSProperties}
+      >
+        {submitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 size={14} className="animate-spin" />
+            Cloning & opening…
+          </span>
+        ) : (
+          "Scaffold ↗"
+        )}
+      </button>
+    </div>
+  );
+}
+
+// ── Main modal ────────────────────────────────────────────────────────────────
+
 export function WorkflowModal({
   workflow,
   cluster,
   onClose,
   onOpen,
   onRun,
+  onScaffold,
 }: Props) {
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
+  const isScaffold = workflow.action === "scaffold";
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -169,11 +303,7 @@ export function WorkflowModal({
             className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
             style={{ backgroundColor: `${workflow.color}22` }}
           >
-            <Icon
-              size={22}
-              style={{ color: workflow.color }}
-              strokeWidth={1.75}
-            />
+            <Icon size={22} style={{ color: workflow.color }} strokeWidth={1.75} />
           </span>
 
           <div className="flex-1 min-w-0">
@@ -221,221 +351,212 @@ export function WorkflowModal({
 
           <div className="h-px bg-zinc-800" />
 
-          {/* ── Operational ─────────────────────────────────── */}
-          <div>
-            <SectionHeader>Operational</SectionHeader>
-            <div className="space-y-2.5">
-              {workflow.trigger_type && (
-                <MetaRow icon={<Zap size={11} />} label="Trigger">
-                  <span className="text-xs text-zinc-300 capitalize">
-                    {workflow.trigger_type}
-                  </span>
-                </MetaRow>
-              )}
-              {workflow.schedule && (
-                <MetaRow icon={<Clock size={11} />} label="Schedule">
-                  <span className="text-xs text-zinc-300">
-                    {workflow.schedule}
-                  </span>
-                </MetaRow>
-              )}
-              {workflow.owner && (
-                <MetaRow icon={<User size={11} />} label="Owner">
-                  <span className="text-xs text-zinc-400">
-                    {workflow.owner}
-                  </span>
-                </MetaRow>
-              )}
-            </div>
-          </div>
-
-          <div className="h-px bg-zinc-800" />
-
-          {/* ── Run History ──────────────────────────────────── */}
-          <div>
-            <SectionHeader>Run History</SectionHeader>
-            <div className="space-y-2.5">
-              {workflow.last_run_at && (
-                <MetaRow icon={<RefreshCw size={11} />} label="Last run">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-zinc-300">
-                      {formatDate(workflow.last_run_at)}
-                    </span>
-                    {workflow.last_run_status && (
-                      <RunStatusDot s={workflow.last_run_status} />
-                    )}
-                  </div>
-                </MetaRow>
-              )}
-              {workflow.run_count != null && (
-                <MetaRow icon={<Activity size={11} />} label="Total runs">
-                  <span className="text-xs text-zinc-300">
-                    {workflow.run_count.toLocaleString()}
-                  </span>
-                </MetaRow>
-              )}
-              {successPct && (
-                <MetaRow icon={<TrendingUp size={11} />} label="Success rate">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-300">{successPct}</span>
-                    <div className="flex-1 max-w-[80px] h-1 rounded-full bg-zinc-800 overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: successPct,
-                          backgroundColor:
-                            workflow.success_rate! >= 0.95
-                              ? "#10b981"
-                              : workflow.success_rate! >= 0.8
-                                ? "#f59e0b"
-                                : "#ef4444",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </MetaRow>
-              )}
-            </div>
-          </div>
-
-          <div className="h-px bg-zinc-800" />
-
-          {/* ── Performance & Cost ───────────────────────────── */}
-          <div>
-            <SectionHeader>Performance & Cost</SectionHeader>
-            <div className="space-y-2.5">
-              {workflow.estimated_duration_seconds != null && (
-                <MetaRow icon={<Timer size={11} />} label="Duration">
-                  <span className="text-xs text-zinc-300">
-                    {formatDuration(workflow.estimated_duration_seconds)}
-                  </span>
-                </MetaRow>
-              )}
-              {workflow.estimated_cost_usd != null && (
-                <MetaRow icon={<DollarSign size={11} />} label="Est. cost">
-                  <span className="text-xs text-zinc-300">
-                    ${workflow.estimated_cost_usd.toFixed(2)} per run
-                  </span>
-                </MetaRow>
-              )}
-              {workflow.model && (
-                <MetaRow icon={<Cpu size={11} />} label="Model">
-                  <code className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40 px-1.5 py-0.5 rounded">
-                    {workflow.model}
-                  </code>
-                </MetaRow>
-              )}
-            </div>
-          </div>
-
-          {/* ── Inputs & Outputs ─────────────────────────────── */}
-          {((workflow.inputs?.length ?? 0) > 0 ||
-            (workflow.outputs?.length ?? 0) > 0) && (
+          {/* ── Scaffold panel (replaces the standard action area) ─── */}
+          {isScaffold && workflow.scaffold ? (
+            <ScaffoldPanel
+              workflow={workflow}
+              onScaffold={onScaffold}
+              onClose={onClose}
+            />
+          ) : (
             <>
-              <div className="h-px bg-zinc-800" />
+              {/* ── Operational ──────────────────────────────────── */}
               <div>
-                <SectionHeader>Inputs & Outputs</SectionHeader>
-                <div className="space-y-3">
-                  {workflow.inputs && workflow.inputs.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
-                        <ArrowDownToLine size={10} />
-                        <span>Inputs</span>
-                      </div>
-                      <div className="space-y-1">
-                        {workflow.inputs.map((inp) => (
-                          <div
-                            key={inp.name}
-                            className="flex items-start gap-2 text-xs"
-                          >
-                            <code className="text-zinc-300 font-mono shrink-0">
-                              {inp.name}
-                            </code>
-                            <span className="text-zinc-600 shrink-0">
-                              {inp.required ? "·required" : "·optional"}
-                            </span>
-                            <span className="text-zinc-500 truncate">
-                              {inp.description}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                <SectionHeader>Operational</SectionHeader>
+                <div className="space-y-2.5">
+                  {workflow.trigger_type && (
+                    <MetaRow icon={<Zap size={11} />} label="Trigger">
+                      <span className="text-xs text-zinc-300 capitalize">
+                        {workflow.trigger_type}
+                      </span>
+                    </MetaRow>
                   )}
-                  {workflow.outputs && workflow.outputs.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
-                        <ArrowUpFromLine size={10} />
-                        <span>Outputs</span>
-                      </div>
-                      <div className="space-y-1">
-                        {workflow.outputs.map((out) => (
-                          <div
-                            key={out.name}
-                            className="flex items-start gap-2 text-xs"
-                          >
-                            <code className="text-zinc-300 font-mono shrink-0">
-                              {out.name}
-                            </code>
-                            <span className="text-zinc-600 shrink-0">
-                              {out.type}
-                            </span>
-                            <span className="text-zinc-500 truncate">
-                              {out.description}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  {workflow.schedule && (
+                    <MetaRow icon={<Clock size={11} />} label="Schedule">
+                      <span className="text-xs text-zinc-300">{workflow.schedule}</span>
+                    </MetaRow>
+                  )}
+                  {workflow.owner && (
+                    <MetaRow icon={<User size={11} />} label="Owner">
+                      <span className="text-xs text-zinc-400">{workflow.owner}</span>
+                    </MetaRow>
                   )}
                 </div>
               </div>
+
+              <div className="h-px bg-zinc-800" />
+
+              {/* ── Run History ──────────────────────────────────── */}
+              <div>
+                <SectionHeader>Run History</SectionHeader>
+                <div className="space-y-2.5">
+                  {workflow.last_run_at && (
+                    <MetaRow icon={<RefreshCw size={11} />} label="Last run">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-zinc-300">
+                          {formatDate(workflow.last_run_at)}
+                        </span>
+                        {workflow.last_run_status && (
+                          <RunStatusDot s={workflow.last_run_status} />
+                        )}
+                      </div>
+                    </MetaRow>
+                  )}
+                  {workflow.run_count != null && (
+                    <MetaRow icon={<Activity size={11} />} label="Total runs">
+                      <span className="text-xs text-zinc-300">
+                        {workflow.run_count.toLocaleString()}
+                      </span>
+                    </MetaRow>
+                  )}
+                  {successPct && (
+                    <MetaRow icon={<TrendingUp size={11} />} label="Success rate">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-300">{successPct}</span>
+                        <div className="flex-1 max-w-[80px] h-1 rounded-full bg-zinc-800 overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: successPct,
+                              backgroundColor:
+                                workflow.success_rate! >= 0.95
+                                  ? "#10b981"
+                                  : workflow.success_rate! >= 0.8
+                                    ? "#f59e0b"
+                                    : "#ef4444",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </MetaRow>
+                  )}
+                </div>
+              </div>
+
+              <div className="h-px bg-zinc-800" />
+
+              {/* ── Performance & Cost ───────────────────────────── */}
+              <div>
+                <SectionHeader>Performance & Cost</SectionHeader>
+                <div className="space-y-2.5">
+                  {workflow.estimated_duration_seconds != null && (
+                    <MetaRow icon={<Timer size={11} />} label="Duration">
+                      <span className="text-xs text-zinc-300">
+                        {formatDuration(workflow.estimated_duration_seconds)}
+                      </span>
+                    </MetaRow>
+                  )}
+                  {workflow.estimated_cost_usd != null && (
+                    <MetaRow icon={<DollarSign size={11} />} label="Est. cost">
+                      <span className="text-xs text-zinc-300">
+                        ${workflow.estimated_cost_usd.toFixed(2)} per run
+                      </span>
+                    </MetaRow>
+                  )}
+                  {workflow.model && (
+                    <MetaRow icon={<Cpu size={11} />} label="Model">
+                      <code className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40 px-1.5 py-0.5 rounded">
+                        {workflow.model}
+                      </code>
+                    </MetaRow>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Inputs & Outputs ─────────────────────────────── */}
+              {((workflow.inputs?.length ?? 0) > 0 ||
+                (workflow.outputs?.length ?? 0) > 0) && (
+                <>
+                  <div className="h-px bg-zinc-800" />
+                  <div>
+                    <SectionHeader>Inputs & Outputs</SectionHeader>
+                    <div className="space-y-3">
+                      {workflow.inputs && workflow.inputs.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
+                            <ArrowDownToLine size={10} />
+                            <span>Inputs</span>
+                          </div>
+                          <div className="space-y-1">
+                            {workflow.inputs.map((inp) => (
+                              <div key={inp.name} className="flex items-start gap-2 text-xs">
+                                <code className="text-zinc-300 font-mono shrink-0">{inp.name}</code>
+                                <span className="text-zinc-600 shrink-0">
+                                  {inp.required ? "·required" : "·optional"}
+                                </span>
+                                <span className="text-zinc-500 truncate">{inp.description}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {workflow.outputs && workflow.outputs.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1.5">
+                            <ArrowUpFromLine size={10} />
+                            <span>Outputs</span>
+                          </div>
+                          <div className="space-y-1">
+                            {workflow.outputs.map((out) => (
+                              <div key={out.name} className="flex items-start gap-2 text-xs">
+                                <code className="text-zinc-300 font-mono shrink-0">{out.name}</code>
+                                <span className="text-zinc-600 shrink-0">{out.type}</span>
+                                <span className="text-zinc-500 truncate">{out.description}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="h-px bg-zinc-800" />
+
+              {/* ── Tags & meta ──────────────────────────────────── */}
+              <div className="space-y-2.5">
+                {workflow.tags.length > 0 && (
+                  <MetaRow icon={<Tag size={11} />} label="Tags">
+                    <div className="flex flex-wrap gap-1.5">
+                      {workflow.tags.map((t) => (
+                        <TagBadge key={t} tag={t} />
+                      ))}
+                    </div>
+                  </MetaRow>
+                )}
+                <MetaRow icon={<FolderOpen size={11} />} label="Repo">
+                  <code
+                    className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40
+                                   px-2 py-0.5 rounded-lg break-all leading-relaxed"
+                  >
+                    {workflow.repo_path}
+                  </code>
+                </MetaRow>
+                <MetaRow icon={<Calendar size={11} />} label="Added">
+                  <span className="text-xs text-zinc-400">{workflow.added}</span>
+                </MetaRow>
+              </div>
+
+              <div className="h-px bg-zinc-800" />
+
+              {/* Action */}
+              <button
+                onClick={() => {
+                  if (isRun) onRun(workflow.id);
+                  else onOpen(workflow.id);
+                  onClose();
+                }}
+                className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
+                           text-zinc-100 border border-zinc-700/60
+                           hover:border-zinc-500 hover:bg-zinc-800/60
+                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+                style={{ "--tw-ring-color": workflow.color } as React.CSSProperties}
+              >
+                {isRun ? "Run ▶" : "Open in Claude ↗"}
+              </button>
             </>
           )}
-
-          <div className="h-px bg-zinc-800" />
-
-          {/* ── Tags & meta ──────────────────────────────────── */}
-          <div className="space-y-2.5">
-            {workflow.tags.length > 0 && (
-              <MetaRow icon={<Tag size={11} />} label="Tags">
-                <div className="flex flex-wrap gap-1.5">
-                  {workflow.tags.map((t) => (
-                    <TagBadge key={t} tag={t} />
-                  ))}
-                </div>
-              </MetaRow>
-            )}
-            <MetaRow icon={<FolderOpen size={11} />} label="Repo">
-              <code
-                className="text-[11px] text-zinc-400 bg-zinc-800/60 border border-zinc-700/40
-                               px-2 py-0.5 rounded-lg break-all leading-relaxed"
-              >
-                {workflow.repo_path}
-              </code>
-            </MetaRow>
-            <MetaRow icon={<Calendar size={11} />} label="Added">
-              <span className="text-xs text-zinc-400">{workflow.added}</span>
-            </MetaRow>
-          </div>
-
-          <div className="h-px bg-zinc-800" />
-
-          {/* Action */}
-          <button
-            onClick={() => {
-              if (isRun) onRun(workflow.id);
-              else onOpen(workflow.id);
-              onClose();
-            }}
-            className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                       text-zinc-100 border border-zinc-700/60
-                       hover:border-zinc-500 hover:bg-zinc-800/60
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-            style={{ "--tw-ring-color": workflow.color } as React.CSSProperties}
-          >
-            {isRun ? "Run ▶" : "Open in Claude ↗"}
-          </button>
         </div>
       </div>
     </div>

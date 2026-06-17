@@ -15,6 +15,8 @@ import {
   disableSchedule,
   readLog,
 } from "./schedule";
+import { listBranches, scaffoldWorkflow } from "./scaffolder";
+import { writeActivityLog, type ActivityEntry } from "./logger";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -65,7 +67,16 @@ app.whenReady().then(() => {
     const repoPath = isAbsolute(workflow.repo_path)
       ? workflow.repo_path
       : join(getBaseDir(), workflow.repo_path);
-    return openInTerminal(repoPath);
+    const result = openInTerminal(repoPath);
+    writeActivityLog({
+      timestamp: new Date().toISOString(),
+      workflow_id: workflow.id,
+      workflow_name: workflow.name,
+      action: "claude",
+      success: result.success,
+      error: result.error,
+    });
+    return result;
   });
 
   ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) =>
@@ -129,6 +140,40 @@ app.whenReady().then(() => {
         ? workflow.repo_path
         : join(getBaseDir(), workflow.repo_path);
       return runScript(repoPath, workflow.runner, folder, apply, extraArgs);
+    },
+  );
+
+  ipcMain.handle(
+    IPC.LIST_BRANCHES,
+    (_, repo: string, defaultBranch?: string) =>
+      listBranches(repo, defaultBranch),
+  );
+
+  ipcMain.handle(
+    IPC.SCAFFOLD_WORKFLOW,
+    (_, id: string, branch: string, description: string) => {
+      const workflow = getRegistry().workflows.find((w) => w.id === id);
+      if (!workflow) return { success: false, error: "Workflow not found", errorKind: "unknown" };
+      const result = scaffoldWorkflow(workflow, branch, description);
+      writeActivityLog({
+        timestamp: new Date().toISOString(),
+        workflow_id: workflow.id,
+        workflow_name: workflow.name,
+        action: "scaffold",
+        branch,
+        description,
+        success: result.success,
+        error: result.error,
+      });
+      return result;
+    },
+  );
+
+  ipcMain.handle(
+    IPC.WRITE_ACTIVITY_LOG,
+    (_, entry: ActivityEntry) => {
+      writeActivityLog(entry);
+      return { success: true };
     },
   );
 
