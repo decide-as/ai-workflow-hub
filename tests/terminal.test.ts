@@ -151,7 +151,10 @@ describe("openInTerminal()", () => {
 
   it("succeeds when initialPrompt is provided", () => {
     mockSpawnSync.mockReturnValue(makeSpawnResult(0));
-    const result = openInTerminal("/valid/repo", "Please summarise the receipts");
+    const result = openInTerminal(
+      "/valid/repo",
+      "Please summarise the receipts",
+    );
     expect(result.success).toBe(true);
   });
 });
