@@ -1,14 +1,11 @@
 ### Diff Review
 
-**Scope:** 2026-06-17/feat/ui-enhancements | **Agents:** 1 | **Threshold:** 75
+**Scope:** 7 changed files | **Agents:** 3 independent reviewers
 
-**Findings above threshold:** 2 (both fixed)
+**Findings above threshold (≥80 confidence):** 0
 
-| # | File | Finding | Confidence | Status |
-|---|------|---------|-----------|--------|
-| 1 | `LogModal.tsx` | Run indices showed #1 = oldest after reverse; re-numbered after reversing | 80 | Fixed |
-| 2 | `src/main/schedule.ts` | `readLog` accepted arbitrary paths; scoped to `homedir()` | 77 | Fixed |
+**Findings below threshold:** 2 (resolved during review)
+- Typo `hasTranscribeToClaud` — fixed
+- Unused `workflow` prop in `TranscribeControls` — removed
 
-**Findings below threshold:** 2 suppressed (reversed run index as pure UX concern; `onOptionsChange` retained but voided — intentional, documented in comment)
-
-All findings above threshold resolved in commit `4d3eb98`.
+**Resolution:** All findings addressed in commit `6aa7ea3`.

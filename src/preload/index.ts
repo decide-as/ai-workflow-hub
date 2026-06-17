@@ -8,6 +8,9 @@ import type {
   BranchListResult,
   ActivityEntry,
   TranscriptionEntry,
+  ReadingListEntry,
+  ReadingListImportResult,
+  ReadingListAddResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -59,4 +62,10 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.GET_TRANSCRIPTION_LOG),
   saveTranscription: (text: string): Promise<TranscriptionEntry> =>
     ipcRenderer.invoke(IPC.SAVE_TRANSCRIPTION, text),
+  readingListImport: (): Promise<ReadingListImportResult> =>
+    ipcRenderer.invoke(IPC.READING_LIST_IMPORT),
+  readingListAddUrl: (url: string): Promise<ReadingListAddResult> =>
+    ipcRenderer.invoke(IPC.READING_LIST_ADD_URL, url),
+  readingListGetEntries: (limit?: number): Promise<ReadingListEntry[]> =>
+    ipcRenderer.invoke(IPC.READING_LIST_GET_ENTRIES, limit),
 });

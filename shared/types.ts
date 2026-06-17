@@ -18,11 +18,17 @@ export interface WorkflowOutput {
 }
 
 // How the primary action button behaves:
-//   'claude'     — open a Claude terminal session in the repo (default).
-//   'run'        — pick a folder and run a bundled script against it.
-//   'scaffold'   — clone an external repo, pick a branch, open Claude with a seeded prompt.
-//   'transcribe' — in-card voice recorder that transcribes via Whisper and copies to clipboard.
-export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe";
+//   'claude'       — open a Claude terminal session in the repo (default).
+//   'run'          — pick a folder and run a bundled script against it.
+//   'scaffold'     — clone an external repo, pick a branch, open Claude with a seeded prompt.
+//   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
+//   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
+export type WorkflowAction =
+  | "claude"
+  | "run"
+  | "scaffold"
+  | "transcribe"
+  | "reading-list";
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {
@@ -204,6 +210,29 @@ export interface RunResult {
 }
 
 // A single activity log entry written to workflow-hub-data/activity-log/.
+export interface ReadingListEntry {
+  id: string;
+  url: string;
+  title: string;
+  notes: string;
+  source: string;
+  added_at: string | null;
+  status: "unread" | "read" | "skipped";
+}
+
+export interface ReadingListImportResult {
+  success: boolean;
+  imported?: number;
+  duplicates?: number;
+  error?: string;
+}
+
+export interface ReadingListAddResult {
+  success: boolean;
+  id?: string;
+  error?: string;
+}
+
 export interface ActivityEntry {
   timestamp: string;
   workflow_id: string;
