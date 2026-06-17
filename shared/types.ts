@@ -20,8 +20,28 @@ export interface WorkflowOutput {
 // How the primary action button behaves:
 //   'claude'     — open a Claude terminal session in the repo (default).
 //   'run'        — pick a folder and run a bundled script against it.
+//   'scaffold'   — clone an external repo, pick a branch, open Claude with a seeded prompt.
 //   'transcribe' — in-card voice recorder that transcribes via Whisper and copies to clipboard.
-export type WorkflowAction = "claude" | "run" | "transcribe";
+export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe";
+
+// Configuration for the 'scaffold' action type.
+export interface ScaffoldConfig {
+  // Local path or remote URL of the repo to clone/pull.
+  repo: string;
+  // Branch to pre-select in the picker. Falls back to the repo default.
+  branch_default?: string;
+  // CLI command shown in the modal (informational) and embedded in the initial prompt.
+  command: string;
+  // Template for Claude's initial prompt. Use {description} as the placeholder.
+  initial_prompt_template: string;
+}
+
+// Result of listing branches for a scaffold repo.
+export interface BranchListResult {
+  success: boolean;
+  branches: string[];
+  error?: string;
+}
 
 export interface TranscriptionEntry {
   id: string;
@@ -135,6 +155,7 @@ export interface Workflow {
   // Action — how the primary button behaves. Defaults to 'claude'.
   action?: WorkflowAction;
   runner?: WorkflowRunner;
+  scaffold?: ScaffoldConfig;
   // Present when the workflow can be installed as a recurring launchd job.
   scheduled_job?: ScheduledJob;
 }
@@ -176,4 +197,16 @@ export interface RunResult {
   output: string;
   error?: string;
   errorKind?: RunErrorKind;
+}
+
+// A single activity log entry written to workflow-hub-data/activity-log/.
+export interface ActivityEntry {
+  timestamp: string;
+  workflow_id: string;
+  workflow_name: string;
+  action: string;
+  branch?: string;
+  description?: string;
+  success: boolean;
+  error?: string;
 }

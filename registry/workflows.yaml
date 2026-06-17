@@ -227,6 +227,61 @@ workflows:
         description: >
           A numbered per-post folder (idea, draft versions, final text, scores,
           metadata, analytics) plus updates to the SQLite content database.
+  - id: a4f82c3e-7b19-4d05-9e61-1c3f85de2047
+    name: Scaffold New Project
+    summary: Describe a project → Claude scaffolds it via code_practices.
+    description: >
+      Describe what you want to build in plain language. The hub clones the
+      code_practices repo, checks out the branch you select, and opens a Claude
+      session pre-seeded with your description. Claude generates an answers.yaml
+      from your description and runs `cp create --from-answers answers.yaml` to
+      scaffold a complete project — directory structure, config, CI, tests, rules,
+      and all.
+    tags: [scaffold, code_practices, project, setup, developer-tools]
+    repo_path: /Users/christianbraathen/Repositories/code_practices
+    color: '#8b5cf6'
+    icon: Wand2
+    cluster_id: developer-tools
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    action: scaffold
+    scaffold:
+      repo: /Users/christianbraathen/Repositories/code_practices
+      branch_default: master
+      command: cp create --from-answers answers.yaml
+      initial_prompt_template: |
+        I want to scaffold a new project. Here is what I am building:
+
+        {description}
+
+        Please do the following:
+        1. Create an `answers.yaml` file in the current directory that captures
+           what I described above. The file should look like the example below —
+           only include the fields a human would answer interactively; all derived
+           fields are computed automatically by `cp create --from-answers`.
+
+           Example answers.yaml:
+             name: my-app
+             description: A brief description of what the project does.
+             archetype: python-fastapi
+             has_api_keys: true
+             quality_gate: basic
+             branching_complexity: simple
+             scoring_profile: solo_dev
+
+           Common archetypes: python-fastapi, python-django, python-cli, python-lib,
+           node-tool, node-api. Pick the one that best fits my description.
+
+        2. Once the file is written, run: cp create --from-answers answers.yaml
+
+        Start by writing the answers.yaml, show it to me for a quick review, and
+        then run the command.
+
 clusters:
   - id: finance
     name: Finance
@@ -246,3 +301,8 @@ clusters:
     tags: [content, linkedin, writing, marketing]
     workflow_ids:
       - 115a3614-d1fe-460a-a6cb-54676775749b
+  - id: developer-tools
+    name: Developer Tools
+    tags: [scaffold, developer-tools, setup]
+    workflow_ids:
+      - a4f82c3e-7b19-4d05-9e61-1c3f85de2047

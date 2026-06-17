@@ -5,6 +5,8 @@ import type {
   OpenResult,
   RunResult,
   ScheduleStatus,
+  BranchListResult,
+  ActivityEntry,
   TranscriptionEntry,
 } from "../../shared/types";
 
@@ -31,6 +33,19 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.SCHEDULE_DISABLE, id),
   readLog: (logPath: string): Promise<string> =>
     ipcRenderer.invoke(IPC.READ_LOG, logPath),
+  listBranches: (
+    repo: string,
+    defaultBranch?: string,
+  ): Promise<BranchListResult> =>
+    ipcRenderer.invoke(IPC.LIST_BRANCHES, repo, defaultBranch),
+  scaffoldWorkflow: (
+    id: string,
+    branch: string,
+    description: string,
+  ): Promise<OpenResult> =>
+    ipcRenderer.invoke(IPC.SCAFFOLD_WORKFLOW, id, branch, description),
+  writeActivityLog: (entry: ActivityEntry): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke(IPC.WRITE_ACTIVITY_LOG, entry),
   onRegistryUpdated: (cb: (reg: Registry) => void): (() => void) => {
     const handler = (_: unknown, reg: Registry) => cb(reg);
     ipcRenderer.on(IPC.REGISTRY_UPDATED, handler);
