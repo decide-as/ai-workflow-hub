@@ -62,8 +62,9 @@ function makeLauncherCommand(
   initialPrompt?: string,
 ): string {
   if (!initialPrompt) {
-    // Simple inline command — no temp files needed.
-    return `cd "${escapeForOsascript(repoPath)}" && claude`;
+    // The command is embedded inside a double-quoted osascript string literal,
+    // so the path's inner quotes must be backslash-escaped (\").
+    return `cd \\"${escapeForOsascript(repoPath)}\\" && claude`;
   }
 
   const id = Date.now();

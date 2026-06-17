@@ -15,9 +15,15 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
   const [loading, setLoading] = useState(false);
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
+  const isScaffold = workflow.action === "scaffold";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
+    if (isScaffold) {
+      // Scaffold needs the description modal first — open the card modal.
+      onClick(workflow.id);
+      return;
+    }
     setLoading(true);
     await (isRun ? onRun(workflow.id) : onOpen(workflow.id));
     setTimeout(() => setLoading(false), 800);
@@ -89,6 +95,8 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
             </span>
           ) : isRun ? (
             "Run ▶"
+          ) : isScaffold ? (
+            "Create ↗"
           ) : (
             "Open in Claude ↗"
           )}
