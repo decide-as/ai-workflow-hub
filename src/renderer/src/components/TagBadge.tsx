@@ -1,7 +1,7 @@
 function tagColor(tag: string): string {
-  let h = 0
-  for (let i = 0; i < tag.length; i++) h = tag.charCodeAt(i) + ((h << 5) - h)
-  return `hsla(${Math.abs(h) % 360}, 55%, 60%, 0.18)`
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = tag.charCodeAt(i) + ((h << 5) - h);
+  return `hsla(${Math.abs(h) % 360}, 55%, 60%, 0.18)`;
 }
 
 export function TagBadge({ tag }: { tag: string }) {
@@ -12,5 +12,5 @@ export function TagBadge({ tag }: { tag: string }) {
     >
       {tag}
     </span>
-  )
+  );
 }

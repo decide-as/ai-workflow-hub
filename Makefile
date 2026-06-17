@@ -4,7 +4,7 @@ install:
 	npm install
 
 dev:
-npm run dev
+	npm run dev
 
 
 build:

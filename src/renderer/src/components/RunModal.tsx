@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react'
-import { X, Play, FolderInput, FolderOpen, CheckCircle2, AlertCircle } from 'lucide-react'
-import type { Workflow, RunResult } from '../../../../shared/types'
-import { resolveIcon } from '../lib/icons'
+import { useEffect, useState } from "react";
+import {
+  X,
+  Play,
+  FolderInput,
+  FolderOpen,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import type { Workflow, RunResult } from "../../../../shared/types";
+import { resolveIcon } from "../lib/icons";
 
 // Per-option UI state, keyed by the option's `key`.
 export type OptionValues = Record<string, { enabled: boolean; value: number }>;
@@ -10,90 +17,120 @@ export type OptionValues = Record<string, { enabled: boolean; value: number }>;
 // Finder" reveals exactly where the files landed. Falls back to the source
 // folder, which contains the destination subfolder anyway.
 function destFromOutput(output: string, fallback: string): string {
-  const m = output.match(/^Dest directory\s*:\s*(.+)$/m)
-  return m ? m[1].trim() : fallback
+  const m = output.match(/^Dest directory\s*:\s*(.+)$/m);
+  return m ? m[1].trim() : fallback;
 }
 
-export type RunPhase = 'configure' | 'running' | 'preview' | 'applying' | 'done'
+export type RunPhase =
+  | "configure"
+  | "running"
+  | "preview"
+  | "applying"
+  | "done";
 
 export interface RunState {
-  workflow: Workflow
-  folder: string
-  phase: RunPhase
-  result: RunResult | null
-  applied: boolean
-  options: OptionValues
+  workflow: Workflow;
+  folder: string;
+  phase: RunPhase;
+  result: RunResult | null;
+  applied: boolean;
+  options: OptionValues;
 }
 
 interface Props {
-  state: RunState
-  onApply: () => void
-  onReveal: (target: string) => void
-  onOptionsChange: (next: OptionValues) => void
-  onConfigure: (options: OptionValues) => void
-  onClose: () => void
+  state: RunState;
+  onApply: () => void;
+  onReveal: (target: string) => void;
+  onOptionsChange: (next: OptionValues) => void;
+  onConfigure: (options: OptionValues) => void;
+  onClose: () => void;
 }
 
 function Spinner() {
-  return <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
+  return (
+    <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
+  );
 }
 
-export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigure, onClose }: Props) {
-  const { workflow, folder, phase, result, applied } = state
-  const Icon = resolveIcon(workflow.icon, workflow.tags)
-  const busy = phase === 'running' || phase === 'applying'
+export function RunModal({
+  state,
+  onApply,
+  onReveal,
+  onOptionsChange,
+  onConfigure,
+  onClose,
+}: Props) {
+  const { workflow, folder, phase, result, applied } = state;
+  const Icon = resolveIcon(workflow.icon, workflow.tags);
+  const busy = phase === "running" || phase === "applying";
 
-  const [optValues, setOptValues] = useState<OptionValues>(state.options)
-  const runnerOptions = workflow.runner?.options ?? []
+  const [optValues, setOptValues] = useState<OptionValues>(state.options);
+  const runnerOptions = workflow.runner?.options ?? [];
 
   // onOptionsChange is kept for future use (e.g. re-running preview from summary pill).
-  void onOptionsChange
+  void onOptionsChange;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !busy && phase !== 'configure') onClose()
-      if (e.key === 'Escape' && phase === 'configure') onClose()
+      if (e.key === "Escape" && !busy && phase !== "configure") onClose();
+      if (e.key === "Escape" && phase === "configure") onClose();
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [busy, phase, onClose])
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, phase, onClose]);
 
   const phaseLabel =
-    phase === 'running' ? 'Scanning folder…'
-    : phase === 'preview' ? (result?.success ? 'Preview — nothing moved yet' : 'Could not preview')
-    : phase === 'applying' ? 'Applying…'
-    : applied ? 'Done — files moved' : 'Closed'
+    phase === "running"
+      ? "Scanning folder…"
+      : phase === "preview"
+        ? result?.success
+          ? "Preview — nothing moved yet"
+          : "Could not preview"
+        : phase === "applying"
+          ? "Applying…"
+          : applied
+            ? "Done — files moved"
+            : "Closed";
 
-  const failed = result != null && !result.success
+  const failed = result != null && !result.success;
 
   // ── Configure phase ────────────────────────────────────────────────────────
-  if (phase === 'configure') {
-    const ageOpt = runnerOptions.find((o) => o.key === 'min_age_days')
-    const ageVal = optValues['min_age_days']
-    const sliderMax = 90
-    const days = ageVal ? ageVal.value : 0
-    const everything = !ageVal?.enabled || days === 0
+  if (phase === "configure") {
+    const ageOpt = runnerOptions.find((o) => o.key === "min_age_days");
+    const ageVal = optValues["min_age_days"];
+    const sliderMax = 90;
+    const days = ageVal ? ageVal.value : 0;
+    const everything = !ageVal?.enabled || days === 0;
 
     function setDays(n: number) {
-      if (!ageVal) return
-      setOptValues((prev) => ({ ...prev, min_age_days: { enabled: n > 0, value: n } }))
+      if (!ageVal) return;
+      setOptValues((prev) => ({
+        ...prev,
+        min_age_days: { enabled: n > 0, value: n },
+      }));
     }
 
     function ageLabel(n: number) {
-      if (n === 0) return 'Everything — no age filter'
-      if (n === 1) return 'Files older than 1 day'
-      return `Files older than ${n} days`
+      if (n === 0) return "Everything — no age filter";
+      if (n === 1) return "Files older than 1 day";
+      return `Files older than ${n} days`;
     }
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        onClick={onClose}
+      >
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
         <div
           className="relative z-10 w-full max-w-lg mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
                      shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-1 w-full rounded-t-2xl shrink-0" style={{ backgroundColor: workflow.color }} />
+          <div
+            className="h-1 w-full rounded-t-2xl shrink-0"
+            style={{ backgroundColor: workflow.color }}
+          />
 
           {/* Header */}
           <div className="flex items-start gap-4 px-6 pt-5 pb-4">
@@ -101,10 +138,16 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
               className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
               style={{ backgroundColor: `${workflow.color}22` }}
             >
-              <Icon size={22} style={{ color: workflow.color }} strokeWidth={1.75} />
+              <Icon
+                size={22}
+                style={{ color: workflow.color }}
+                strokeWidth={1.75}
+              />
             </span>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-zinc-100">{workflow.name}</h2>
+              <h2 className="text-base font-semibold text-zinc-100">
+                {workflow.name}
+              </h2>
               <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500">
                 <FolderInput size={11} className="shrink-0" />
                 <span className="truncate font-mono">{folder}</span>
@@ -124,12 +167,16 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
             <div className="px-6 pb-6 space-y-4">
               <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-zinc-200">{ageOpt.label}</p>
+                  <p className="text-sm font-medium text-zinc-200">
+                    {ageOpt.label}
+                  </p>
                   <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{
-                      backgroundColor: everything ? '#52525b33' : `${workflow.color}22`,
-                      color: everything ? '#a1a1aa' : workflow.color,
+                      backgroundColor: everything
+                        ? "#52525b33"
+                        : `${workflow.color}22`,
+                      color: everything ? "#a1a1aa" : workflow.color,
                     }}
                   >
                     {ageLabel(days)}
@@ -154,7 +201,8 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
 
                 {!everything && (
                   <p className="text-[11px] text-zinc-500 leading-relaxed">
-                    Files created or modified within the last {days} day{days !== 1 ? 's' : ''} will be skipped.
+                    Files created or modified within the last {days} day
+                    {days !== 1 ? "s" : ""} will be skipped.
                   </p>
                 )}
               </div>
@@ -183,21 +231,27 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // ── Running / preview / done phases ───────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => !busy && onClose()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={() => !busy && onClose()}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       <div
         className="relative z-10 w-full max-w-2xl mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
                    shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
-        style={{ maxHeight: 'calc(100vh - 80px)' }}
+        style={{ maxHeight: "calc(100vh - 80px)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="h-1 w-full rounded-t-2xl shrink-0" style={{ backgroundColor: workflow.color }} />
+        <div
+          className="h-1 w-full rounded-t-2xl shrink-0"
+          style={{ backgroundColor: workflow.color }}
+        />
 
         {/* Header */}
         <div className="flex items-start gap-4 px-6 pt-5 pb-4 shrink-0">
@@ -205,11 +259,17 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
             className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
             style={{ backgroundColor: `${workflow.color}22` }}
           >
-            <Icon size={22} style={{ color: workflow.color }} strokeWidth={1.75} />
+            <Icon
+              size={22}
+              style={{ color: workflow.color }}
+              strokeWidth={1.75}
+            />
           </span>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-zinc-100 leading-snug">{workflow.name}</h2>
+            <h2 className="text-base font-semibold text-zinc-100 leading-snug">
+              {workflow.name}
+            </h2>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 min-w-0">
               <FolderInput size={11} className="shrink-0" />
               <span className="truncate font-mono">{folder}</span>
@@ -231,31 +291,42 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
         <div className="px-6 pb-3 shrink-0">
           <div className="flex items-center gap-2 text-xs">
             {busy && <Spinner />}
-            {phase === 'done' && applied && <CheckCircle2 size={13} className="text-emerald-400" />}
+            {phase === "done" && applied && (
+              <CheckCircle2 size={13} className="text-emerald-400" />
+            )}
             {failed && <AlertCircle size={13} className="text-red-400" />}
-            <span className={failed ? 'text-red-300' : 'text-zinc-400'}>{phaseLabel}</span>
+            <span className={failed ? "text-red-300" : "text-zinc-400"}>
+              {phaseLabel}
+            </span>
           </div>
         </div>
 
         {/* Age filter pill — reminds user what setting was applied */}
-        {(phase === 'running' || phase === 'preview') && (() => {
-          const v = optValues['min_age_days']
-          const days = v?.enabled && v.value > 0 ? v.value : 0
-          return (
-            <div className="px-6 pb-3 shrink-0">
-              <span className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1
-                               border border-zinc-700/60 text-zinc-400">
-                {days === 0 ? 'All files (no age filter)' : `Files older than ${days} day${days !== 1 ? 's' : ''}`}
-              </span>
-            </div>
-          )
-        })()}
+        {(phase === "running" || phase === "preview") &&
+          (() => {
+            const v = optValues["min_age_days"];
+            const days = v?.enabled && v.value > 0 ? v.value : 0;
+            return (
+              <div className="px-6 pb-3 shrink-0">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1
+                               border border-zinc-700/60 text-zinc-400"
+                >
+                  {days === 0
+                    ? "All files (no age filter)"
+                    : `Files older than ${days} day${days !== 1 ? "s" : ""}`}
+                </span>
+              </div>
+            );
+          })()}
 
         {/* Output */}
         <div className="overflow-y-auto flex-1 px-6 pb-4">
           {result?.output ? (
-            <pre className="text-[11px] leading-relaxed font-mono text-zinc-300 whitespace-pre-wrap break-words
-                            bg-zinc-950/60 border border-zinc-800 rounded-lg p-3">
+            <pre
+              className="text-[11px] leading-relaxed font-mono text-zinc-300 whitespace-pre-wrap break-words
+                            bg-zinc-950/60 border border-zinc-800 rounded-lg p-3"
+            >
               {result.output}
             </pre>
           ) : failed ? (
@@ -270,7 +341,7 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
 
         {/* Footer actions */}
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-zinc-800 shrink-0">
-          {phase === 'preview' && result?.success && (
+          {phase === "preview" && result?.success && (
             <>
               <button
                 onClick={onClose}
@@ -292,9 +363,11 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
             </>
           )}
 
-          {phase === 'done' && applied && (
+          {phase === "done" && applied && (
             <button
-              onClick={() => onReveal(destFromOutput(result?.output ?? '', folder))}
+              onClick={() =>
+                onReveal(destFromOutput(result?.output ?? "", folder))
+              }
               className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
                          text-zinc-950 transition-all hover:brightness-110"
               style={{ backgroundColor: workflow.color }}
@@ -304,7 +377,7 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
             </button>
           )}
 
-          {(phase === 'done' || (phase === 'preview' && failed)) && (
+          {(phase === "done" || (phase === "preview" && failed)) && (
             <button
               onClick={onClose}
               className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-200
@@ -317,11 +390,11 @@ export function RunModal({ state, onApply, onReveal, onOptionsChange, onConfigur
           {busy && (
             <span className="inline-flex items-center gap-2 text-sm text-zinc-400 px-2">
               <Spinner />
-              {phase === 'applying' ? 'Moving files…' : 'Scanning…'}
+              {phase === "applying" ? "Moving files…" : "Scanning…"}
             </span>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

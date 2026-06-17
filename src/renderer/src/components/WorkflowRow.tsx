@@ -1,27 +1,33 @@
-import { useState } from 'react'
-import { Clock } from 'lucide-react'
-import type { Workflow } from '../../../../shared/types'
-import { TagBadge } from './TagBadge'
-import { resolveIcon } from '../lib/icons'
+import { useState } from "react";
+import { Clock } from "lucide-react";
+import type { Workflow } from "../../../../shared/types";
+import { TagBadge } from "./TagBadge";
+import { resolveIcon } from "../lib/icons";
 
 interface Props {
-  workflow: Workflow
-  clusterName?: string
-  onOpen: (id: string) => void
-  onRun: (id: string) => void
-  onClick: (id: string) => void
+  workflow: Workflow;
+  clusterName?: string;
+  onOpen: (id: string) => void;
+  onRun: (id: string) => void;
+  onClick: (id: string) => void;
 }
 
-export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: Props) {
-  const [loading, setLoading] = useState(false)
-  const Icon = resolveIcon(workflow.icon, workflow.tags)
-  const isRun = workflow.action === 'run'
+export function WorkflowRow({
+  workflow,
+  clusterName,
+  onOpen,
+  onRun,
+  onClick,
+}: Props) {
+  const [loading, setLoading] = useState(false);
+  const Icon = resolveIcon(workflow.icon, workflow.tags);
+  const isRun = workflow.action === "run";
 
   async function handleAction(e: React.MouseEvent) {
-    e.stopPropagation()
-    setLoading(true)
-    await (isRun ? onRun(workflow.id) : onOpen(workflow.id))
-    setTimeout(() => setLoading(false), 800)
+    e.stopPropagation();
+    setLoading(true);
+    await (isRun ? onRun(workflow.id) : onOpen(workflow.id));
+    setTimeout(() => setLoading(false), 800);
   }
 
   return (
@@ -29,14 +35,17 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
       role="button"
       tabIndex={0}
       onClick={() => onClick(workflow.id)}
-      onKeyDown={(e) => e.key === 'Enter' && onClick(workflow.id)}
+      onKeyDown={(e) => e.key === "Enter" && onClick(workflow.id)}
       className="group flex items-center gap-4 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800/60
                  cursor-pointer transition-all duration-150
                  hover:border-zinc-700/80 hover:bg-zinc-900/80
                  focus:outline-none focus:ring-2 focus:ring-zinc-600"
     >
       {/* Color accent bar */}
-      <div className="w-1 self-stretch rounded-full shrink-0" style={{ backgroundColor: workflow.color }} />
+      <div
+        className="w-1 self-stretch rounded-full shrink-0"
+        style={{ backgroundColor: workflow.color }}
+      />
 
       {/* Icon */}
       <span
@@ -48,8 +57,12 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
 
       {/* Name + summary */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-zinc-100 text-sm leading-snug truncate">{workflow.name}</p>
-        <p className="text-xs text-zinc-500 mt-0.5 truncate">{workflow.summary ?? workflow.description}</p>
+        <p className="font-semibold text-zinc-100 text-sm leading-snug truncate">
+          {workflow.name}
+        </p>
+        <p className="text-xs text-zinc-500 mt-0.5 truncate">
+          {workflow.summary ?? workflow.description}
+        </p>
       </div>
 
       {/* Tags */}
@@ -59,7 +72,9 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
             <TagBadge key={tag} tag={tag} />
           ))}
           {workflow.tags.length > 3 && (
-            <span className="text-[11px] text-zinc-600">+{workflow.tags.length - 3}</span>
+            <span className="text-[11px] text-zinc-600">
+              +{workflow.tags.length - 3}
+            </span>
           )}
         </div>
       )}
@@ -91,14 +106,14 @@ export function WorkflowRow({ workflow, clusterName, onOpen, onRun, onClick }: P
         {loading ? (
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-            {isRun ? 'Starting…' : 'Opening…'}
+            {isRun ? "Starting…" : "Opening…"}
           </span>
         ) : isRun ? (
-          'Run ▶'
+          "Run ▶"
         ) : (
-          'Open ↗'
+          "Open ↗"
         )}
       </button>
     </div>
-  )
+  );
 }
