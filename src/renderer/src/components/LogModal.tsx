@@ -64,8 +64,8 @@ function parseRuns(content: string): RunEntry[] {
     });
   }
 
-  // Most recent first
-  return entries.reverse();
+  // Most recent first, re-numbered so #1 = most recent run
+  return entries.reverse().map((e, i) => ({ ...e, index: i + 1 }));
 }
 
 interface Props {
