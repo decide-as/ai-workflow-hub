@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { Copy, Check, Square, Mic, Loader2 } from 'lucide-react'
 import type { Workflow } from '../../../../shared/types'
 import { TagBadge } from './TagBadge'
 import { SchedulePanel } from './SchedulePanel'
@@ -11,10 +12,141 @@ interface Props {
   onClick: (id: string) => void
 }
 
+type RecordState = 'idle' | 'recording' | 'transcribing'
+
+function TranscribeControls({ workflow }: { workflow: Workflow }) {
+  const [state, setState] = useState<RecordState>('idle')
+  const [lastText, setLastText] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const mediaRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+
+  async function startRecording() {
+    setError(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
+      chunksRef.current = []
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data)
+      }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop())
+        setState('transcribing')
+        try {
+          const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' })
+          const arrayBuffer = await blob.arrayBuffer()
+          const text = await window.api.transcribeAudio(arrayBuffer)
+          await window.api.copyToClipboard(text)
+          await window.api.saveTranscription(text)
+          setLastText(text)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Transcription failed')
+        } finally {
+          setState('idle')
+        }
+      }
+      mediaRef.current = recorder
+      recorder.start()
+      setState('recording')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not access microphone')
+      setState('idle')
+    }
+  }
+
+  function stopRecording() {
+    mediaRef.current?.stop()
+    mediaRef.current = null
+  }
+
+  async function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!lastText) return
+    await window.api.copyToClipboard(lastText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  function handleRecordClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (state === 'recording') {
+      stopRecording()
+    } else if (state === 'idle') {
+      startRecording()
+    }
+  }
+
+  const isRecording = state === 'recording'
+  const isTranscribing = state === 'transcribing'
+  const busy = isRecording || isTranscribing
+
+  return (
+    <div className="space-y-2">
+      {error && (
+        <p className="text-[11px] text-red-400 leading-snug">{error}</p>
+      )}
+
+      {lastText && (
+        <p className="text-[11px] text-zinc-500 leading-snug line-clamp-2">{lastText}</p>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleRecordClick}
+          disabled={isTranscribing}
+          className={[
+            'flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium',
+            'transition-all duration-150 border focus:outline-none focus:ring-2',
+            'focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed',
+            isRecording
+              ? 'border-red-700/60 text-red-400 bg-red-950/30 hover:bg-red-950/50'
+              : 'border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60',
+          ].join(' ')}
+        >
+          {isTranscribing ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Transcribing…
+            </>
+          ) : isRecording ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+              <Square size={13} fill="currentColor" />
+              Stop
+            </>
+          ) : (
+            <>
+              <Mic size={14} />
+              Record
+            </>
+          )}
+        </button>
+
+        {lastText && (
+          <button
+            onClick={handleCopy}
+            disabled={busy}
+            title="Copy last transcription"
+            className="w-10 h-10 flex items-center justify-center rounded-xl border border-zinc-700/60
+                       text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/60
+                       transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
+                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+          >
+            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
   const [loading, setLoading] = useState(false)
   const Icon = resolveIcon(workflow.icon, workflow.tags)
   const isRun = workflow.action === 'run'
+  const isTranscribe = workflow.action === 'transcribe'
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation()
@@ -64,26 +196,30 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
 
         <div className="flex-1" />
 
-        <button
-          onClick={handleAction}
-          disabled={loading}
-          className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
-                     border border-zinc-700/60 text-zinc-300
-                     hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-              {isRun ? 'Starting…' : 'Opening…'}
-            </span>
-          ) : isRun ? (
-            'Run ▶'
-          ) : (
-            'Open in Claude ↗'
-          )}
-        </button>
+        {isTranscribe ? (
+          <TranscribeControls workflow={workflow} />
+        ) : (
+          <button
+            onClick={handleAction}
+            disabled={loading}
+            className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
+                       border border-zinc-700/60 text-zinc-300
+                       hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
+          >
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+                {isRun ? 'Starting…' : 'Opening…'}
+              </span>
+            ) : isRun ? (
+              'Run ▶'
+            ) : (
+              'Open in Claude ↗'
+            )}
+          </button>
+        )}
       </div>
     </div>
   )

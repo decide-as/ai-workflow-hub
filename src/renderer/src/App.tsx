@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type {
   Registry, Workflow, OpenErrorKind, OpenResult, RunResult, WorkflowRunner, ScheduleStatus,
+  TranscriptionEntry,
 } from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
@@ -8,6 +9,7 @@ import { EmptyState } from './components/EmptyState'
 import { Sidebar } from './components/Sidebar'
 import { WorkflowModal } from './components/WorkflowModal'
 import { RunModal, type RunState, type OptionValues } from './components/RunModal'
+import { TranscribeModal } from './components/TranscribeModal'
 
 // Seed each runner option's UI state from its defaults; optional options start off.
 function initOptionValues(runner?: WorkflowRunner): OptionValues {
@@ -43,6 +45,10 @@ declare global {
       scheduleEnable: (id: string) => Promise<ScheduleStatus>
       scheduleDisable: (id: string) => Promise<ScheduleStatus>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
+      transcribeAudio: (audioBuffer: ArrayBuffer) => Promise<string>
+      copyToClipboard: (text: string) => Promise<void>
+      getTranscriptionLog: () => Promise<TranscriptionEntry[]>
+      saveTranscription: (text: string) => Promise<TranscriptionEntry>
     }
   }
 }
@@ -53,6 +59,7 @@ export default function App() {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
+  const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(null)
   const [runState, setRunState] = useState<RunState | null>(null)
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -155,7 +162,11 @@ export default function App() {
 
   function handleCardClick(id: string) {
     const w = registry.workflows.find((w) => w.id === id) ?? null
-    setActiveWorkflow(w)
+    if (w?.action === 'transcribe') {
+      setTranscribeWorkflow(w)
+    } else {
+      setActiveWorkflow(w)
+    }
   }
 
   const filtered = filterWorkflows(registry.workflows)
@@ -244,6 +255,13 @@ export default function App() {
           onClose={() => setActiveWorkflow(null)}
           onOpen={handleOpen}
           onRun={handleRun}
+        />
+      )}
+
+      {transcribeWorkflow && (
+        <TranscribeModal
+          workflow={transcribeWorkflow}
+          onClose={() => setTranscribeWorkflow(null)}
         />
       )}
 

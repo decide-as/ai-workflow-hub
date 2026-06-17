@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../../shared/ipc-channels'
-import type { Registry, OpenResult, RunResult, ScheduleStatus } from '../../shared/types'
+import type { Registry, OpenResult, RunResult, ScheduleStatus, TranscriptionEntry } from '../../shared/types'
 
 contextBridge.exposeInMainWorld('api', {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
@@ -25,4 +25,12 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on(IPC.REGISTRY_UPDATED, handler)
     return () => ipcRenderer.removeListener(IPC.REGISTRY_UPDATED, handler)
   },
+  transcribeAudio: (audioBuffer: ArrayBuffer): Promise<string> =>
+    ipcRenderer.invoke(IPC.TRANSCRIBE_AUDIO, audioBuffer),
+  copyToClipboard: (text: string): Promise<void> =>
+    ipcRenderer.invoke(IPC.COPY_TO_CLIPBOARD, text),
+  getTranscriptionLog: (): Promise<TranscriptionEntry[]> =>
+    ipcRenderer.invoke(IPC.GET_TRANSCRIPTION_LOG),
+  saveTranscription: (text: string): Promise<TranscriptionEntry> =>
+    ipcRenderer.invoke(IPC.SAVE_TRANSCRIPTION, text),
 })

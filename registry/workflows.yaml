@@ -111,6 +111,32 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
+  - id: 145bb544-5270-4288-9afd-1284a7edcce7
+    name: Voice Transcriber
+    summary: Record speech → text, auto-copied to clipboard.
+    description: >
+      Record your voice and transcribe it to text using OpenAI Whisper. Hit Record, speak,
+      hit Stop — the transcription is sent to your clipboard automatically. Tap the card
+      to see the full log of recent transcriptions (stored for 24 hours).
+      Requires OPENAI_API_KEY to be set in your environment.
+    tags: [voice, transcription, stt, utility]
+    repo_path: '.'
+    color: '#ec4899'
+    icon: Mic
+    cluster_id: utilities
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    action: transcribe
+    model: gpt-4o-transcribe
+    outputs:
+      - name: transcription
+        type: text
+        description: Transcribed text, auto-copied to clipboard and stored in the 24-hour log.
   - id: c339825f-f476-4a4d-a96c-8a4aa989fe36
     name: File Organizer
     summary: Tidy a messy folder into category subfolders.
@@ -211,8 +237,9 @@ clusters:
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
   - id: utilities
     name: Utilities
-    tags: [files, organization, utility]
+    tags: [files, organization, utility, voice, transcription]
     workflow_ids:
+      - 145bb544-5270-4288-9afd-1284a7edcce7
       - c339825f-f476-4a4d-a96c-8a4aa989fe36
   - id: content
     name: Content

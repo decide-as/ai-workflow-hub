@@ -1,10 +1,11 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, clipboard } from 'electron'
 import { isAbsolute, join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
 import { openInTerminal } from './terminal'
 import { pickFolder, runScript } from './runner'
 import { getScheduleStatus, enableSchedule, disableSchedule } from './schedule'
+import { transcribeAudio, getTranscriptionLog, saveTranscription } from './transcriber'
 import { IPC } from '../../shared/ipc-channels'
 import type { RunResult, ScheduleStatus, Workflow } from '../../shared/types'
 
@@ -96,6 +97,19 @@ app.whenReady().then(() => {
       return runScript(repoPath, workflow.runner, folder, apply, extraArgs)
     },
   )
+
+  ipcMain.handle(IPC.COPY_TO_CLIPBOARD, (_, text: string) => {
+    clipboard.writeText(text)
+  })
+
+  ipcMain.handle(IPC.GET_TRANSCRIPTION_LOG, () => getTranscriptionLog())
+
+  ipcMain.handle(IPC.SAVE_TRANSCRIPTION, (_, text: string) => saveTranscription(text))
+
+  ipcMain.handle(IPC.TRANSCRIBE_AUDIO, async (_, audioData: ArrayBuffer) => {
+    const buf = Buffer.from(audioData)
+    return transcribeAudio(buf)
+  })
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg)
