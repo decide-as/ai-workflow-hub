@@ -29,17 +29,52 @@ export function getLoanStakeholders(): LoanStakeholdersResult {
   }
 }
 
-async function fetchSkjermingsrente(): Promise<string> {
+const NORWEGIAN_MONTHS: Record<string, number> = {
+  januar: 1, februar: 2, mars: 3, april: 4, mai: 5, juni: 6,
+  juli: 7, august: 8, september: 9, oktober: 10, november: 11, desember: 12,
+};
+
+async function fetchSkjermingsrente(date: string): Promise<string> {
+  const year = date.slice(0, 4);
+  const month = parseInt(date.slice(5, 7), 10);
+
   const res = await fetch(
-    "https://www.skatteetaten.no/satser/skjermingsrente-for-ekstra-skatt-pa-lan/",
+    `https://www.skatteetaten.no/satser/skjermingsrente-for-ekstra-skatt-pa-lan?year=${year}#rateShowYear`,
   );
   if (!res.ok)
-    throw new Error(`Skatteetaten svarte med ${res.status} — kan ikke hente skjermingsrente`);
+    throw new Error(
+      `Skatteetaten svarte med ${res.status} — kan ikke hente skjermingsrente`,
+    );
+
   const html = await res.text();
-  const m = html.match(/(\d+[.,]\d+)\s*%/);
-  if (!m)
-    throw new Error("Fant ikke skjermingsrente på skatteetaten.no — sjekk siden manuelt");
-  return m[1].replace(".", ",");
+
+  // Each row: <td>Januar og februar 2026</td><td>3,4 %</td>
+  const rowRe =
+    /<tr[^>]*>\s*<td[^>]*>([\wæøåÆØÅ\s]+?)<\/td>\s*<td[^>]*>(.*?)<\/td>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = rowRe.exec(html)) !== null) {
+    const period = m[1].trim().toLowerCase();
+    const cell = m[2].replace(/&nbsp;/g, "").trim();
+
+    // "januar og februar 2026" → words[0]=start month, words[2]=end month
+    const words = period.split(/\s+/);
+    const startMonth = NORWEGIAN_MONTHS[words[0]];
+    const endMonth = NORWEGIAN_MONTHS[words[2]];
+    if (!startMonth || !endMonth) continue;
+
+    if (month >= startMonth && month <= endMonth) {
+      const rateMatch = cell.match(/(\d+[.,]\d+)/);
+      if (!rateMatch)
+        throw new Error(
+          `Skjermingsrenten for ${m[1].trim()} er ikke publisert ennå — sjekk skatteetaten.no`,
+        );
+      return rateMatch[1].replace(".", ",");
+    }
+  }
+
+  throw new Error(
+    `Fant ikke skjermingsrente for ${date} på skatteetaten.no — sjekk siden manuelt`,
+  );
 }
 
 function formatNok(amount: number): string {
@@ -208,7 +243,7 @@ export async function generateLoanAgreement(
         error: `Ukjent låntaker: ${data.receivingStakeholder}`,
       };
 
-    const rate = await fetchSkjermingsrente();
+    const rate = await fetchSkjermingsrente(data.date);
     const html = buildHtml(giving, receiving, data, rate);
 
     const outDir = join(workflowHubDataDir(), "loan-agreement", "data");
