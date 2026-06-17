@@ -50,6 +50,10 @@ export interface ScaffoldConfig {
   command: string;
   // Template for Claude's initial prompt. Use {description} as the placeholder.
   initial_prompt_template: string;
+  // Shell command run once after first clone (and re-run when this string changes).
+  // Executed via `bash -c` in the cache directory. Typical use: venv creation and
+  // dependency installation, e.g. "python3 -m venv .venv && .venv/bin/pip install -e ."
+  setup_command?: string;
 }
 
 // Result of listing branches for a scaffold repo.

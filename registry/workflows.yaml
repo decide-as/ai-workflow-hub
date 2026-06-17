@@ -441,15 +441,17 @@ workflows:
           Structured metadata (title, author, date, text, keywords, insights) written
           to workflow-hub-data/web-scraper/data/structured/, media downloads to data/downloads/.
     scaffold:
-      repo: /Users/christianbraathen/Repositories/scrapers
+      repo: https://github.com/decide-as/scrapers.git
       branch_default: master
+      setup_command: python3 -m venv .venv && .venv/bin/pip install -e .
       command: scrapers "<url>" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
       initial_prompt_template: |
         I want to scrape the following URL:
 
         {description}
 
-        Please do the following:
+        The virtual environment is already activated — `scrapers` is on your PATH.
+
         1. Run the unified scraper, routing all output to the workflow data folder:
 
            scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
