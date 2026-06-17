@@ -18,7 +18,6 @@
   "build": {
     "appId": "as.decide.workflow-hub",
     "productName": "Workflow Hub",
-    "icon": "resources/icon.icns",
     "files": [
       "out/**/*",
       "package.json"
