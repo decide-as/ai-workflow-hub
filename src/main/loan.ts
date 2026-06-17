@@ -32,10 +32,9 @@ export function getLoanStakeholders(): LoanStakeholdersResult {
 async function fetchSkjermingsrente(): Promise<string> {
   try {
     const res = await fetch(
-      "https://www.skatteetaten.no/satser/skjermingsrente/",
+      "https://www.skatteetaten.no/satser/skjermingsrente-for-ekstra-skatt-pa-lan/",
     );
     const html = await res.text();
-    // The page lists the rate as e.g. "3,25 %" or "3.25 %"
     const m = html.match(/(\d+[.,]\d+)\s*%/);
     if (m) return m[1].replace(".", ",");
   } catch {
