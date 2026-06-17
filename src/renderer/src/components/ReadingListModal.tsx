@@ -33,7 +33,7 @@ export function ReadingListModal({ workflow, onClose }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    window.api.readingListGetEntries(200).then((result) => {
+    window.api.readingListGetEntries().then((result) => {
       setEntries(Array.isArray(result) ? result : []);
       setLoading(false);
     });
