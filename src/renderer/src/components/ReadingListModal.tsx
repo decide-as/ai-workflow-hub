@@ -131,15 +131,9 @@ export function ReadingListModal({ workflow, onClose }: Props) {
                     {domainOf(entry.url)} · {formatDate(entry.added_at)} ·{" "}
                     <span className="capitalize">{entry.source}</span>
                   </p>
-                  {entry.title ? (
-                    <p className="text-sm text-zinc-200 leading-snug mb-1">
-                      {entry.title}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-zinc-500 font-mono leading-snug break-all">
-                      {truncateUrl(entry.url)}
-                    </p>
-                  )}
+                  <p className="text-xs text-zinc-400 font-mono leading-snug break-all">
+                    {truncateUrl(entry.url)}
+                  </p>
                   {entry.notes && (
                     <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
                       {entry.notes}
