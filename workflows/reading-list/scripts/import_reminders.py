@@ -78,7 +78,7 @@ end tell
     for line in result.stdout.strip().split("\n"):
         if not line.strip():
             continue
-        parts = line.split("|||")
+        parts = line.split("|||", 4)
         if len(parts) < 5:
             continue
         _, list_name, title, url, notes = (
