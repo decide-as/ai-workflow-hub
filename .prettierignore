@@ -1,0 +1,7 @@
+# Markdown and config files in workflow directories — prose formatting is manual
+workflows/
+.claude/
+docs/
+changelog.d/
+CHANGELOG.md
+*.md

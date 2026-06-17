@@ -10,22 +10,22 @@ workflows:
       session that extracts, classifies, and totals the receipts.
     tags: [finance, expense, travel, reimbursement]
     repo_path: workflows/travel-reimbursement-form
-    color: '#0ea5e9'
+    color: "#0ea5e9"
     icon: Plane
     cluster_id: finance
-    added: '2026-06-16'
-    updated: '2026-06-16'
+    added: "2026-06-16"
+    updated: "2026-06-16"
     status: active
     trigger_type: manual
     complexity: moderate
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     inputs:
       - name: receipts
         type: file
         description: Receipt images/PDFs — bank-app screenshots or paper receipts
         required: true
-        example: '06.png, 29.pdf'
+        example: "06.png, 29.pdf"
       - name: trip_name
         type: string
         description: A name for the trip (becomes its data folder)
@@ -46,22 +46,22 @@ workflows:
       classifies, and totals the receipts with VAT.
     tags: [finance, expense, reimbursement, accounting]
     repo_path: workflows/expense-reimbursement-form
-    color: '#10b981'
+    color: "#10b981"
     icon: Receipt
     cluster_id: finance
-    added: '2026-06-16'
-    updated: '2026-06-16'
+    added: "2026-06-16"
+    updated: "2026-06-16"
     status: active
     trigger_type: manual
     complexity: moderate
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     inputs:
       - name: receipts
         type: file
         description: Receipt images/PDFs — bank-app screenshots or paper receipts
         required: true
-        example: '06.png, 29.pdf'
+        example: "06.png, 29.pdf"
       - name: batch_name
         type: string
         description: A name for the expense batch (becomes its data folder)
@@ -84,22 +84,22 @@ workflows:
       Expense and Travel Reimbursement forms.
     tags: [finance, accounting, bank, reconciliation, bookkeeping]
     repo_path: workflows/bank-transaction-triage
-    color: '#f59e0b'
+    color: "#f59e0b"
     icon: ListOrdered
     cluster_id: finance
-    added: '2026-06-16'
-    updated: '2026-06-16'
+    added: "2026-06-16"
+    updated: "2026-06-16"
     status: active
     trigger_type: manual
     complexity: moderate
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     inputs:
       - name: bank_exports
         type: file
         description: Bank statements / transaction exports (PDF, CSV, XLSX) from one or more accounts
         required: true
-        example: 'dnb-mai-2026.pdf, sparebank1-q2.csv'
+        example: "dnb-mai-2026.pdf, sparebank1-q2.csv"
       - name: batch_name
         type: string
         description: A name for the triage batch (becomes its data folder)
@@ -120,16 +120,16 @@ workflows:
       to see the full log of recent transcriptions (stored for 24 hours).
       Requires OPENAI_API_KEY to be set in your environment.
     tags: [voice, transcription, stt, utility]
-    repo_path: '.'
-    color: '#ec4899'
+    repo_path: "."
+    color: "#ec4899"
     icon: Mic
     cluster_id: utilities
-    added: '2026-06-17'
-    updated: '2026-06-17'
+    added: "2026-06-17"
+    updated: "2026-06-17"
     status: active
     trigger_type: manual
     complexity: simple
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     action: transcribe
     model: gpt-4o-transcribe
@@ -149,16 +149,16 @@ workflows:
       session.
     tags: [files, organization, utility]
     repo_path: workflows/file-organizer
-    color: '#8b5cf6'
+    color: "#8b5cf6"
     icon: FolderTree
     cluster_id: utilities
-    added: '2026-06-17'
-    updated: '2026-06-17'
+    added: "2026-06-17"
+    updated: "2026-06-17"
     status: active
     trigger_type: scheduled
     schedule: Every hour · ~/Downloads
     complexity: simple
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     action: run
     runner:
@@ -166,11 +166,11 @@ workflows:
       interpreter: python3
       pick_prompt: Choose a folder to organize
       preview: true
-      apply_flag: '--execute'
+      apply_flag: "--execute"
       options:
         - key: min_age_days
           label: Only move files older than
-          flag: '--min-age-days'
+          flag: "--min-age-days"
           type: number
           default: 7
           unit: days
@@ -205,22 +205,22 @@ workflows:
       and post-publish analytics — backed by a SQLite store.
     tags: [content, linkedin, writing, marketing]
     repo_path: /Users/christianbraathen/Repositories/linkedin_posts
-    color: '#0a66c2'
+    color: "#0a66c2"
     icon: PenLine
     cluster_id: content
-    added: '2026-06-17'
-    updated: '2026-06-17'
+    added: "2026-06-17"
+    updated: "2026-06-17"
     status: active
     trigger_type: manual
     complexity: complex
-    version: '0.1.0'
+    version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     inputs:
       - name: idea_or_url
         type: string
         description: A post idea, topic, or a source URL (Instagram/LinkedIn/YouTube/web) to research
         required: false
-        example: 'Why agentic AI is a strategic decision, not a technical one'
+        example: "Why agentic AI is a strategic decision, not a technical one"
     outputs:
       - name: post_folder
         type: file

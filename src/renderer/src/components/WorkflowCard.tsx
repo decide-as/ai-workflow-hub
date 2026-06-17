@@ -1,119 +1,125 @@
-import { useEffect, useRef, useState } from 'react'
-import { Copy, Check, Square, Mic, Loader2 } from 'lucide-react'
-import type { Workflow } from '../../../../shared/types'
-import { TagBadge } from './TagBadge'
-import { SchedulePanel } from './SchedulePanel'
-import { resolveIcon } from '../lib/icons'
+import { useEffect, useRef, useState } from "react";
+import { Copy, Check, Square, Mic, Loader2 } from "lucide-react";
+import type { Workflow } from "../../../../shared/types";
+import { TagBadge } from "./TagBadge";
+import { SchedulePanel } from "./SchedulePanel";
+import { resolveIcon } from "../lib/icons";
 
 interface Props {
-  workflow: Workflow
-  onOpen: (id: string) => void
-  onRun: (id: string) => void
-  onClick: (id: string) => void
+  workflow: Workflow;
+  onOpen: (id: string) => void;
+  onRun: (id: string) => void;
+  onClick: (id: string) => void;
 }
 
-const MAX_SECONDS = 5 * 60
+const MAX_SECONDS = 5 * 60;
 
 function formatCountdown(secs: number): string {
-  const m = Math.floor(secs / 60)
-  const s = secs % 60
-  return `${m}:${String(s).padStart(2, '0')}`
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-type RecordState = 'idle' | 'recording' | 'transcribing'
+type RecordState = "idle" | "recording" | "transcribing";
 
-function TranscribeControls({ workflow }: { workflow: Workflow }) {
-  const [state, setState] = useState<RecordState>('idle')
-  const [remaining, setRemaining] = useState(MAX_SECONDS)
-  const [lastText, setLastText] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const mediaRef = useRef<MediaRecorder | null>(null)
-  const chunksRef = useRef<Blob[]>([])
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+function TranscribeControls(_: { workflow: Workflow }) {
+  const [state, setState] = useState<RecordState>("idle");
+  const [remaining, setRemaining] = useState(MAX_SECONDS);
+  const [lastText, setLastText] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function clearTimer() {
     if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   }
 
   // Auto-stop when countdown reaches zero
   useEffect(() => {
-    if (state === 'recording' && remaining === 0) {
-      clearTimer()
-      stopRecording()
+    if (state === "recording" && remaining === 0) {
+      clearTimer();
+      stopRecording();
     }
-  }, [remaining, state])
+  }, [remaining, state]);
 
   async function startRecording() {
-    setError(null)
-    setRemaining(MAX_SECONDS)
+    setError(null);
+    setRemaining(MAX_SECONDS);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
-      chunksRef.current = []
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+      chunksRef.current = [];
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data)
-      }
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
       recorder.onstop = async () => {
-        clearTimer()
-        stream.getTracks().forEach((t) => t.stop())
-        setState('transcribing')
+        clearTimer();
+        stream.getTracks().forEach((t) => t.stop());
+        setState("transcribing");
         try {
-          const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' })
-          const arrayBuffer = await blob.arrayBuffer()
-          const text = await window.api.transcribeAudio(arrayBuffer)
-          await window.api.copyToClipboard(text)
-          await window.api.saveTranscription(text)
-          setLastText(text)
+          const blob = new Blob(chunksRef.current, {
+            type: "audio/webm;codecs=opus",
+          });
+          const arrayBuffer = await blob.arrayBuffer();
+          const text = await window.api.transcribeAudio(arrayBuffer);
+          await window.api.copyToClipboard(text);
+          await window.api.saveTranscription(text);
+          setLastText(text);
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Transcription failed')
+          setError(err instanceof Error ? err.message : "Transcription failed");
         } finally {
-          setState('idle')
-          setRemaining(MAX_SECONDS)
+          setState("idle");
+          setRemaining(MAX_SECONDS);
         }
-      }
-      mediaRef.current = recorder
-      recorder.start()
-      setState('recording')
+      };
+      mediaRef.current = recorder;
+      recorder.start();
+      setState("recording");
 
       timerRef.current = setInterval(() => {
-        setRemaining((prev) => Math.max(0, prev - 1))
-      }, 1000)
+        setRemaining((prev) => Math.max(0, prev - 1));
+      }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not access microphone')
-      setState('idle')
+      setError(
+        err instanceof Error ? err.message : "Could not access microphone",
+      );
+      setState("idle");
     }
   }
 
   function stopRecording() {
-    clearTimer()
-    mediaRef.current?.stop()
-    mediaRef.current = null
+    clearTimer();
+    mediaRef.current?.stop();
+    mediaRef.current = null;
   }
 
   async function handleCopy(e: React.MouseEvent) {
-    e.stopPropagation()
-    if (!lastText) return
-    await window.api.copyToClipboard(lastText)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    e.stopPropagation();
+    if (!lastText) return;
+    await window.api.copyToClipboard(lastText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   }
 
   function handleRecordClick(e: React.MouseEvent) {
-    e.stopPropagation()
-    if (state === 'recording') {
-      stopRecording()
-    } else if (state === 'idle') {
-      startRecording()
+    e.stopPropagation();
+    if (state === "recording") {
+      stopRecording();
+    } else if (state === "idle") {
+      startRecording();
     }
   }
 
-  const isRecording = state === 'recording'
-  const isTranscribing = state === 'transcribing'
-  const busy = isRecording || isTranscribing
+  const isRecording = state === "recording";
+  const isTranscribing = state === "transcribing";
+  const busy = isRecording || isTranscribing;
 
   return (
     <div className="space-y-2">
@@ -122,7 +128,9 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
       )}
 
       {lastText && (
-        <p className="text-[11px] text-zinc-500 leading-snug line-clamp-2">{lastText}</p>
+        <p className="text-[11px] text-zinc-500 leading-snug line-clamp-2">
+          {lastText}
+        </p>
       )}
 
       <div className="flex gap-2">
@@ -130,13 +138,13 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
           onClick={handleRecordClick}
           disabled={isTranscribing}
           className={[
-            'flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium',
-            'transition-all duration-150 border focus:outline-none focus:ring-2',
-            'focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed',
+            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium",
+            "transition-all duration-150 border focus:outline-none focus:ring-2",
+            "focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed",
             isRecording
-              ? 'border-red-700/60 text-red-400 bg-red-950/30 hover:bg-red-950/50'
-              : 'border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60',
-          ].join(' ')}
+              ? "border-red-700/60 text-red-400 bg-red-950/30 hover:bg-red-950/50"
+              : "border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60",
+          ].join(" ")}
         >
           {isTranscribing ? (
             <>
@@ -170,25 +178,29 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
                        transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
           >
-            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+            {copied ? (
+              <Check size={14} className="text-emerald-400" />
+            ) : (
+              <Copy size={14} />
+            )}
           </button>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
-  const [loading, setLoading] = useState(false)
-  const Icon = resolveIcon(workflow.icon, workflow.tags)
-  const isRun = workflow.action === 'run'
-  const isTranscribe = workflow.action === 'transcribe'
+  const [loading, setLoading] = useState(false);
+  const Icon = resolveIcon(workflow.icon, workflow.tags);
+  const isRun = workflow.action === "run";
+  const isTranscribe = workflow.action === "transcribe";
 
   async function handleAction(e: React.MouseEvent) {
-    e.stopPropagation()
-    setLoading(true)
-    await (isRun ? onRun(workflow.id) : onOpen(workflow.id))
-    setTimeout(() => setLoading(false), 800)
+    e.stopPropagation();
+    setLoading(true);
+    await (isRun ? onRun(workflow.id) : onOpen(workflow.id));
+    setTimeout(() => setLoading(false), 800);
   }
 
   return (
@@ -196,13 +208,16 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
       role="button"
       tabIndex={0}
       onClick={() => onClick(workflow.id)}
-      onKeyDown={(e) => e.key === 'Enter' && onClick(workflow.id)}
+      onKeyDown={(e) => e.key === "Enter" && onClick(workflow.id)}
       className="group relative flex flex-col rounded-2xl bg-zinc-900 border border-zinc-800/60
                  overflow-hidden transition-all duration-200 cursor-pointer
                  hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/50 hover:border-zinc-700/80
                  focus:outline-none focus:ring-2 focus:ring-zinc-600"
     >
-      <div className="h-[3px] w-full shrink-0" style={{ backgroundColor: workflow.color }} />
+      <div
+        className="h-[3px] w-full shrink-0"
+        style={{ backgroundColor: workflow.color }}
+      />
 
       <div className="flex flex-col flex-1 p-5 gap-3">
         <div className="flex items-start gap-3">
@@ -210,10 +225,16 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
             className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0"
             style={{ backgroundColor: `${workflow.color}22` }}
           >
-            <Icon size={18} style={{ color: workflow.color }} strokeWidth={1.75} />
+            <Icon
+              size={18}
+              style={{ color: workflow.color }}
+              strokeWidth={1.75}
+            />
           </span>
           <div className="min-w-0 pt-0.5">
-            <p className="font-semibold text-zinc-100 leading-snug truncate">{workflow.name}</p>
+            <p className="font-semibold text-zinc-100 leading-snug truncate">
+              {workflow.name}
+            </p>
             <p className="text-sm text-zinc-300 mt-1 truncate leading-relaxed">
               {workflow.summary ?? workflow.description}
             </p>
@@ -247,16 +268,16 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-                {isRun ? 'Starting…' : 'Opening…'}
+                {isRun ? "Starting…" : "Opening…"}
               </span>
             ) : isRun ? (
-              'Run ▶'
+              "Run ▶"
             ) : (
-              'Open in Claude ↗'
+              "Open in Claude ↗"
             )}
           </button>
         )}
       </div>
     </div>
-  )
+  );
 }
