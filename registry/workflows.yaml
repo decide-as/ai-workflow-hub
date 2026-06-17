@@ -111,6 +111,96 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
+  - id: c339825f-f476-4a4d-a96c-8a4aa989fe36
+    name: File Organizer
+    summary: Tidy a messy folder into category subfolders.
+    description: >
+      Pick a folder (e.g. Downloads) and sort its top-level files into category
+      subfolders by file type — Images, PDF, Spreadsheets, and more — inside an
+      __ORGANIZED__ subfolder. Runs a dry-run preview first so you see every
+      move before anything happens; content duplicates are set aside, empty
+      folders removed, and an undo report written. Runs locally — no Claude
+      session.
+    tags: [files, organization, utility]
+    repo_path: workflows/file-organizer
+    color: '#8b5cf6'
+    icon: FolderTree
+    cluster_id: utilities
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: scheduled
+    schedule: Every hour · ~/Downloads
+    complexity: simple
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    action: run
+    runner:
+      script: scripts/organize.py
+      interpreter: python3
+      pick_prompt: Choose a folder to organize
+      preview: true
+      apply_flag: '--execute'
+      options:
+        - key: min_age_days
+          label: Only move files older than
+          flag: '--min-age-days'
+          type: number
+          default: 7
+          unit: days
+          min: 0
+          optional: true
+    scheduled_job:
+      label: as.decide.ai-workflow-hub.file-organizer
+      target: ~/Downloads
+      cadence: Every hour
+      interval_seconds: 3600
+      min_age_days: 7
+    inputs:
+      - name: folder
+        type: file
+        description: The folder to organize (its top-level files get sorted)
+        required: true
+        example: ~/Downloads
+    outputs:
+      - name: organized_folder
+        type: file
+        description: >
+          An __ORGANIZED__ subfolder with files sorted into category folders,
+          duplicates set aside, plus a JSON report of every move for undo.
+  - id: 115a3614-d1fe-460a-a6cb-54676775749b
+    name: LinkedIn Posts
+    summary: Ideate, draft, score, and schedule LinkedIn posts.
+    description: >
+      A content management system for LinkedIn thought-leadership publishing.
+      Opens a Claude session in the standalone linkedin_posts repo that tracks
+      the full lifecycle — idea capture, drafting against post-type templates,
+      quality scoring (5 weighted criteria, publish at ≥75), weekly scheduling,
+      and post-publish analytics — backed by a SQLite store.
+    tags: [content, linkedin, writing, marketing]
+    repo_path: /Users/christianbraathen/Repositories/linkedin_posts
+    color: '#0a66c2'
+    icon: PenLine
+    cluster_id: content
+    added: '2026-06-17'
+    updated: '2026-06-17'
+    status: active
+    trigger_type: manual
+    complexity: complex
+    version: '0.1.0'
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: idea_or_url
+        type: string
+        description: A post idea, topic, or a source URL (Instagram/LinkedIn/YouTube/web) to research
+        required: false
+        example: 'Why agentic AI is a strategic decision, not a technical one'
+    outputs:
+      - name: post_folder
+        type: file
+        description: >
+          A numbered per-post folder (idea, draft versions, final text, scores,
+          metadata, analytics) plus updates to the SQLite content database.
 clusters:
   - id: finance
     name: Finance
@@ -119,3 +209,13 @@ clusters:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
+  - id: utilities
+    name: Utilities
+    tags: [files, organization, utility]
+    workflow_ids:
+      - c339825f-f476-4a4d-a96c-8a4aa989fe36
+  - id: content
+    name: Content
+    tags: [content, linkedin, writing, marketing]
+    workflow_ids:
+      - 115a3614-d1fe-460a-a6cb-54676775749b

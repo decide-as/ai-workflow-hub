@@ -1,16 +1,47 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Registry, Workflow, OpenErrorKind, OpenResult } from '../../../shared/types'
+import type {
+  Registry, Workflow, OpenErrorKind, OpenResult, RunResult, WorkflowRunner, ScheduleStatus,
+} from '../../../shared/types'
 import { ClusterSection } from './components/ClusterSection'
 import { SearchBar } from './components/SearchBar'
 import { EmptyState } from './components/EmptyState'
 import { Sidebar } from './components/Sidebar'
 import { WorkflowModal } from './components/WorkflowModal'
+import { RunModal, type RunState, type OptionValues } from './components/RunModal'
+
+// Seed each runner option's UI state from its defaults; optional options start off.
+function initOptionValues(runner?: WorkflowRunner): OptionValues {
+  const out: OptionValues = {}
+  for (const o of runner?.options ?? []) {
+    out[o.key] = { enabled: !o.optional, value: o.default }
+  }
+  return out
+}
+
+// Turn the option UI state into CLI args, skipping disabled optional options.
+function buildExtraArgs(runner: WorkflowRunner | undefined, values: OptionValues): string[] {
+  const args: string[] = []
+  for (const o of runner?.options ?? []) {
+    const v = values[o.key]
+    if (!v || (o.optional && !v.enabled)) continue
+    args.push(o.flag, String(v.value))
+  }
+  return args
+}
 
 declare global {
   interface Window {
     api: {
       getRegistry: () => Promise<Registry>
       openWorkflow: (id: string) => Promise<OpenResult>
+      pickFolder: (prompt?: string) => Promise<string | null>
+      runWorkflow: (
+        id: string, folder: string, apply: boolean, extraArgs?: string[],
+      ) => Promise<RunResult>
+      revealPath: (target: string) => Promise<string>
+      scheduleStatus: (id: string) => Promise<ScheduleStatus>
+      scheduleEnable: (id: string) => Promise<ScheduleStatus>
+      scheduleDisable: (id: string) => Promise<ScheduleStatus>
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void
     }
   }
@@ -22,6 +53,7 @@ export default function App() {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null)
   const [openError, setOpenError] = useState<string | null>(null)
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null)
+  const [runState, setRunState] = useState<RunState | null>(null)
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -72,6 +104,53 @@ export default function App() {
       default:
         return raw ?? 'Failed to open workflow'
     }
+  }
+
+  async function handleRun(id: string) {
+    const workflow = registry.workflows.find((w) => w.id === id)
+    if (!workflow) return
+    const folder = await window.api.pickFolder(workflow.runner?.pick_prompt)
+    if (!folder) return // user cancelled the folder picker
+
+    const options = initOptionValues(workflow.runner)
+    setRunState({ workflow, folder, phase: 'running', result: null, applied: false, options })
+    const result = await window.api.runWorkflow(id, folder, false, buildExtraArgs(workflow.runner, options))
+    // If preview isn't supported, a successful first run is already the final run.
+    const previewSupported = workflow.runner?.preview ?? true
+    setRunState((prev) =>
+      prev
+        ? {
+            ...prev,
+            phase: previewSupported ? 'preview' : 'done',
+            result,
+            applied: !previewSupported && result.success,
+          }
+        : prev
+    )
+  }
+
+  // Re-run the dry-run preview when the user adjusts a filter option.
+  async function handleOptionsChange(next: OptionValues) {
+    if (!runState) return
+    const { workflow, folder } = runState
+    setRunState({ ...runState, options: next, phase: 'running' })
+    const result = await window.api.runWorkflow(
+      workflow.id, folder, false, buildExtraArgs(workflow.runner, next)
+    )
+    setRunState((cur) => (cur ? { ...cur, options: next, phase: 'preview', result } : cur))
+  }
+
+  function handleApply() {
+    if (!runState) return
+    const { workflow, folder, options } = runState
+    setRunState({ ...runState, phase: 'applying' })
+    window.api
+      .runWorkflow(workflow.id, folder, true, buildExtraArgs(workflow.runner, options))
+      .then((result) => {
+        setRunState((cur) =>
+          cur ? { ...cur, phase: 'done', result, applied: result.success } : cur
+        )
+      })
   }
 
   function handleCardClick(id: string) {
@@ -140,6 +219,7 @@ export default function App() {
                   cluster={cluster}
                   workflows={workflows}
                   onOpen={handleOpen}
+                  onRun={handleRun}
                   onClick={handleCardClick}
                 />
               ))}
@@ -148,6 +228,7 @@ export default function App() {
                   cluster={{ id: '__other', name: 'Other', tags: [], workflow_ids: [] }}
                   workflows={unclustered}
                   onOpen={handleOpen}
+                  onRun={handleRun}
                   onClick={handleCardClick}
                 />
               )}
@@ -162,6 +243,18 @@ export default function App() {
           cluster={modalCluster}
           onClose={() => setActiveWorkflow(null)}
           onOpen={handleOpen}
+          onRun={handleRun}
+        />
+      )}
+
+      {runState && (
+        <RunModal
+          key={runState.folder}
+          state={runState}
+          onApply={handleApply}
+          onReveal={(target) => window.api.revealPath(target)}
+          onOptionsChange={handleOptionsChange}
+          onClose={() => setRunState(null)}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ interface Props {
   cluster: Cluster | null
   onClose: () => void
   onOpen: (id: string) => void
+  onRun: (id: string) => void
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -74,8 +75,9 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export function WorkflowModal({ workflow, cluster, onClose, onOpen }: Props) {
+export function WorkflowModal({ workflow, cluster, onClose, onOpen, onRun }: Props) {
   const Icon = resolveIcon(workflow.icon, workflow.tags)
+  const isRun = workflow.action === 'run'
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
@@ -310,14 +312,14 @@ export function WorkflowModal({ workflow, cluster, onClose, onOpen }: Props) {
 
           {/* Action */}
           <button
-            onClick={() => { onOpen(workflow.id); onClose() }}
+            onClick={() => { if (isRun) onRun(workflow.id); else onOpen(workflow.id); onClose() }}
             className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
                        text-zinc-100 border border-zinc-700/60
                        hover:border-zinc-500 hover:bg-zinc-800/60
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
             style={{ '--tw-ring-color': workflow.color } as React.CSSProperties}
           >
-            Open in Claude ↗
+            {isRun ? 'Run ▶' : 'Open in Claude ↗'}
           </button>
         </div>
       </div>

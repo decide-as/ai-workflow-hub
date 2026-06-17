@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import type { Workflow } from '../../../../shared/types'
 import { TagBadge } from './TagBadge'
+import { SchedulePanel } from './SchedulePanel'
 import { resolveIcon } from '../lib/icons'
 
 interface Props {
   workflow: Workflow
   onOpen: (id: string) => void
+  onRun: (id: string) => void
   onClick: (id: string) => void
 }
 
-export function WorkflowCard({ workflow, onOpen, onClick }: Props) {
+export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
   const [loading, setLoading] = useState(false)
   const Icon = resolveIcon(workflow.icon, workflow.tags)
+  const isRun = workflow.action === 'run'
 
-  async function handleOpen(e: React.MouseEvent) {
+  async function handleAction(e: React.MouseEvent) {
     e.stopPropagation()
     setLoading(true)
-    await onOpen(workflow.id)
+    await (isRun ? onRun(workflow.id) : onOpen(workflow.id))
     setTimeout(() => setLoading(false), 800)
   }
 
@@ -57,10 +60,12 @@ export function WorkflowCard({ workflow, onOpen, onClick }: Props) {
           </div>
         )}
 
+        {workflow.scheduled_job && <SchedulePanel workflow={workflow} />}
+
         <div className="flex-1" />
 
         <button
-          onClick={handleOpen}
+          onClick={handleAction}
           disabled={loading}
           className="w-full rounded-xl py-2.5 text-sm font-medium transition-all duration-150
                      border border-zinc-700/60 text-zinc-300
@@ -71,8 +76,10 @@ export function WorkflowCard({ workflow, onOpen, onClick }: Props) {
           {loading ? (
             <span className="inline-flex items-center gap-2">
               <span className="w-3 h-3 border border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-              Opening…
+              {isRun ? 'Starting…' : 'Opening…'}
             </span>
+          ) : isRun ? (
+            'Run ▶'
           ) : (
             'Open in Claude ↗'
           )}
