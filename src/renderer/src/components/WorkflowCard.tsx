@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Copy, Check, Square, Mic, Loader2 } from 'lucide-react'
 import type { Workflow } from '../../../../shared/types'
 import { TagBadge } from './TagBadge'
@@ -12,18 +12,44 @@ interface Props {
   onClick: (id: string) => void
 }
 
+const MAX_SECONDS = 5 * 60
+
+function formatCountdown(secs: number): string {
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 type RecordState = 'idle' | 'recording' | 'transcribing'
 
 function TranscribeControls({ workflow }: { workflow: Workflow }) {
   const [state, setState] = useState<RecordState>('idle')
+  const [remaining, setRemaining] = useState(MAX_SECONDS)
   const [lastText, setLastText] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const mediaRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  function clearTimer() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  // Auto-stop when countdown reaches zero
+  useEffect(() => {
+    if (state === 'recording' && remaining === 0) {
+      clearTimer()
+      stopRecording()
+    }
+  }, [remaining, state])
 
   async function startRecording() {
     setError(null)
+    setRemaining(MAX_SECONDS)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
@@ -32,6 +58,7 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
         if (e.data.size > 0) chunksRef.current.push(e.data)
       }
       recorder.onstop = async () => {
+        clearTimer()
         stream.getTracks().forEach((t) => t.stop())
         setState('transcribing')
         try {
@@ -45,11 +72,16 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
           setError(err instanceof Error ? err.message : 'Transcription failed')
         } finally {
           setState('idle')
+          setRemaining(MAX_SECONDS)
         }
       }
       mediaRef.current = recorder
       recorder.start()
       setState('recording')
+
+      timerRef.current = setInterval(() => {
+        setRemaining((prev) => Math.max(0, prev - 1))
+      }, 1000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not access microphone')
       setState('idle')
@@ -57,6 +89,7 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
   }
 
   function stopRecording() {
+    clearTimer()
     mediaRef.current?.stop()
     mediaRef.current = null
   }
@@ -115,6 +148,9 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
               <Square size={13} fill="currentColor" />
               Stop
+              <span className="ml-auto tabular-nums text-xs opacity-70">
+                {formatCountdown(remaining)}
+              </span>
             </>
           ) : (
             <>
