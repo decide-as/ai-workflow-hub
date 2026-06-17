@@ -388,13 +388,12 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
         {isReadingList ? (
           <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
         ) : hasSchedule ? (
-            <ScheduleFooter workflow={workflow} actionSlot={actionBtn} />
-          ) : (
-            <div className="flex items-center">
-              <div className="flex-1" />
-              {actionBtn}
-            </div>
-          )
+          <ScheduleFooter workflow={workflow} actionSlot={actionBtn} />
+        ) : (
+          <div className="flex items-center">
+            <div className="flex-1" />
+            {actionBtn}
+          </div>
         )}
       </div>
     </div>
