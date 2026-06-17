@@ -14,14 +14,15 @@ import type {
   LoanFormData,
   LoanStakeholdersResult,
   LoanGenerateResult,
+  VoucherFolderResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
   openWorkflow: (id: string, initialPrompt?: string): Promise<OpenResult> =>
     ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id, initialPrompt),
-  pickFolder: (prompt?: string): Promise<string | null> =>
-    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
+  pickFolder: (prompt?: string, defaultPath?: string): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt, defaultPath),
   runWorkflow: (
     id: string,
     folder: string,
@@ -87,4 +88,9 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.LOAN_GET_STAKEHOLDERS),
   loanGenerate: (data: LoanFormData): Promise<LoanGenerateResult> =>
     ipcRenderer.invoke(IPC.LOAN_GENERATE, data),
+  createVoucherFolders: (
+    files: Array<{ name: string; dataUrl: string }>,
+    outputDir: string,
+  ): Promise<VoucherFolderResult> =>
+    ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
 });

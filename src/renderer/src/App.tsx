@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Sun, Moon } from "lucide-react";
 import type {
   Registry,
   Workflow,
@@ -24,6 +24,7 @@ import { SearchBar } from "./components/SearchBar";
 import { EmptyState } from "./components/EmptyState";
 import { Sidebar, type SolutionType } from "./components/Sidebar";
 import { WorkflowModal } from "./components/WorkflowModal";
+import { HeaderRecordButton } from "./components/HeaderRecordButton";
 import {
   RunModal,
   type RunState,
@@ -70,12 +71,6 @@ function workflowSolutionType(w: Workflow): SolutionType {
     return "routine";
   if (w.action === "scaffold") return "claude";
   return "claude";
-}
-
-function hashColor(str: string): string {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-  return `hsl(${Math.abs(h) % 360}, 65%, 58%)`;
 }
 
 declare global {
@@ -137,6 +132,13 @@ export default function App() {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "dark" || stored === "light") return stored;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
   const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
@@ -152,6 +154,22 @@ export default function App() {
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  // Follow system preference changes when no explicit override is stored
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    function handleChange(e: MediaQueryListEvent) {
+      if (!localStorage.getItem("theme")) {
+        setTheme(e.matches ? "dark" : "light");
+      }
+    }
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
     window.api.getRegistry().then(setRegistry);
     const off = window.api.onRegistryUpdated((reg) => {
       setRegistry(reg);
@@ -163,7 +181,7 @@ export default function App() {
   }, []);
 
   function filterWorkflows(workflows: Workflow[]): Workflow[] {
-    let result = workflows;
+    let result = workflows.filter((w) => w.action !== "transcribe");
     if (selectedCluster) {
       result = result.filter((w) => w.cluster_id === selectedCluster);
     }
@@ -359,7 +377,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         clusters={registry.clusters}
         selected={selectedCluster}
@@ -372,46 +390,65 @@ export default function App() {
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <header className="drag-region flex items-center gap-4 px-6 pt-10 pb-5 shrink-0">
-          <div className="flex items-center gap-2 mr-auto">
-            <h1 className="text-base font-semibold text-zinc-100 tracking-tight capitalize">
+          <div className="flex items-center gap-2.5 mr-auto">
+            <h1
+              className="text-base font-semibold tracking-tight capitalize"
+              style={{ color: "var(--c-text)" }}
+            >
               {activeCluster ? activeCluster.name : "All workflows"}
             </h1>
-            <span className="text-xs text-zinc-600 tabular-nums">
+            <span
+              className="text-xs tabular-nums"
+              style={{ color: "var(--c-text-subtle)" }}
+            >
               {filtered.length}
             </span>
           </div>
           <div className="no-drag flex items-center gap-2">
-            {/* View mode toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-800 overflow-hidden">
+            {(() => {
+              const tw = registry.workflows.find(
+                (w) => w.action === "transcribe",
+              );
+              return tw ? <HeaderRecordButton workflow={tw} /> : null;
+            })()}
+            <div className="view-toggle">
               <button
                 onClick={() => setViewMode("grid")}
                 title="Grid view"
-                className={`px-2.5 py-1.5 transition-colors duration-100 ${
-                  viewMode === "grid"
-                    ? "bg-zinc-700 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-                }`}
+                className={`view-toggle-btn ${viewMode === "grid" ? "is-active" : ""}`}
               >
                 <LayoutGrid size={14} />
               </button>
               <button
                 onClick={() => setViewMode("list")}
                 title="List view"
-                className={`px-2.5 py-1.5 transition-colors duration-100 ${
-                  viewMode === "list"
-                    ? "bg-zinc-700 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
-                }`}
+                className={`view-toggle-btn ${viewMode === "list" ? "is-active" : ""}`}
               >
                 <List size={14} />
               </button>
             </div>
             <SearchBar value={query} onChange={setQuery} />
+            <button
+              onClick={() => {
+                const next = theme === "dark" ? "light" : "dark";
+                localStorage.setItem("theme", next);
+                setTheme(next);
+              }}
+              title={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+              className="view-toggle-btn"
+              style={{ borderRadius: "var(--radius-sm)", padding: "5px 8px" }}
+            >
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
           </div>
         </header>
 
         {openError && (
-          <div className="mx-6 mb-3 px-4 py-2.5 rounded-lg bg-red-950/60 border border-red-800/50 text-red-300 text-sm animate-fade-in">
+          <div className="error-banner mx-6 mb-3 animate-fade-in">
             {openError}
           </div>
         )}
@@ -420,25 +457,28 @@ export default function App() {
           {registry.workflows.length === 0 ? (
             <EmptyState />
           ) : filtered.length === 0 ? (
-            <p className="text-zinc-500 text-sm mt-8 text-center">
+            <p
+              className="text-sm mt-8 text-center"
+              style={{ color: "var(--c-text-subtle)" }}
+            >
               No workflows match &ldquo;{query}&rdquo;
             </p>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3 animate-fade-in">
+            <div className="card-masonry animate-fade-in">
               {filtered.map((w) => {
                 const cluster = showWorkspaceBadges
                   ? clusterForWorkflow(w)
                   : null;
                 return (
-                  <WorkflowCard
-                    key={w.id}
-                    workflow={w}
-                    clusterName={cluster?.name}
-                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
-                    onOpen={handleOpen}
-                    onRun={handleRun}
-                    onClick={handleCardClick}
-                  />
+                  <div key={w.id} className="card-masonry-item">
+                    <WorkflowCard
+                      workflow={w}
+                      clusterName={cluster?.name}
+                      onOpen={handleOpen}
+                      onRun={handleRun}
+                      onClick={handleCardClick}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -453,7 +493,6 @@ export default function App() {
                     key={w.id}
                     workflow={w}
                     clusterName={cluster?.name}
-                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
                     onOpen={handleOpen}
                     onRun={handleRun}
                     onClick={handleCardClick}

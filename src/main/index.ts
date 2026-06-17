@@ -48,6 +48,7 @@ import {
   generateCalendarScript,
 } from "./calendar";
 import { getLoanStakeholders, generateLoanAgreement } from "./loan";
+import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -110,8 +111,8 @@ app.whenReady().then(() => {
     return result;
   });
 
-  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) =>
-    pickFolder(mainWindow, prompt),
+  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string, defaultPath?: string) =>
+    pickFolder(mainWindow, prompt, defaultPath),
   );
 
   // Open a folder in Finder. Returns '' on success or an error string.
@@ -251,6 +252,12 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC.LOAN_GET_STAKEHOLDERS, () => getLoanStakeholders());
 
   ipcMain.handle(IPC.LOAN_GENERATE, (_, data) => generateLoanAgreement(data));
+
+  ipcMain.handle(
+    IPC.CREATE_VOUCHER_FOLDERS,
+    (_, files: Array<{ name: string; dataUrl: string }>, outputDir: string) =>
+      createVoucherFolders(files, outputDir),
+  );
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);

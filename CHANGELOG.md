@@ -6,6 +6,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-06-17
+
+### Added
+
+- `setup_command` field on scaffold workflows: runs once after first clone (re-runs on command change) to install dependencies into the cache directory — no manual venv setup needed
+- Automatic venv activation: if `setup_command` creates a `.venv`, it is sourced before Claude opens so all CLI tools are on PATH for the entire session
+- Web Scraper now clones from GitHub (authoritative, committed state) and installs its own venv on first use
+
+## [0.15.0] - 2026-06-17
+
+### Added
+
+- Voucher Folder Creator workflow: drag-and-drop bank statement screenshots onto the card, Claude reads them via the local `claude -p` CLI subprocess, and one sub-folder per transaction is created in the configured output directory with Norwegian Title Case naming rules.
+- `bookkeeping` action type for workflow cards with a full multi-phase inline UI (idle drop zone, processing spinner, done list, error state).
+- `pickFolder` IPC call now accepts an optional `defaultPath` so the Finder folder picker opens pre-navigated to the configured output directory.
+- `.claude/guides/claude-subprocess.md` documenting the preferred pattern for invoking Claude headlessly from the Electron main process without calling the Anthropic API directly.
+
+## [0.14.0] - 2026-06-17
+
+### Added
+
+- Web Scraper workflow card — paste any URL (web article, Instagram, LinkedIn, YouTube, PDF) and Claude runs the scrapers repo with `--output-dir` routing all output to `workflow-hub-data/web-scraper/data`
+- `workflow-data-repo` rule mandating a corresponding data folder in `workflow-hub-data` for every registry workflow, with symlink/routing conventions for scaffold and external-repo workflows
+
+## [0.13.0] - 2026-06-17
+
+### Added
+
+- Dark/light mode theming with automatic macOS system preference detection (`prefers-color-scheme`), manual Sun/Moon toggle in header, and localStorage persistence for override.
+- Light theme using the lanserbart beige palette (`#f9f6f2` warm white base) via CSS custom properties.
+- No-flash inline script in `index.html` applies the correct theme before React mounts.
+
+### Changed
+
+- Schedule status controls (cadence, last run, enable/disable, logs) moved from workflow cards into the workflow detail modal as a live Schedule section.
+- Workflow cards now show a uniform footer with only the primary CTA button — schedule state no longer clutters the card grid.
+- `InlineRecordButton` renamed to `TranscribeControls` with an `onTranscribed` callback and proper error state handling.
+- `WorkflowCard` accepts new `clusterColor?` prop and `onOpen(id, initialPrompt?)` signature, consistent with the rest of the component tree.
+
 ## [0.12.0] - 2026-06-17
 
 ### Added
