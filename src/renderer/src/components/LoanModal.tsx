@@ -208,9 +208,7 @@ export function LoanModal({ workflow, onClose }: Props) {
           {phase === "generating" && (
             <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
               <Loader2 size={24} className="animate-spin text-zinc-500" />
-              <p className="text-sm">
-                Henter skjermingsrente og genererer avtale…
-              </p>
+              <p className="text-sm">Henter skjermingsrente og genererer PDF…</p>
             </div>
           )}
 
@@ -220,10 +218,10 @@ export function LoanModal({ workflow, onClose }: Props) {
                 ✓
               </div>
               <p className="text-sm font-medium text-zinc-100">
-                Låneavtale åpnet i nettleser
+                PDF lagret og åpnet i Finder
               </p>
               <p className="text-xs text-zinc-500 mt-1">
-                Bruk nettleserens utskriftsfunksjon (⌘P) for å lagre som PDF.
+                Filen ligger i workflow-hub-data/loan-agreement/data/
               </p>
             </div>
           )}

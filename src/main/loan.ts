@@ -1,5 +1,5 @@
-import { shell } from "electron";
-import { readFileSync, writeFileSync } from "fs";
+import { shell, BrowserWindow } from "electron";
+import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
 import { join, dirname } from "path";
 import { tmpdir } from "os";
 import { getBaseDir } from "./registry";
@@ -161,6 +161,31 @@ ${data.location}, ${toNorwegianDate(data.date)}.</p>
 </html>`;
 }
 
+async function htmlToPdf(html: string, outputPath: string): Promise<void> {
+  const tmpHtml = join(tmpdir(), `loan-tmp-${Date.now()}.html`);
+  writeFileSync(tmpHtml, html, "utf-8");
+
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
+  });
+
+  try {
+    await win.loadFile(tmpHtml);
+    const pdfBuffer = await win.webContents.printToPDF({
+      pageSize: "A4",
+      printBackground: false,
+      margins: { marginType: "none" },
+    });
+    writeFileSync(outputPath, pdfBuffer);
+  } finally {
+    win.destroy();
+    try {
+      unlinkSync(tmpHtml);
+    } catch {}
+  }
+}
+
 export async function generateLoanAgreement(
   data: LoanFormData,
 ): Promise<LoanGenerateResult> {
@@ -187,10 +212,15 @@ export async function generateLoanAgreement(
     const rate = await fetchSkjermingsrente();
     const html = buildHtml(giving, receiving, data, rate);
 
-    const fileName = `låneavtale-${Date.now()}.html`;
-    const filePath = join(tmpdir(), fileName);
-    writeFileSync(filePath, html, "utf-8");
-    await shell.openExternal(`file://${filePath}`);
+    const outDir = join(workflowHubDataDir(), "loan-agreement", "data");
+    mkdirSync(outDir, { recursive: true });
+
+    const slug = (s: string) => s.replace(/\s+/g, "-");
+    const fileName = `låneavtale-${data.date}-${slug(giving.name)}-til-${slug(receiving.name)}.pdf`;
+    const pdfPath = join(outDir, fileName);
+
+    await htmlToPdf(html, pdfPath);
+    shell.showItemInFolder(pdfPath);
 
     return { success: true };
   } catch (err) {
