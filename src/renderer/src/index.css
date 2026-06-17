@@ -11,10 +11,13 @@
 /* ── Design tokens ──────────────────────────────────────────── */
 
 :root {
+  /* Dark theme (default) */
   --c-base:            #0a0908;
   --c-surface:         #141210;
   --c-surface-raised:  #1c1917;
   --c-surface-overlay: #252019;
+  --c-surface-inset:   rgba(10, 9, 8, 0.40);
+  --c-overlay:         rgba(10, 9, 8, 0.72);
 
   --c-accent:       #a9927d;
   --c-accent-dark:  #96836d;
@@ -42,6 +45,34 @@
   --ease-ui: cubic-bezier(0.23, 1, 0.32, 1);
   --duration: 0.18s;
   --transition: var(--duration) var(--ease-ui);
+}
+
+/* Light theme — lanserbart beige palette */
+:root[data-theme="light"] {
+  --c-base:            #f9f6f2;
+  --c-surface:         #f3ede5;
+  --c-surface-raised:  #ece5db;
+  --c-surface-overlay: #e5ddd2;
+  --c-surface-inset:   rgba(160, 140, 120, 0.07);
+  --c-overlay:         rgba(10, 9, 8, 0.45);
+
+  --c-accent:       #8c7a66;
+  --c-accent-dark:  #7a6a58;
+  --c-accent-light: #a9927d;
+
+  --c-text:          #1a1714;
+  --c-text-secondary:#3d3530;
+  --c-text-muted:    #6e6258;
+  --c-text-subtle:   #a09088;
+
+  --c-border:        rgba(150, 130, 110, 0.16);
+  --c-border-hover:  rgba(150, 130, 110, 0.30);
+  --c-border-active: rgba(150, 130, 110, 0.50);
+
+  --shadow-xs: 0 1px 3px rgba(10, 9, 8, 0.06);
+  --shadow-sm: 0 2px 8px rgba(10, 9, 8, 0.09), 0 0 1px rgba(10, 9, 8, 0.04);
+  --shadow-md: 0 6px 24px rgba(10, 9, 8, 0.11), 0 1px 6px rgba(10, 9, 8, 0.06);
+  --shadow-xl: 0 24px 72px rgba(10, 9, 8, 0.16), 0 4px 16px rgba(10, 9, 8, 0.09);
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -250,7 +281,7 @@ body {
     font-size: 11px;
     padding: 6px 8px;
     border-radius: var(--radius-sm);
-    background: rgba(10, 9, 8, 0.35);
+    background: var(--c-surface-inset);
     border: 1px solid var(--c-border);
     color: var(--c-text-muted);
   }
@@ -450,7 +481,7 @@ body {
   .search-input {
     padding: 6px 12px 6px 30px;
     border-radius: var(--radius-md);
-    background: rgba(169, 146, 125, 0.05);
+    background: var(--c-surface-inset);
     border: 1px solid var(--c-border);
     color: var(--c-text);
     font-family: inherit;
@@ -497,7 +528,7 @@ body {
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(10, 9, 8, 0.72);
+    background: var(--c-overlay);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
   }
@@ -542,7 +573,7 @@ body {
 
   .form-input {
     width: 100%;
-    background: rgba(169, 146, 125, 0.04);
+    background: var(--c-surface-inset);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-md);
     padding: 8px 12px;
@@ -568,7 +599,7 @@ body {
   .code-inline {
     font-family: ui-monospace, monospace;
     font-size: 11px;
-    background: rgba(169, 146, 125, 0.05);
+    background: var(--c-surface-inset);
     border: 1px solid var(--c-border);
     border-radius: 4px;
     padding: 1px 5px;
@@ -579,7 +610,7 @@ body {
     display: block;
     font-family: ui-monospace, monospace;
     font-size: 11px;
-    background: rgba(169, 146, 125, 0.04);
+    background: var(--c-surface-inset);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-md);
     padding: 8px 12px;
@@ -618,7 +649,7 @@ body {
   .schedule-panel {
     border-radius: var(--radius-md);
     border: 1px solid var(--c-border);
-    background: rgba(10, 9, 8, 0.35);
+    background: var(--c-surface-inset);
     padding: 10px 12px;
   }
 

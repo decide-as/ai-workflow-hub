@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Sun, Moon } from "lucide-react";
 import type {
   Registry,
   Workflow,
@@ -116,6 +116,9 @@ export default function App() {
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("theme") as "dark" | "light") ?? "dark";
+  });
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
   const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
@@ -125,6 +128,11 @@ export default function App() {
     useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     window.api.getRegistry().then(setRegistry);
@@ -376,6 +384,16 @@ export default function App() {
               </button>
             </div>
             <SearchBar value={query} onChange={setQuery} />
+            <button
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="view-toggle-btn"
+              style={{ borderRadius: "var(--radius-sm)", padding: "5px 8px" }}
+            >
+              {theme === "dark"
+                ? <Sun size={14} />
+                : <Moon size={14} />}
+            </button>
           </div>
         </header>
 
