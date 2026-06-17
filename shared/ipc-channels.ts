@@ -16,4 +16,7 @@ export const IPC = {
   COPY_TO_CLIPBOARD: "copy-to-clipboard",
   GET_TRANSCRIPTION_LOG: "get-transcription-log",
   SAVE_TRANSCRIPTION: "save-transcription",
+  EXEC_OSASCRIPT: "exec-osascript",
+  READ_CLIPBOARD_IMAGE: "read-clipboard-image",
+  GENERATE_CALENDAR_SCRIPT: "generate-calendar-script",
 } as const;

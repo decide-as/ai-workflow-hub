@@ -24,6 +24,7 @@ import {
   type OptionValues,
 } from "./components/RunModal";
 import { TranscribeModal } from "./components/TranscribeModal";
+import { CalendarModal } from "./components/CalendarModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -96,6 +97,13 @@ declare global {
       copyToClipboard: (text: string) => Promise<void>;
       getTranscriptionLog: () => Promise<TranscriptionEntry[]>;
       saveTranscription: (text: string) => Promise<TranscriptionEntry>;
+      execOsascript: (script: string) => Promise<{ success: boolean; output: string; error?: string }>;
+      readClipboardImage: () => Promise<string | null>;
+      generateCalendarScript: (
+        text: string,
+        imageDataUrl: string | null,
+        today: string,
+      ) => Promise<{ success: boolean; script: string; error?: string }>;
     };
   }
 }
@@ -114,6 +122,7 @@ export default function App() {
   const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
     null,
   );
+  const [calendarWorkflow, setCalendarWorkflow] = useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -287,6 +296,8 @@ export default function App() {
     const w = registry.workflows.find((w) => w.id === id) ?? null;
     if (w?.action === "transcribe") {
       setTranscribeWorkflow(w);
+    } else if (w?.action === "calendar") {
+      setCalendarWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -440,6 +451,13 @@ export default function App() {
         <TranscribeModal
           workflow={transcribeWorkflow}
           onClose={() => setTranscribeWorkflow(null)}
+        />
+      )}
+
+      {calendarWorkflow && (
+        <CalendarModal
+          workflow={calendarWorkflow}
+          onClose={() => setCalendarWorkflow(null)}
         />
       )}
 

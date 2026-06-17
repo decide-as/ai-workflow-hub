@@ -22,7 +22,8 @@ export interface WorkflowOutput {
 //   'run'        — pick a folder and run a bundled script against it.
 //   'scaffold'   — clone an external repo, pick a branch, open Claude with a seeded prompt.
 //   'transcribe' — in-card voice recorder that transcribes via Whisper and copies to clipboard.
-export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe";
+//   'calendar'   — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
+export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe" | "calendar";
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {

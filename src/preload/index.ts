@@ -59,4 +59,14 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.GET_TRANSCRIPTION_LOG),
   saveTranscription: (text: string): Promise<TranscriptionEntry> =>
     ipcRenderer.invoke(IPC.SAVE_TRANSCRIPTION, text),
+  execOsascript: (script: string): Promise<{ success: boolean; output: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.EXEC_OSASCRIPT, script),
+  readClipboardImage: (): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.READ_CLIPBOARD_IMAGE),
+  generateCalendarScript: (
+    text: string,
+    imageDataUrl: string | null,
+    today: string,
+  ): Promise<{ success: boolean; script: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrl, today),
 });

@@ -37,6 +37,7 @@ import {
   getTranscriptionLog,
   saveTranscription,
 } from "./transcriber";
+import { execOsascript, readClipboardImage, generateCalendarScript } from "./calendar";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -212,6 +213,18 @@ app.whenReady().then(() => {
     const buf = Buffer.from(audioData);
     return transcribeAudio(buf);
   });
+
+  ipcMain.handle(IPC.EXEC_OSASCRIPT, (_, script: string) =>
+    execOsascript(script),
+  );
+
+  ipcMain.handle(IPC.READ_CLIPBOARD_IMAGE, () => readClipboardImage());
+
+  ipcMain.handle(
+    IPC.GENERATE_CALENDAR_SCRIPT,
+    (_, text: string, imageDataUrl: string | null, today: string) =>
+      generateCalendarScript(text, imageDataUrl, today),
+  );
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
