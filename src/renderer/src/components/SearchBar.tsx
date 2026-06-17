@@ -1,14 +1,17 @@
-import { Search } from 'lucide-react'
+import { Search } from "lucide-react";
 
 interface Props {
-  value: string
-  onChange: (v: string) => void
+  value: string;
+  onChange: (v: string) => void;
 }
 
 export function SearchBar({ value, onChange }: Props) {
   return (
     <div className="relative">
-      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 pointer-events-none" />
+      <Search
+        size={14}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 pointer-events-none"
+      />
       <input
         type="search"
         value={value}
@@ -20,5 +23,5 @@ export function SearchBar({ value, onChange }: Props) {
                    w-48 transition-all"
       />
     </div>
-  )
+  );
 }

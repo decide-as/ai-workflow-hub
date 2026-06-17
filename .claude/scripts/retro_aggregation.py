@@ -371,7 +371,9 @@ def aggregate_by_period(
         peak = max(vals.values()) if vals else 1.0
         if peak == 0:
             peak = 1.0
-        normalized_scores[fid] = {key: round(raw / peak * 10.0, 1) for key, raw in vals.items()}
+        normalized_scores[fid] = {
+            key: round(raw / peak * 10.0, 1) for key, raw in vals.items()
+        }
 
     # Normalize activity per-feature (largest period = 100)
     normalized_activity: dict[str, dict[str, int]] = {}
@@ -380,6 +382,8 @@ def aggregate_by_period(
         feature_max = max(act_vals.values()) if act_vals else 1
         if feature_max == 0:
             feature_max = 1
-        normalized_activity[fid] = {key: round(churn / feature_max * 100) for key, churn in act_vals.items()}
+        normalized_activity[fid] = {
+            key: round(churn / feature_max * 100) for key, churn in act_vals.items()
+        }
 
     return period_commits, normalized_scores, normalized_activity, granularity

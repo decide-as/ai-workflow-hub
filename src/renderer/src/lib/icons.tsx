@@ -1,14 +1,49 @@
 import {
-  Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
-  BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
-  Globe, Code, FolderTree, FolderCog, type LucideIcon,
-} from 'lucide-react'
+  Bot,
+  Receipt,
+  BarChart2,
+  FileText,
+  Mail,
+  Mic,
+  Shield,
+  Lock,
+  PenLine,
+  BookOpen,
+  ClipboardList,
+  ListOrdered,
+  Users,
+  Plane,
+  Wrench,
+  Database,
+  Globe,
+  Code,
+  FolderTree,
+  FolderCog,
+  type LucideIcon,
+} from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Bot, Receipt, BarChart2, FileText, Mail, Mic, Shield, Lock, PenLine,
-  BookOpen, ClipboardList, ListOrdered, Users, Plane, Wrench, Database,
-  Globe, Code, FolderTree, FolderCog,
-}
+  Bot,
+  Receipt,
+  BarChart2,
+  FileText,
+  Mail,
+  Mic,
+  Shield,
+  Lock,
+  PenLine,
+  BookOpen,
+  ClipboardList,
+  ListOrdered,
+  Users,
+  Plane,
+  Wrench,
+  Database,
+  Globe,
+  Code,
+  FolderTree,
+  FolderCog,
+};
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {
   finance: Receipt,
@@ -33,13 +68,13 @@ const TAG_DEFAULTS: Record<string, LucideIcon> = {
   reporting: BarChart2,
   analysis: BarChart2,
   travel: Plane,
-}
+};
 
 export function resolveIcon(name: string, tags: string[]): LucideIcon {
-  if (name && ICON_MAP[name]) return ICON_MAP[name]
+  if (name && ICON_MAP[name]) return ICON_MAP[name];
   for (const tag of tags) {
-    const icon = TAG_DEFAULTS[tag.toLowerCase()]
-    if (icon) return icon
+    const icon = TAG_DEFAULTS[tag.toLowerCase()];
+    if (icon) return icon;
   }
-  return Bot
+  return Bot;
 }

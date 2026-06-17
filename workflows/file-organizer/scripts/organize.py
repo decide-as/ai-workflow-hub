@@ -734,6 +734,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if not dry_run:
         dest_dir.mkdir(parents=True, exist_ok=True)
+        print(f"\n{'=' * 70}")
+        print(f"  RUN STARTED: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"{'=' * 70}")
         _setup_execution_logging(dest_dir)
         logger.info(f"Logger initialized — log file: {dest_dir / LOG_FILE_NAME}")
 

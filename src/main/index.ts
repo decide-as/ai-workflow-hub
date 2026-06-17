@@ -1,14 +1,24 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { isAbsolute, join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
-import { openInTerminal } from './terminal'
-import { pickFolder, runScript } from './runner'
-import { getScheduleStatus, enableSchedule, disableSchedule } from './schedule'
-import { IPC } from '../../shared/ipc-channels'
-import type { RunResult, ScheduleStatus, Workflow } from '../../shared/types'
+import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { isAbsolute, join } from "path";
+import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import {
+  getRegistry,
+  watchRegistry,
+  getRegistryPath,
+  getBaseDir,
+} from "./registry";
+import { openInTerminal } from "./terminal";
+import { pickFolder, runScript } from "./runner";
+import {
+  getScheduleStatus,
+  enableSchedule,
+  disableSchedule,
+  readLog,
+} from "./schedule";
+import { IPC } from "../../shared/ipc-channels";
+import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
-let mainWindow: BrowserWindow | null = null
+let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -17,96 +27,121 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     show: false,
-    titleBarStyle: 'hiddenInset',
-    vibrancy: 'sidebar',
-    backgroundColor: '#09090b',
+    titleBarStyle: "hiddenInset",
+    vibrancy: "sidebar",
+    backgroundColor: "#09090b",
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
     },
-  })
+  });
 
-  mainWindow.on('ready-to-show', () => mainWindow?.show())
+  mainWindow.on("ready-to-show", () => mainWindow?.show());
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
-    return { action: 'deny' }
-  })
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
 
   if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('as.decide.workflow-hub')
-  app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window))
+  electronApp.setAppUserModelId("as.decide.workflow-hub");
+  app.on("browser-window-created", (_, window) =>
+    optimizer.watchWindowShortcuts(window),
+  );
 
-  ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry())
+  ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry());
   ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string) => {
-    const reg = getRegistry()
-    const workflow = reg.workflows.find((w) => w.id === id)
-    if (!workflow) return { success: false, error: 'Workflow not found' }
+    const reg = getRegistry();
+    const workflow = reg.workflows.find((w) => w.id === id);
+    if (!workflow) return { success: false, error: "Workflow not found" };
     // repo_path may be absolute, or relative to the app root (for bundled workflows).
     const repoPath = isAbsolute(workflow.repo_path)
       ? workflow.repo_path
-      : join(getBaseDir(), workflow.repo_path)
-    return openInTerminal(repoPath)
-  })
+      : join(getBaseDir(), workflow.repo_path);
+    return openInTerminal(repoPath);
+  });
 
-  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) => pickFolder(mainWindow, prompt))
+  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) =>
+    pickFolder(mainWindow, prompt),
+  );
 
   // Open a folder in Finder. Returns '' on success or an error string.
-  ipcMain.handle(IPC.REVEAL_PATH, (_, target: string) => shell.openPath(target))
+  ipcMain.handle(IPC.REVEAL_PATH, (_, target: string) =>
+    shell.openPath(target),
+  );
 
   const withWorkflow = (
     id: string,
     fn: (w: Workflow) => ScheduleStatus,
   ): ScheduleStatus => {
-    const workflow = getRegistry().workflows.find((w) => w.id === id)
-    if (!workflow) return { installed: false, loaded: false, error: 'Workflow not found' }
-    return fn(workflow)
-  }
+    const workflow = getRegistry().workflows.find((w) => w.id === id);
+    if (!workflow)
+      return { installed: false, loaded: false, error: "Workflow not found" };
+    return fn(workflow);
+  };
 
-  ipcMain.handle(IPC.SCHEDULE_STATUS, (_, id: string) => withWorkflow(id, getScheduleStatus))
-  ipcMain.handle(IPC.SCHEDULE_ENABLE, (_, id: string) => withWorkflow(id, enableSchedule))
-  ipcMain.handle(IPC.SCHEDULE_DISABLE, (_, id: string) => withWorkflow(id, disableSchedule))
+  ipcMain.handle(IPC.SCHEDULE_STATUS, (_, id: string) =>
+    withWorkflow(id, getScheduleStatus),
+  );
+  ipcMain.handle(IPC.SCHEDULE_ENABLE, (_, id: string) =>
+    withWorkflow(id, enableSchedule),
+  );
+  ipcMain.handle(IPC.SCHEDULE_DISABLE, (_, id: string) =>
+    withWorkflow(id, disableSchedule),
+  );
+  ipcMain.handle(IPC.READ_LOG, (_, logPath: string) => readLog(logPath));
 
   ipcMain.handle(
     IPC.RUN_WORKFLOW,
-    (_, id: string, folder: string, apply: boolean, extraArgs: string[] = []): RunResult => {
-      const reg = getRegistry()
-      const workflow = reg.workflows.find((w) => w.id === id)
+    (
+      _,
+      id: string,
+      folder: string,
+      apply: boolean,
+      extraArgs: string[] = [],
+    ): RunResult => {
+      const reg = getRegistry();
+      const workflow = reg.workflows.find((w) => w.id === id);
       if (!workflow) {
-        return { success: false, output: '', error: 'Workflow not found', errorKind: 'unknown' }
-      }
-      if (workflow.action !== 'run' || !workflow.runner) {
         return {
           success: false,
-          output: '',
-          error: 'This workflow is not runnable.',
-          errorKind: 'not-runnable',
-        }
+          output: "",
+          error: "Workflow not found",
+          errorKind: "unknown",
+        };
+      }
+      if (workflow.action !== "run" || !workflow.runner) {
+        return {
+          success: false,
+          output: "",
+          error: "This workflow is not runnable.",
+          errorKind: "not-runnable",
+        };
       }
       const repoPath = isAbsolute(workflow.repo_path)
         ? workflow.repo_path
-        : join(getBaseDir(), workflow.repo_path)
-      return runScript(repoPath, workflow.runner, folder, apply, extraArgs)
+        : join(getBaseDir(), workflow.repo_path);
+      return runScript(repoPath, workflow.runner, folder, apply, extraArgs);
     },
-  )
+  );
 
   watchRegistry(getRegistryPath(), (reg) => {
-    mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg)
-  })
+    mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
+  });
 
-  createWindow()
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+  createWindow();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});

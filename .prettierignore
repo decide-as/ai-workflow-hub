@@ -1,0 +1,21 @@
+# Infrastructure and documentation
+.claude/
+docs/
+workflows/
+CHANGELOG.md
+ARCHITECTURE.md
+CLAUDE.md
+SKILLS.md
+SECURITY.md
+README.md
+
+# Config/data files
+*.yaml
+*.yml
+*.json
+*.md
+
+# Build artifacts
+dist/
+out/
+node_modules/
