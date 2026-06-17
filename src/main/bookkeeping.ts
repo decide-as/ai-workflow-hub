@@ -12,7 +12,9 @@ import type { VoucherFolderResult } from "../../shared/types";
 //   3. /usr/local/bin/claude (Homebrew / system-wide)
 function findClaudeBin(): string | null {
   try {
-    const found = execFileSync("which", ["claude"], { encoding: "utf8" }).trim();
+    const found = execFileSync("which", ["claude"], {
+      encoding: "utf8",
+    }).trim();
     if (found && existsSync(found)) return found;
   } catch {
     // `which` failed — fall through to manual candidates
@@ -105,7 +107,10 @@ function parseTransaksjoner(claudeResponse: string): string[] | null {
 
 function buildScript(entries: string[]): string {
   const placeholder = entries.map((e) => `"${e}"`).join("\n");
-  return FOLDER_SCRIPT_TEMPLATE.replace("TRANSAKSJONER_PLACEHOLDER", placeholder);
+  return FOLDER_SCRIPT_TEMPLATE.replace(
+    "TRANSAKSJONER_PLACEHOLDER",
+    placeholder,
+  );
 }
 
 function dataUrlToBuffer(dataUrl: string): Buffer | null {
@@ -168,7 +173,10 @@ export async function createVoucherFolders(
       if (!buf) continue;
       const ext = extFromMediaType(file.dataUrl);
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const dest = join(tmpDir, safeName.endsWith(ext) ? safeName : safeName + ext);
+      const dest = join(
+        tmpDir,
+        safeName.endsWith(ext) ? safeName : safeName + ext,
+      );
       writeFileSync(dest, buf);
       filePaths.push(dest);
     }

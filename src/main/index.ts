@@ -250,11 +250,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     IPC.CREATE_VOUCHER_FOLDERS,
-    (
-      _,
-      files: Array<{ name: string; dataUrl: string }>,
-      outputDir: string,
-    ) => createVoucherFolders(files, outputDir),
+    (_, files: Array<{ name: string; dataUrl: string }>, outputDir: string) =>
+      createVoucherFolders(files, outputDir),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

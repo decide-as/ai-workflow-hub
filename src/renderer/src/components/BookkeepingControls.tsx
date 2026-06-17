@@ -1,5 +1,12 @@
 import { useRef, useState } from "react";
-import { Upload, Loader2, CheckCircle2, XCircle, RotateCcw, FolderOpen } from "lucide-react";
+import {
+  Upload,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  FolderOpen,
+} from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 
 interface Props {
@@ -42,7 +49,9 @@ export function BookkeepingControls({ workflow }: Props) {
     );
 
     if (imageFiles.length === 0) {
-      setErrorMsg("No image or PDF files found. Drop bank statement screenshots.");
+      setErrorMsg(
+        "No image or PDF files found. Drop bank statement screenshots.",
+      );
       setPhase("error");
       return;
     }
@@ -64,7 +73,9 @@ export function BookkeepingControls({ workflow }: Props) {
       return;
     }
 
-    setStatus(`Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`);
+    setStatus(
+      `Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`,
+    );
 
     let droppedFiles: DroppedFile[];
     try {
@@ -82,7 +93,10 @@ export function BookkeepingControls({ workflow }: Props) {
 
     setStatus("Claude is reading the bank statement…");
 
-    const result = await window.api.createVoucherFolders(droppedFiles, outputDir);
+    const result = await window.api.createVoucherFolders(
+      droppedFiles,
+      outputDir,
+    );
 
     if (!result.success) {
       setErrorMsg(result.error ?? "Unknown error");
@@ -148,7 +162,10 @@ export function BookkeepingControls({ workflow }: Props) {
     return (
       <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start gap-2">
-          <CheckCircle2 size={15} className="text-emerald-400 shrink-0 mt-0.5" />
+          <CheckCircle2
+            size={15}
+            className="text-emerald-400 shrink-0 mt-0.5"
+          />
           <p className="text-xs text-emerald-400 font-medium">
             {folders.length} folder{folders.length !== 1 ? "s" : ""} created
           </p>
