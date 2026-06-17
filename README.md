@@ -83,7 +83,19 @@ npm install
 
 ## Usage
 
-<!-- Describe how to use this project -->
+**Development** — runs with hot reload, lives in the terminal:
+
+```bash
+npm run dev
+```
+
+**Standalone macOS app** — packages as a native `.app` launchable from Spotlight or the Dock:
+
+```bash
+make dist
+```
+
+Open the generated `dist/Workflow Hub-<version>-arm64.dmg`, drag `Workflow Hub.app` into `/Applications`, and launch it like any native Mac app. On first open, right-click → Open to bypass the Gatekeeper prompt (unsigned personal build).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
