@@ -12,4 +12,8 @@ export const IPC = {
   LIST_BRANCHES: "list-branches",
   SCAFFOLD_WORKFLOW: "scaffold-workflow",
   WRITE_ACTIVITY_LOG: "write-activity-log",
+  TRANSCRIBE_AUDIO: "transcribe-audio",
+  COPY_TO_CLIPBOARD: "copy-to-clipboard",
+  GET_TRANSCRIPTION_LOG: "get-transcription-log",
+  SAVE_TRANSCRIPTION: "save-transcription",
 } as const;

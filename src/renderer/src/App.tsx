@@ -10,6 +10,7 @@ import type {
   ScheduleStatus,
   BranchListResult,
   ActivityEntry,
+  TranscriptionEntry,
 } from "../../../shared/types";
 import { ClusterSection } from "./components/ClusterSection";
 import { SearchBar } from "./components/SearchBar";
@@ -21,6 +22,7 @@ import {
   type RunState,
   type OptionValues,
 } from "./components/RunModal";
+import { TranscribeModal } from "./components/TranscribeModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -83,6 +85,10 @@ declare global {
       ) => Promise<OpenResult>;
       writeActivityLog: (entry: ActivityEntry) => Promise<{ success: boolean }>;
       onRegistryUpdated: (cb: (reg: Registry) => void) => () => void;
+      transcribeAudio: (audioBuffer: ArrayBuffer) => Promise<string>;
+      copyToClipboard: (text: string) => Promise<void>;
+      getTranscriptionLog: () => Promise<TranscriptionEntry[]>;
+      saveTranscription: (text: string) => Promise<TranscriptionEntry>;
     };
   }
 }
@@ -98,6 +104,9 @@ export default function App() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [openError, setOpenError] = useState<string | null>(null);
   const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
+  const [transcribeWorkflow, setTranscribeWorkflow] = useState<Workflow | null>(
+    null,
+  );
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -269,7 +278,11 @@ export default function App() {
 
   function handleCardClick(id: string) {
     const w = registry.workflows.find((w) => w.id === id) ?? null;
-    setActiveWorkflow(w);
+    if (w?.action === "transcribe") {
+      setTranscribeWorkflow(w);
+    } else {
+      setActiveWorkflow(w);
+    }
   }
 
   const filtered = filterWorkflows(registry.workflows);
@@ -408,6 +421,13 @@ export default function App() {
           onOpen={handleOpen}
           onRun={handleRun}
           onScaffold={handleScaffold}
+        />
+      )}
+
+      {transcribeWorkflow && (
+        <TranscribeModal
+          workflow={transcribeWorkflow}
+          onClose={() => setTranscribeWorkflow(null)}
         />
       )}
 

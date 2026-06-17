@@ -18,10 +18,11 @@ export interface WorkflowOutput {
 }
 
 // How the primary action button behaves:
-//   'claude'   — open a Claude terminal session in the repo (default).
-//   'run'      — pick a folder and run a bundled script against it.
-//   'scaffold' — clone an external repo, pick a branch, open Claude with a seeded prompt.
-export type WorkflowAction = "claude" | "run" | "scaffold";
+//   'claude'     — open a Claude terminal session in the repo (default).
+//   'run'        — pick a folder and run a bundled script against it.
+//   'scaffold'   — clone an external repo, pick a branch, open Claude with a seeded prompt.
+//   'transcribe' — in-card voice recorder that transcribes via Whisper and copies to clipboard.
+export type WorkflowAction = "claude" | "run" | "scaffold" | "transcribe";
 
 // Configuration for the 'scaffold' action type.
 export interface ScaffoldConfig {
@@ -40,6 +41,13 @@ export interface BranchListResult {
   success: boolean;
   branches: string[];
   error?: string;
+}
+
+export interface TranscriptionEntry {
+  id: string;
+  text: string;
+  // ISO timestamp of when the transcription was saved
+  timestamp: string;
 }
 
 // A user-adjustable option surfaced in the run modal and passed to the script
