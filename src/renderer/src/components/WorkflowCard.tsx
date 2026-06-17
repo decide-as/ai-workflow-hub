@@ -148,7 +148,7 @@ function TranscribeControls({ workflow }: { workflow: Workflow }) {
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
               <Square size={13} fill="currentColor" />
               Stop
-              <span className="ml-auto tabular-nums text-xs opacity-70">
+              <span className="tabular-nums text-xs font-mono px-1.5 py-0.5 rounded-md bg-red-950/60 text-red-400 border border-red-800/40">
                 {formatCountdown(remaining)}
               </span>
             </>
