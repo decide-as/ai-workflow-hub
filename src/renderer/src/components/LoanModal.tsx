@@ -61,7 +61,7 @@ export function LoanModal({ workflow, onClose }: Props) {
         setReceiving(result.borrowers[0].name);
         setPhase("form");
       } else {
-        setErrorMsg(result.error ?? "Kunne ikke laste parter");
+        setErrorMsg(result.error ?? "Could not load parties");
         setPhase("error");
       }
     });
@@ -107,7 +107,7 @@ export function LoanModal({ workflow, onClose }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-semibold text-zinc-100">
-              Ny låneavtale
+              New loan agreement
             </h2>
             <p className="text-xs text-zinc-500 truncate">
               {workflow.summary ?? workflow.description}
@@ -126,14 +126,14 @@ export function LoanModal({ workflow, onClose }: Props) {
           {phase === "loading" && (
             <div className="flex items-center justify-center gap-2 py-10 text-zinc-500">
               <Loader2 size={18} className="animate-spin" />
-              <span className="text-sm">Laster parter…</span>
+              <span className="text-sm">Loading parties…</span>
             </div>
           )}
 
           {(phase === "form" || (phase === "error" && lenders.length > 0)) && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Utlåner">
+                <Field label="Lender">
                   <select
                     value={giving}
                     onChange={(e) => setGiving(e.target.value)}
@@ -148,7 +148,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     ))}
                   </select>
                 </Field>
-                <Field label="Låntaker">
+                <Field label="Borrower">
                   <select
                     value={receiving}
                     onChange={(e) => setReceiving(e.target.value)}
@@ -165,7 +165,13 @@ export function LoanModal({ workflow, onClose }: Props) {
                 </Field>
               </div>
 
-              <Field label="Beløp (NOK)">
+              {sameParty && (
+                <p className="text-xs text-red-400 bg-red-950/30 border border-red-700/30 rounded-lg px-3 py-2">
+                  Lender and borrower cannot be the same party.
+                </p>
+              )}
+
+              <Field label="Amount (NOK)">
                 <input
                   type="number"
                   min="1"
@@ -177,7 +183,7 @@ export function LoanModal({ workflow, onClose }: Props) {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Dato">
+                <Field label="Date">
                   <input
                     type="date"
                     value={date}
@@ -185,7 +191,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     className={INPUT_CLS}
                   />
                 </Field>
-                <Field label="Sted">
+                <Field label="Location">
                   <input
                     type="text"
                     value={location}
@@ -194,12 +200,6 @@ export function LoanModal({ workflow, onClose }: Props) {
                   />
                 </Field>
               </div>
-
-              {sameParty && (
-                <p className="text-xs text-amber-400 bg-amber-950/30 border border-amber-700/30 rounded-lg px-3 py-2">
-                  Utlåner og låntaker kan ikke være samme part.
-                </p>
-              )}
 
               {phase === "error" && errorMsg && (
                 <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
@@ -212,7 +212,7 @@ export function LoanModal({ workflow, onClose }: Props) {
           {phase === "generating" && (
             <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
               <Loader2 size={24} className="animate-spin text-zinc-500" />
-              <p className="text-sm">Henter skjermingsrente og genererer PDF…</p>
+              <p className="text-sm">Fetching interest rate and generating PDF…</p>
             </div>
           )}
 
@@ -222,10 +222,10 @@ export function LoanModal({ workflow, onClose }: Props) {
                 ✓
               </div>
               <p className="text-sm font-medium text-zinc-100">
-                PDF lagret og åpnet i Finder
+                PDF saved and opened in Finder
               </p>
               <p className="text-xs text-zinc-500 mt-1">
-                Filen ligger i workflow-hub-data/loan-agreement/data/
+                Saved to workflow-hub-data/loan-agreement/data/
               </p>
             </div>
           )}
@@ -244,7 +244,7 @@ export function LoanModal({ workflow, onClose }: Props) {
               onClick={onClose}
               className="px-4 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
             >
-              Lukk
+              Close
             </button>
           ) : (
             <>
@@ -252,7 +252,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                 onClick={onClose}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
               >
-                Avbryt
+                Cancel
               </button>
               <button
                 onClick={handleGenerate}
@@ -261,7 +261,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                 style={{ backgroundColor: canSubmit ? color : undefined }}
               >
                 <FileText size={12} />
-                Generer avtale →
+                Generate →
               </button>
             </>
           )}
