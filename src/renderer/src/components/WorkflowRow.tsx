@@ -7,6 +7,7 @@ import { resolveIcon } from "../lib/icons";
 interface Props {
   workflow: Workflow;
   clusterName?: string;
+  clusterColor?: string;
   onOpen: (id: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
@@ -15,6 +16,7 @@ interface Props {
 export function WorkflowRow({
   workflow,
   clusterName,
+  clusterColor,
   onOpen,
   onRun,
   onClick,
@@ -89,7 +91,11 @@ export function WorkflowRow({
 
       {/* Cluster badge */}
       {clusterName && (
-        <span className="hidden lg:block text-[11px] text-zinc-600 shrink-0 capitalize">
+        <span
+          className="hidden lg:block text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize shrink-0
+                     bg-zinc-800 border-zinc-700 text-zinc-400"
+          style={clusterColor ? { borderColor: `${clusterColor}40`, color: clusterColor } : undefined}
+        >
           {clusterName}
         </span>
       )}

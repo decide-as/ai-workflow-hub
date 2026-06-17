@@ -6,12 +6,14 @@ import { resolveIcon } from "../lib/icons";
 
 interface Props {
   workflow: Workflow;
+  clusterName?: string;
+  clusterColor?: string;
   onOpen: (id: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
 }
 
-export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
+export function WorkflowCard({ workflow, clusterName, clusterColor, onOpen, onRun, onClick }: Props) {
   const [loading, setLoading] = useState(false);
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
@@ -51,10 +53,21 @@ export function WorkflowCard({ workflow, onOpen, onRun, onClick }: Props) {
               strokeWidth={1.75}
             />
           </span>
-          <div className="min-w-0 pt-0.5">
-            <p className="font-semibold text-zinc-100 leading-snug truncate">
-              {workflow.name}
-            </p>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-semibold text-zinc-100 leading-snug truncate">
+                {workflow.name}
+              </p>
+              {clusterName && (
+                <span
+                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize
+                             bg-zinc-800 border-zinc-700 text-zinc-400 leading-none mt-0.5"
+                  style={clusterColor ? { borderColor: `${clusterColor}40`, color: clusterColor } : undefined}
+                >
+                  {clusterName}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-zinc-300 mt-1 truncate leading-relaxed">
               {workflow.summary ?? workflow.description}
             </p>

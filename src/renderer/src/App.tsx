@@ -9,7 +9,8 @@ import type {
   WorkflowRunner,
   ScheduleStatus,
 } from "../../../shared/types";
-import { ClusterSection } from "./components/ClusterSection";
+import { WorkflowCard } from "./components/WorkflowCard";
+import { WorkflowRow } from "./components/WorkflowRow";
 import { SearchBar } from "./components/SearchBar";
 import { EmptyState } from "./components/EmptyState";
 import { Sidebar, type SolutionType } from "./components/Sidebar";
@@ -50,6 +51,12 @@ function workflowSolutionType(w: Workflow): SolutionType {
   if (w.scheduled_job) return "scheduled";
   if (w.action === "run") return "run";
   return "claude";
+}
+
+function hashColor(str: string): string {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return `hsl(${Math.abs(h) % 360}, 65%, 58%)`;
 }
 
 declare global {
@@ -247,18 +254,6 @@ export default function App() {
   }
 
   const filtered = filterWorkflows(registry.workflows);
-  const visibleClusters = selectedCluster
-    ? registry.clusters.filter((c) => c.id === selectedCluster)
-    : registry.clusters;
-
-  const clustered = visibleClusters
-    .map((c) => ({
-      cluster: c,
-      workflows: filtered.filter((w) => w.cluster_id === c.id),
-    }))
-    .filter((g) => g.workflows.length > 0);
-
-  const unclustered = filtered.filter((w) => w.cluster_id === null);
   const activeCluster = selectedCluster
     ? registry.clusters.find((c) => c.id === selectedCluster)
     : null;
@@ -275,6 +270,14 @@ export default function App() {
     },
     { scheduled: 0, claude: 0, run: 0 } as Record<SolutionType, number>,
   );
+
+  // Only show workspace badges when viewing all workspaces (no filter active)
+  const showWorkspaceBadges = !selectedCluster;
+
+  function clusterForWorkflow(w: Workflow) {
+    if (!w.cluster_id) return null;
+    return registry.clusters.find((c) => c.id === w.cluster_id) ?? null;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#09090b]">
@@ -341,34 +344,39 @@ export default function App() {
             <p className="text-zinc-500 text-sm mt-8 text-center">
               No workflows match &ldquo;{query}&rdquo;
             </p>
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3 animate-fade-in">
+              {filtered.map((w) => {
+                const cluster = showWorkspaceBadges ? clusterForWorkflow(w) : null;
+                return (
+                  <WorkflowCard
+                    key={w.id}
+                    workflow={w}
+                    clusterName={cluster?.name}
+                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
+                    onOpen={handleOpen}
+                    onRun={handleRun}
+                    onClick={handleCardClick}
+                  />
+                );
+              })}
+            </div>
           ) : (
-            <div className="space-y-10">
-              {clustered.map(({ cluster, workflows }) => (
-                <ClusterSection
-                  key={cluster.id}
-                  cluster={cluster}
-                  workflows={workflows}
-                  onOpen={handleOpen}
-                  onRun={handleRun}
-                  onClick={handleCardClick}
-                  viewMode={viewMode}
-                />
-              ))}
-              {unclustered.length > 0 && (
-                <ClusterSection
-                  cluster={{
-                    id: "__other",
-                    name: "Other",
-                    tags: [],
-                    workflow_ids: [],
-                  }}
-                  workflows={unclustered}
-                  onOpen={handleOpen}
-                  onRun={handleRun}
-                  onClick={handleCardClick}
-                  viewMode={viewMode}
-                />
-              )}
+            <div className="flex flex-col gap-1.5 animate-fade-in">
+              {filtered.map((w) => {
+                const cluster = showWorkspaceBadges ? clusterForWorkflow(w) : null;
+                return (
+                  <WorkflowRow
+                    key={w.id}
+                    workflow={w}
+                    clusterName={cluster?.name}
+                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
+                    onOpen={handleOpen}
+                    onRun={handleRun}
+                    onClick={handleCardClick}
+                  />
+                );
+              })}
             </div>
           )}
         </main>
