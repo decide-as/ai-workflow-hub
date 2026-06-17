@@ -11,7 +11,6 @@ import {
   ExternalLink,
   GitBranch,
   Clock,
-  FolderInput,
   ScrollText,
 } from "lucide-react";
 import type { Workflow, ScheduleStatus } from "../../../../shared/types";
@@ -40,9 +39,15 @@ function formatRun(iso: string): string {
   return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-// ── Compact inline schedule row ───────────────────────────────────────────────
+// ── Schedule footer — left side info + right side controls, all one row ───────
 
-function InlineScheduleRow({ workflow }: { workflow: Workflow }) {
+function ScheduleFooter({
+  workflow,
+  actionSlot,
+}: {
+  workflow: Workflow;
+  actionSlot: React.ReactNode;
+}) {
   const job = workflow.scheduled_job!;
   const [status, setStatus] = useState<ScheduleStatus | null>(null);
   const [busy, setBusy] = useState(false);
@@ -74,47 +79,51 @@ function InlineScheduleRow({ workflow }: { workflow: Workflow }) {
   return (
     <>
       <div
-        className="card-schedule-row"
+        className="flex items-center gap-2 min-w-0"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Cadence + target */}
-        <Clock size={11} className="shrink-0" style={{ color: workflow.color }} />
-        <span className="font-medium" style={{ color: "var(--c-text-secondary)" }}>{job.cadence}</span>
-        <FolderInput size={10} className="shrink-0" style={{ color: "var(--c-text-subtle)" }} />
-        <span className="font-mono text-[10px] truncate flex-1" style={{ color: "var(--c-text-muted)" }}>
-          {job.target}
-        </span>
-
-        {/* Status */}
-        <span
-          className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ background: active ? "#7a9e7e" : "var(--c-text-subtle)" }}
-        />
-        {active && status?.lastRunAt && (
-          <span className="shrink-0 text-[10px]" style={{ color: "var(--c-text-subtle)" }}>
-            {formatRun(status.lastRunAt)}
+        {/* Left: schedule info */}
+        <div className="flex items-center gap-1.5 text-[11px] min-w-0 flex-1 overflow-hidden">
+          <Clock size={11} className="shrink-0" style={{ color: workflow.color }} />
+          <span className="font-medium shrink-0" style={{ color: "var(--c-text-secondary)" }}>
+            {job.cadence}
           </span>
-        )}
+          <span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{ background: active ? "#7a9e7e" : "var(--c-text-subtle)" }}
+          />
+          {active && status?.lastRunAt && (
+            <span className="truncate" style={{ color: "var(--c-text-subtle)" }}>
+              {formatRun(status.lastRunAt)}
+            </span>
+          )}
+          {!active && !checking && (
+            <span style={{ color: "var(--c-text-subtle)" }}>inactive</span>
+          )}
+        </div>
 
-        {/* Controls */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowLog(true); }}
-          className="card-schedule-btn shrink-0 flex items-center gap-1"
-        >
-          <ScrollText size={10} />Logs
-        </button>
-        <button
-          onClick={toggle}
-          disabled={busy || checking}
-          className="card-schedule-btn shrink-0"
-          style={
-            active
-              ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" }
-              : { borderColor: `${workflow.color}55`, color: workflow.color }
-          }
-        >
-          {busy ? "…" : active ? "Disable" : "Enable"}
-        </button>
+        {/* Right: controls + action */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowLog(true); }}
+            className="card-schedule-btn flex items-center gap-1"
+          >
+            <ScrollText size={10} />Logs
+          </button>
+          <button
+            onClick={toggle}
+            disabled={busy || checking}
+            className="card-schedule-btn"
+            style={
+              active
+                ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" }
+                : { borderColor: `${workflow.color}55`, color: workflow.color }
+            }
+          >
+            {busy ? "…" : active ? "Disable" : "Enable"}
+          </button>
+          {actionSlot}
+        </div>
       </div>
 
       {showLog && (
@@ -183,21 +192,18 @@ function InlineRecordButton(_: { workflow: Workflow }) {
 
   function stopRecording() { clearTimer(); mediaRef.current?.stop(); mediaRef.current = null; }
 
-  async function handleCopy(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!lastText) return;
-    await window.api.copyToClipboard(lastText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
   const isRecording = state === "recording";
   const isTranscribing = state === "transcribing";
 
   return (
     <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
       {lastText && (
-        <button onClick={handleCopy} title="Copy" className="btn btn-sm w-7 h-7 p-0">
+        <button onClick={async (e) => {
+          e.stopPropagation();
+          await window.api.copyToClipboard(lastText);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }} className="btn btn-sm w-7 h-7 p-0">
           {copied ? <Check size={11} style={{ color: "#7a9e7e" }} /> : <Copy size={11} />}
         </button>
       )}
@@ -205,79 +211,16 @@ function InlineRecordButton(_: { workflow: Workflow }) {
         onClick={(e) => { e.stopPropagation(); isRecording ? stopRecording() : startRecording(); }}
         disabled={isTranscribing}
         className="btn btn-sm"
-        style={
-          isRecording
-            ? { borderColor: "rgba(239,68,68,0.4)", color: "#f87171" }
-            : {}
-        }
+        style={isRecording ? { borderColor: "rgba(239,68,68,0.4)", color: "#f87171" } : {}}
       >
         {isTranscribing ? (
           <><Loader2 size={11} className="animate-spin" />Processing…</>
         ) : isRecording ? (
-          <>
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-            <Square size={10} fill="currentColor" />
-            {formatCountdown(remaining)}
-          </>
+          <><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" /><Square size={10} fill="currentColor" />{formatCountdown(remaining)}</>
         ) : (
           <><Mic size={11} />Record</>
         )}
       </button>
-    </div>
-  );
-}
-
-// ── Compact inline reading list controls ──────────────────────────────────────
-
-type ImportState = "idle" | "running" | "done" | "error";
-
-function InlineReadingListControls({ onOpen }: { onOpen: () => void }) {
-  const [importState, setImportState] = useState<ImportState>("idle");
-  const [importMsg, setImportMsg] = useState<string | null>(null);
-  const [url, setUrl] = useState("");
-  const [adding, setAdding] = useState(false);
-
-  async function handleImport(e: React.MouseEvent) {
-    e.stopPropagation();
-    setImportState("running");
-    const result = await window.api.readingListImport();
-    setImportMsg(result.success ? `+${result.imported ?? 0} new` : result.error ?? "Failed");
-    setImportState(result.success ? "done" : "error");
-    setTimeout(() => { setImportState("idle"); setImportMsg(null); }, 3500);
-  }
-
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    const trimmed = url.trim();
-    if (!trimmed) return;
-    setAdding(true);
-    const result = await window.api.readingListAddUrl(trimmed);
-    if (result.success) setUrl("");
-    setAdding(false);
-  }
-
-  return (
-    <div className="space-y-1.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
-      <form onSubmit={handleAdd} className="flex gap-1.5 items-center">
-        <input
-          type="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onClick={(e) => e.stopPropagation()}
-          placeholder="Paste a URL…"
-          disabled={adding}
-          className="form-input flex-1"
-          style={{ padding: "5px 10px", fontSize: "11px" }}
-        />
-        <button
-          type="submit"
-          disabled={!url.trim() || adding}
-          className="btn btn-sm w-7 h-7 p-0 shrink-0"
-        >
-          <Plus size={12} />
-        </button>
-      </form>
     </div>
   );
 }
@@ -308,11 +251,7 @@ function InlineActionButton({
   }
 
   return (
-    <button
-      onClick={handleAction}
-      disabled={loading}
-      className="btn btn-sm shrink-0"
-    >
+    <button onClick={handleAction} disabled={loading} className="btn btn-sm shrink-0">
       {loading ? (
         <Loader2 size={11} className="animate-spin" />
       ) : isRun ? (
@@ -326,7 +265,9 @@ function InlineActionButton({
   );
 }
 
-// ── Compact inline reading list footer button ─────────────────────────────────
+// ── Reading list footer ───────────────────────────────────────────────────────
+
+type ImportState = "idle" | "running" | "done" | "error";
 
 function ReadingListFooter({
   workflow,
@@ -337,6 +278,8 @@ function ReadingListFooter({
 }) {
   const [importState, setImportState] = useState<ImportState>("idle");
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
+  const [adding, setAdding] = useState(false);
 
   async function handleImport(e: React.MouseEvent) {
     e.stopPropagation();
@@ -347,26 +290,53 @@ function ReadingListFooter({
     setTimeout(() => { setImportState("idle"); setImportMsg(null); }, 3000);
   }
 
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    setAdding(true);
+    const result = await window.api.readingListAddUrl(trimmed);
+    if (result.success) setUrl("");
+    setAdding(false);
+  }
+
   return (
-    <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-      <button
-        onClick={handleImport}
-        disabled={importState === "running"}
-        className="btn btn-sm"
-        style={
-          importState === "done"
-            ? { borderColor: "rgba(122,158,126,0.4)", color: "#7a9e7e" }
-            : importState === "error"
-              ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" }
-              : {}
-        }
-      >
-        <RefreshCw size={11} className={importState === "running" ? "animate-spin" : ""} />
-        {importMsg ?? "Sync"}
-      </button>
-      <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="btn btn-sm">
-        <ExternalLink size={11} />View
-      </button>
+    <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+      <form onSubmit={handleAdd} className="flex items-center gap-1.5">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          placeholder="Paste a URL…"
+          disabled={adding}
+          className="form-input flex-1"
+          style={{ padding: "5px 10px", fontSize: "11px" }}
+        />
+        <button type="submit" disabled={!url.trim() || adding} className="btn btn-sm w-7 h-7 p-0 shrink-0">
+          <Plus size={12} />
+        </button>
+      </form>
+      <div className="flex items-center gap-2">
+        <div className="flex-1" />
+        <button
+          onClick={handleImport}
+          disabled={importState === "running"}
+          className="btn btn-sm"
+          style={
+            importState === "done" ? { borderColor: "rgba(122,158,126,0.4)", color: "#7a9e7e" } :
+            importState === "error" ? { borderColor: "rgba(180,60,60,0.3)", color: "rgba(220,110,110,0.85)" } :
+            {}
+          }
+        >
+          <RefreshCw size={11} className={importState === "running" ? "animate-spin" : ""} />
+          {importMsg ?? "Sync"}
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="btn btn-sm">
+          <ExternalLink size={11} />View
+        </button>
+      </div>
     </div>
   );
 }
@@ -377,6 +347,14 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isTranscribe = workflow.action === "transcribe";
   const isReadingList = workflow.action === "reading-list";
+  const hasSchedule = !!workflow.scheduled_job;
+
+  // Action button rendered standalone or injected into ScheduleFooter
+  const actionBtn = isTranscribe ? (
+    <InlineRecordButton workflow={workflow} />
+  ) : (
+    <InlineActionButton workflow={workflow} onOpen={onOpen} onRun={onRun} onClick={onClick} />
+  );
 
   return (
     <div
@@ -386,19 +364,15 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
       onKeyDown={(e) => e.key === "Enter" && onClick(workflow.id)}
       className="workflow-card"
     >
-      {/* Per-workflow accent stripe */}
       <div
         className="card-stripe"
         style={{ background: `linear-gradient(90deg, transparent, ${workflow.color}77, transparent)` }}
       />
 
       <div className="p-4 flex flex-col gap-3">
-        {/* ── Header: icon + name + desc ─── */}
+        {/* Header */}
         <div className="flex items-start gap-3">
-          <span
-            className="card-icon shrink-0"
-            style={{ backgroundColor: `${workflow.color}18` }}
-          >
+          <span className="card-icon shrink-0" style={{ backgroundColor: `${workflow.color}18` }}>
             <Icon size={16} style={{ color: workflow.color }} strokeWidth={1.75} />
           </span>
           <div className="min-w-0 flex-1">
@@ -406,36 +380,26 @@ export function WorkflowCard({ workflow, clusterName, onOpen, onRun, onClick }: 
               <p className="card-name truncate">{workflow.name}</p>
               {clusterName && <span className="cluster-badge">{clusterName}</span>}
             </div>
-            <p className="card-desc mt-0.5 line-clamp-2">
-              {workflow.summary ?? workflow.description}
-            </p>
+            <p className="card-desc mt-0.5">{workflow.summary ?? workflow.description}</p>
           </div>
         </div>
 
-        {/* ── Inline schedule row (if scheduled) ─── */}
-        {workflow.scheduled_job && <InlineScheduleRow workflow={workflow} />}
-
-        {/* ── Reading list URL input ─── */}
+        {/* Reading list URL input (above footer) */}
         {isReadingList && (
-          <InlineReadingListControls onOpen={() => onClick(workflow.id)} />
+          <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
         )}
 
-        {/* ── Footer: action ─── */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex-1" />
-          {isTranscribe ? (
-            <InlineRecordButton workflow={workflow} />
-          ) : isReadingList ? (
-            <ReadingListFooter workflow={workflow} onClick={() => onClick(workflow.id)} />
+        {/* Footer: schedule info + action on same row, or just action */}
+        {!isReadingList && (
+          hasSchedule ? (
+            <ScheduleFooter workflow={workflow} actionSlot={actionBtn} />
           ) : (
-            <InlineActionButton
-              workflow={workflow}
-              onOpen={onOpen}
-              onRun={onRun}
-              onClick={onClick}
-            />
-          )}
-        </div>
+            <div className="flex items-center">
+              <div className="flex-1" />
+              {actionBtn}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
