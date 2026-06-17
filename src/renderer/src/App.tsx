@@ -347,7 +347,9 @@ export default function App() {
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3 animate-fade-in">
               {filtered.map((w) => {
-                const cluster = showWorkspaceBadges ? clusterForWorkflow(w) : null;
+                const cluster = showWorkspaceBadges
+                  ? clusterForWorkflow(w)
+                  : null;
                 return (
                   <WorkflowCard
                     key={w.id}
@@ -364,7 +366,9 @@ export default function App() {
           ) : (
             <div className="flex flex-col gap-1.5 animate-fade-in">
               {filtered.map((w) => {
-                const cluster = showWorkspaceBadges ? clusterForWorkflow(w) : null;
+                const cluster = showWorkspaceBadges
+                  ? clusterForWorkflow(w)
+                  : null;
                 return (
                   <WorkflowRow
                     key={w.id}

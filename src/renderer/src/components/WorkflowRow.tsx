@@ -67,7 +67,14 @@ export function WorkflowRow({
             <span
               className="shrink-0 text-[10px] font-medium px-1.5 py-px rounded border capitalize leading-none
                          bg-zinc-800/80 border-zinc-700/80 text-zinc-500"
-              style={clusterColor ? { borderColor: `${clusterColor}30`, color: `${clusterColor}cc` } : undefined}
+              style={
+                clusterColor
+                  ? {
+                      borderColor: `${clusterColor}30`,
+                      color: `${clusterColor}cc`,
+                    }
+                  : undefined
+              }
             >
               {clusterName}
             </span>
@@ -84,17 +91,15 @@ export function WorkflowRow({
         </p>
       </div>
 
-      {/* Tags — right side, hidden on small screens */}
+      {/* Tags — right side, hidden on small screens. +N slot always rendered for alignment */}
       {workflow.tags.length > 0 && (
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {workflow.tags.slice(0, 3).map((tag) => (
             <TagBadge key={tag} tag={tag} />
           ))}
-          {workflow.tags.length > 3 && (
-            <span className="text-[11px] text-zinc-600">
-              +{workflow.tags.length - 3}
-            </span>
-          )}
+          <span className="text-[11px] text-zinc-600 w-5 text-right shrink-0">
+            {workflow.tags.length > 3 ? `+${workflow.tags.length - 3}` : ""}
+          </span>
         </div>
       )}
 
