@@ -6,14 +6,9 @@ export default {
   ],
   theme: {
     extend: {
-      keyframes: {
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(4px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-      },
-      animation: {
-        "fade-in": "fade-in 0.18s ease-out",
+      fontFamily: {
+        sans: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        serif: ['"Cormorant Garamond"', "Georgia", "serif"],
       },
     },
   },

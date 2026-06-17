@@ -111,6 +111,60 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
+  - id: d288500b-64f0-4323-9298-030050bfe4ac
+    name: Loan Agreement Generator
+    summary: Lender + borrower + amount → a print-ready Norwegian loan agreement.
+    description: >
+      Pick a lender and borrower (Christian Braathen, Decide AS, or Bæredyktig AS),
+      enter the loan amount in NOK, and confirm the date and signing location.
+      Claude opens the upon Django app, fetches the current skjermingsrente
+      (shielding interest rate) from skatteetaten.no, and renders a Norwegian-language
+      loan agreement ready for browser print-to-PDF. Both parties' positions are
+      auto-derived (e.g. "Styreleder, Decide AS").
+    tags: [finance, legal, loan, agreement, contracts]
+    repo_path: /Users/christianbraathen/Repositories/upon
+    color: "#6366f1"
+    icon: FileText
+    cluster_id: finance
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: giving_stakeholder
+        type: string
+        description: The party lending money (Christian Braathen, Decide AS, or Bæredyktig AS)
+        required: true
+        example: Christian Braathen
+      - name: receiving_stakeholder
+        type: string
+        description: The party borrowing money (Christian Braathen, Decide AS, or Bæredyktig AS)
+        required: true
+        example: Decide AS
+      - name: amount
+        type: number
+        description: Loan amount in NOK
+        required: true
+        example: "500000"
+      - name: date
+        type: date
+        description: Agreement date (defaults to today)
+        required: false
+        example: "2026-06-17"
+      - name: location
+        type: string
+        description: Signing location (defaults to Oslo)
+        required: false
+        example: Oslo
+    outputs:
+      - name: loan_agreement
+        type: file
+        description: >
+          Print-ready Norwegian loan agreement (HTML → browser print-to-PDF)
+          with auto-fetched interest rate, party names, positions, and account numbers.
   - id: 145bb544-5270-4288-9afd-1284a7edcce7
     name: Voice Transcriber
     summary: Record speech → text, auto-copied to clipboard.
@@ -352,6 +406,62 @@ workflows:
     version: "0.1.0"
     owner: Christian Braathen — christian@decide.as
     action: calendar
+  - id: 8d330ef0-6304-49ba-aa70-f259555a0b56
+    name: Web Scraper
+    summary: Paste a URL → Claude scrapes and extracts content.
+    description: >
+      Paste any URL — web article, Instagram post, LinkedIn post, YouTube video,
+      or PDF — and Claude opens the scrapers repo, runs the right platform scraper
+      automatically, and returns structured metadata, extracted text, and downloaded
+      media. Powered by ScrapingBee + Gemini; uses yt-dlp for YouTube and
+      cookie-based fallbacks for authenticated content.
+    tags: [scraping, research, web, data-extraction]
+    repo_path: /Users/christianbraathen/Repositories/scrapers
+    color: "#06b6d4"
+    icon: Globe
+    cluster_id: research
+    added: "2026-06-17"
+    updated: "2026-06-17"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: scaffold
+    inputs:
+      - name: url
+        type: string
+        description: The URL to scrape (web article, Instagram, LinkedIn, YouTube, or PDF)
+        required: true
+        example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    outputs:
+      - name: scraped_content
+        type: json
+        description: >
+          Structured metadata (title, author, date, text, keywords, insights) written
+          to workflow-hub-data/web-scraper/data/structured/, media downloads to data/downloads/.
+    scaffold:
+      repo: /Users/christianbraathen/Repositories/scrapers
+      branch_default: master
+      command: scrapers "<url>" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
+      initial_prompt_template: |
+        I want to scrape the following URL:
+
+        {description}
+
+        Please do the following:
+        1. Run the unified scraper, routing all output to the workflow data folder:
+
+           scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
+
+        2. If that fails due to authentication (e.g. Instagram), retry with --use-cookies:
+
+           scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data --use-cookies
+
+        3. Show me the extracted metadata (title, author, date, summary, keywords).
+        4. Tell me the full path of any files written.
+
+        Start by running the scraper command above.
   - id: f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
     name: Reading List
     summary: Capture, store, and browse reading resources.
@@ -387,11 +497,12 @@ workflows:
 clusters:
   - id: finance
     name: Finance
-    tags: [finance, expense, reimbursement, accounting, bank, bookkeeping, voucher]
+    tags: [finance, expense, reimbursement, accounting, bank, bookkeeping, voucher, legal, loan]
     workflow_ids:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
+      - d288500b-64f0-4323-9298-030050bfe4ac
       - d38a76f2-0530-40b8-ab82-33b2edd52240
   - id: utilities
     name: Utilities
@@ -410,6 +521,11 @@ clusters:
     tags: [scaffold, developer-tools, setup]
     workflow_ids:
       - a4f82c3e-7b19-4d05-9e61-1c3f85de2047
+  - id: research
+    name: Research
+    tags: [scraping, research, web, data-extraction]
+    workflow_ids:
+      - 8d330ef0-6304-49ba-aa70-f259555a0b56
   - id: knowledge
     name: Knowledge
     tags: [reading, bookmarks, resources, knowledge]

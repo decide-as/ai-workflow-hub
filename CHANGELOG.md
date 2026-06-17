@@ -6,6 +6,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-06-17
+
+### Added
+
+- Web Scraper workflow card — paste any URL (web article, Instagram, LinkedIn, YouTube, PDF) and Claude runs the scrapers repo with `--output-dir` routing all output to `workflow-hub-data/web-scraper/data`
+- `workflow-data-repo` rule mandating a corresponding data folder in `workflow-hub-data` for every registry workflow, with symlink/routing conventions for scaffold and external-repo workflows
+
+## [0.13.0] - 2026-06-17
+
+### Added
+
+- Dark/light mode theming with automatic macOS system preference detection (`prefers-color-scheme`), manual Sun/Moon toggle in header, and localStorage persistence for override.
+- Light theme using the lanserbart beige palette (`#f9f6f2` warm white base) via CSS custom properties.
+- No-flash inline script in `index.html` applies the correct theme before React mounts.
+
+### Changed
+
+- Schedule status controls (cadence, last run, enable/disable, logs) moved from workflow cards into the workflow detail modal as a live Schedule section.
+- Workflow cards now show a uniform footer with only the primary CTA button — schedule state no longer clutters the card grid.
+- `InlineRecordButton` renamed to `TranscribeControls` with an `onTranscribed` callback and proper error state handling.
+- `WorkflowCard` accepts new `clusterColor?` prop and `onOpen(id, initialPrompt?)` signature, consistent with the rest of the component tree.
+
+## [0.12.0] - 2026-06-17
+
+### Added
+
+- Calendar Event Creator workflow: describe events in text, record voice, or paste a transit/flight screenshot — Claude generates AppleScript and runs it directly in Apple Calendar.
+- New `calendar` workflow action type with `CalendarModal` component for the generate-review-execute flow.
+- Main-process IPC handlers for `exec-osascript`, `read-clipboard-image`, and `generate-calendar-script`.
+- `src/main/calendar.ts` with AppleScript conventions: programmatic date building, Oslo timezone, emoji titles, per-calendar alarm rules, walking legs in descriptions.
+
 ## [0.11.0] - 2026-06-17
 
 ### Added
