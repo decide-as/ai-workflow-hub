@@ -47,6 +47,7 @@ import {
   readClipboardImage,
   generateCalendarScript,
 } from "./calendar";
+import { getLoanStakeholders, generateLoanAgreement } from "./loan";
 import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
@@ -247,6 +248,10 @@ app.whenReady().then(() => {
     (_, text: string, imageDataUrl: string | null, today: string) =>
       generateCalendarScript(text, imageDataUrl, today),
   );
+
+  ipcMain.handle(IPC.LOAN_GET_STAKEHOLDERS, () => getLoanStakeholders());
+
+  ipcMain.handle(IPC.LOAN_GENERATE, (_, data) => generateLoanAgreement(data));
 
   ipcMain.handle(
     IPC.CREATE_VOUCHER_FOLDERS,

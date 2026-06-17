@@ -196,10 +196,11 @@ function InlineActionButton({
   const isRun = workflow.action === "run";
   const isScaffold = workflow.action === "scaffold";
   const isCalendar = workflow.action === "calendar";
+  const isLoan = workflow.action === "loan";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isScaffold || isCalendar) {
+    if (isScaffold || isCalendar || isLoan) {
       onClick(workflow.id);
       return;
     }

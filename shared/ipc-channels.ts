@@ -22,5 +22,7 @@ export const IPC = {
   EXEC_OSASCRIPT: "exec-osascript",
   READ_CLIPBOARD_IMAGE: "read-clipboard-image",
   GENERATE_CALENDAR_SCRIPT: "generate-calendar-script",
+  LOAN_GET_STAKEHOLDERS: "loan-get-stakeholders",
+  LOAN_GENERATE: "loan-generate",
   CREATE_VOUCHER_FOLDERS: "create-voucher-folders",
 } as const;
