@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-06-17
+
+### Added
+
+- Loan Agreement Generator: structured form modal that collects lender, borrower, amount, date, and location, fetches the current skjermingsrente (shielding interest rate) from skatteetaten.no for the correct bimonthly period, generates a Norwegian-language PDF via Electron's printToPDF, saves it to `workflow-hub-data/loan-agreement/data/`, and reveals it in Finder.
+- Separate lender and borrower party lists: all three parties (Christian Braathen, Decide AS, Bæredyktig AS) are available as lenders; only companies (Decide AS, Bæredyktig AS) are available as borrowers.
+- Same-party validation in the loan modal: Generate button is disabled with a red warning when the same party is selected as both lender and borrower.
+
 ## [0.16.0] - 2026-06-17
 
 ### Added
