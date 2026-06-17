@@ -50,7 +50,8 @@ export interface LoanFormData {
 
 export interface LoanStakeholdersResult {
   success: boolean;
-  stakeholders?: LoanStakeholder[];
+  lenders?: LoanStakeholder[];
+  borrowers?: LoanStakeholder[];
   error?: string;
 }
 

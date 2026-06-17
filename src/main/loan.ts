@@ -22,8 +22,11 @@ export function getLoanStakeholders(): LoanStakeholdersResult {
       "stakeholders.json",
     );
     const raw = readFileSync(path, "utf-8");
-    const data = JSON.parse(raw) as { parties: LoanStakeholder[] };
-    return { success: true, stakeholders: data.parties };
+    const data = JSON.parse(raw) as {
+      lenders: LoanStakeholder[];
+      borrowers: LoanStakeholder[];
+    };
+    return { success: true, lenders: data.lenders, borrowers: data.borrowers };
   } catch (err) {
     return { success: false, error: String(err) };
   }
@@ -224,12 +227,12 @@ export async function generateLoanAgreement(
   data: LoanFormData,
 ): Promise<LoanGenerateResult> {
   try {
-    const { success, stakeholders, error } = getLoanStakeholders();
-    if (!success || !stakeholders)
+    const { success, lenders, borrowers, error } = getLoanStakeholders();
+    if (!success || !lenders || !borrowers)
       return { success: false, error: error ?? "Could not load stakeholders" };
 
-    const giving = stakeholders.find((s) => s.name === data.givingStakeholder);
-    const receiving = stakeholders.find(
+    const giving = lenders.find((s) => s.name === data.givingStakeholder);
+    const receiving = borrowers.find(
       (s) => s.name === data.receivingStakeholder,
     );
     if (!giving)

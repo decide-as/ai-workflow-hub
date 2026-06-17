@@ -35,7 +35,8 @@ const INPUT_CLS =
 
 export function LoanModal({ workflow, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("loading");
-  const [stakeholders, setStakeholders] = useState<LoanStakeholder[]>([]);
+  const [lenders, setLenders] = useState<LoanStakeholder[]>([]);
+  const [borrowers, setBorrowers] = useState<LoanStakeholder[]>([]);
   const [giving, setGiving] = useState("");
   const [receiving, setReceiving] = useState("");
   const [amount, setAmount] = useState("");
@@ -53,12 +54,11 @@ export function LoanModal({ workflow, onClose }: Props) {
 
   useEffect(() => {
     window.api.loanGetStakeholders().then((result) => {
-      if (result.success && result.stakeholders?.length) {
-        setStakeholders(result.stakeholders);
-        setGiving(result.stakeholders[0].name);
-        setReceiving(
-          result.stakeholders[1]?.name ?? result.stakeholders[0].name,
-        );
+      if (result.success && result.lenders?.length && result.borrowers?.length) {
+        setLenders(result.lenders);
+        setBorrowers(result.borrowers);
+        setGiving(result.lenders[0].name);
+        setReceiving(result.borrowers[0].name);
         setPhase("form");
       } else {
         setErrorMsg(result.error ?? "Kunne ikke laste parter");
@@ -130,7 +130,7 @@ export function LoanModal({ workflow, onClose }: Props) {
             </div>
           )}
 
-          {(phase === "form" || (phase === "error" && stakeholders.length > 0)) && (
+          {(phase === "form" || (phase === "error" && lenders.length > 0)) && (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Utlåner">
@@ -139,7 +139,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     onChange={(e) => setGiving(e.target.value)}
                     className={SELECT_CLS}
                   >
-                    {stakeholders.map((s) => (
+                    {lenders.map((s) => (
                       <option key={s.name} value={s.name}>
                         {s.type === "company"
                           ? `${s.name} (${s.account})`
@@ -154,7 +154,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     onChange={(e) => setReceiving(e.target.value)}
                     className={SELECT_CLS}
                   >
-                    {stakeholders.map((s) => (
+                    {borrowers.map((s) => (
                       <option key={s.name} value={s.name}>
                         {s.type === "company"
                           ? `${s.name} (${s.account})`
@@ -230,7 +230,7 @@ export function LoanModal({ workflow, onClose }: Props) {
             </div>
           )}
 
-          {phase === "error" && stakeholders.length === 0 && (
+          {phase === "error" && lenders.length === 0 && (
             <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
               {errorMsg}
             </p>
