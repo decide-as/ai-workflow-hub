@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, ExternalLink, BookOpen } from "lucide-react";
+import { X, ExternalLink, BookOpen, Info } from "lucide-react";
 import type { ReadingListEntry, Workflow } from "../../../../shared/types";
 
 interface Props {
@@ -91,6 +91,19 @@ export function ReadingListModal({ workflow, onClose }: Props) {
           >
             <X size={16} />
           </button>
+        </div>
+
+        <div
+          className="mx-6 mb-4 shrink-0 flex items-start gap-2 px-3 py-2.5 rounded-lg
+                     bg-zinc-800/60 border border-zinc-700/40 text-zinc-400"
+        >
+          <Info size={13} className="shrink-0 mt-0.5" />
+          <p className="text-xs leading-relaxed">
+            "Get from Reminders" imports from{" "}
+            <strong className="text-zinc-300">Leseliste</strong> and{" "}
+            <strong className="text-zinc-300">Prioritert leseliste</strong> only.
+            Duplicate URLs are skipped automatically.
+          </p>
         </div>
 
         <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-2">
