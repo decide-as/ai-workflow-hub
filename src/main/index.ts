@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { getRegistry, watchRegistry, getRegistryPath, getBaseDir } from './registry'
 import { openInTerminal } from './terminal'
 import { pickFolder, runScript } from './runner'
-import { getScheduleStatus, enableSchedule, disableSchedule } from './schedule'
+import { getScheduleStatus, enableSchedule, disableSchedule, readLog } from './schedule'
 import { IPC } from '../../shared/ipc-channels'
 import type { RunResult, ScheduleStatus, Workflow } from '../../shared/types'
 
@@ -73,6 +73,7 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC.SCHEDULE_STATUS, (_, id: string) => withWorkflow(id, getScheduleStatus))
   ipcMain.handle(IPC.SCHEDULE_ENABLE, (_, id: string) => withWorkflow(id, enableSchedule))
   ipcMain.handle(IPC.SCHEDULE_DISABLE, (_, id: string) => withWorkflow(id, disableSchedule))
+  ipcMain.handle(IPC.READ_LOG, (_, logPath: string) => readLog(logPath))
 
   ipcMain.handle(
     IPC.RUN_WORKFLOW,

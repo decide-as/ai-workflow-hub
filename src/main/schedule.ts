@@ -1,4 +1,5 @@
 import { spawnSync } from 'child_process'
+import { existsSync, readFileSync } from 'fs'
 import { isAbsolute, join } from 'path'
 import { getBaseDir } from './registry'
 import type { Workflow, ScheduleStatus } from '../../shared/types'
@@ -42,9 +43,20 @@ export function parseStatusJson(stdout: string): ScheduleStatus {
       loaded: !!j.loaded,
       lastRunAt: j.lastRunAt ?? null,
       lastExitCode: null,
+      logPath: j.logPath ?? null,
     }
   } catch {
     return { installed: false, loaded: false, error: 'Could not read schedule status.' }
+  }
+}
+
+// Read the launchd log file for a scheduled workflow. Returns '' if not found.
+export function readLog(logPath: string): string {
+  try {
+    if (!logPath || !existsSync(logPath)) return ''
+    return readFileSync(logPath, 'utf-8')
+  } catch {
+    return ''
   }
 }
 

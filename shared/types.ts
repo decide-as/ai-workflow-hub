@@ -63,6 +63,7 @@ export interface ScheduleStatus {
   loaded: boolean
   lastRunAt?: string | null
   lastExitCode?: number | null
+  logPath?: string | null
   error?: string
 }
 
