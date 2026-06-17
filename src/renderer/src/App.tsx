@@ -67,12 +67,6 @@ function workflowSolutionType(w: Workflow): SolutionType {
   return "claude";
 }
 
-function hashColor(str: string): string {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-  return `hsl(${Math.abs(h) % 360}, 65%, 58%)`;
-}
-
 declare global {
   interface Window {
     api: {
@@ -394,21 +388,21 @@ export default function App() {
               No workflows match &ldquo;{query}&rdquo;
             </p>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(390px,1fr))] gap-3 animate-fade-in">
+            <div className="card-masonry animate-fade-in">
               {filtered.map((w) => {
                 const cluster = showWorkspaceBadges
                   ? clusterForWorkflow(w)
                   : null;
                 return (
-                  <WorkflowCard
-                    key={w.id}
-                    workflow={w}
-                    clusterName={cluster?.name}
-                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
-                    onOpen={handleOpen}
-                    onRun={handleRun}
-                    onClick={handleCardClick}
-                  />
+                  <div key={w.id} className="card-masonry-item">
+                    <WorkflowCard
+                      workflow={w}
+                      clusterName={cluster?.name}
+                      onOpen={handleOpen}
+                      onRun={handleRun}
+                      onClick={handleCardClick}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -423,7 +417,6 @@ export default function App() {
                     key={w.id}
                     workflow={w}
                     clusterName={cluster?.name}
-                    clusterColor={cluster ? hashColor(cluster.name) : undefined}
                     onOpen={handleOpen}
                     onRun={handleRun}
                     onClick={handleCardClick}
