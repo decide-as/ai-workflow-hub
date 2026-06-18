@@ -48,6 +48,12 @@ import {
   generateCalendarScript,
 } from "./calendar";
 import { getLoanStakeholders, generateLoanAgreement } from "./loan";
+import {
+  getTransactions as loanInterestGetTransactions,
+  saveTransaction as loanInterestSaveTransaction,
+  deleteTransaction as loanInterestDeleteTransaction,
+  calculateInterest as loanInterestCalculate,
+} from "./loanInterest";
 import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
@@ -252,6 +258,21 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC.LOAN_GET_STAKEHOLDERS, () => getLoanStakeholders());
 
   ipcMain.handle(IPC.LOAN_GENERATE, (_, data) => generateLoanAgreement(data));
+
+  ipcMain.handle(IPC.LOAN_INTEREST_GET_TRANSACTIONS, (_, lender, borrower) =>
+    loanInterestGetTransactions(lender, borrower),
+  );
+  ipcMain.handle(IPC.LOAN_INTEREST_SAVE_TRANSACTION, (_, tx) =>
+    loanInterestSaveTransaction(tx),
+  );
+  ipcMain.handle(IPC.LOAN_INTEREST_DELETE_TRANSACTION, (_, id) =>
+    loanInterestDeleteTransaction(id),
+  );
+  ipcMain.handle(
+    IPC.LOAN_INTEREST_CALCULATE,
+    (_, lender, borrower, toDate) =>
+      loanInterestCalculate(lender, borrower, toDate),
+  );
 
   ipcMain.handle(
     IPC.CREATE_VOUCHER_FOLDERS,
