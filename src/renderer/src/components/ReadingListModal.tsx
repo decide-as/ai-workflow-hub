@@ -88,7 +88,10 @@ export function ReadingListModal({ workflow, onClose }: Props) {
             >
               {workflow.name}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "var(--c-text-muted)" }}>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               {loading ? "Loading…" : `${entries.length} saved URLs`}
             </p>
           </div>
@@ -120,7 +123,9 @@ export function ReadingListModal({ workflow, onClose }: Props) {
           <Info size={13} className="shrink-0 mt-0.5" />
           <p className="text-xs leading-relaxed">
             "Get from Reminders" imports from{" "}
-            <strong style={{ color: "var(--c-text-secondary)" }}>Leseliste</strong>{" "}
+            <strong style={{ color: "var(--c-text-secondary)" }}>
+              Leseliste
+            </strong>{" "}
             and{" "}
             <strong style={{ color: "var(--c-text-secondary)" }}>
               Prioritert leseliste
@@ -198,8 +203,7 @@ export function ReadingListModal({ workflow, onClose }: Props) {
                   className="btn shrink-0 w-7 h-7"
                   style={{ color: "var(--c-text-subtle)" }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
-                      "rgba(169,146,125,0.06)";
+                    e.currentTarget.style.background = "rgba(169,146,125,0.06)";
                     e.currentTarget.style.color = "var(--c-text-muted)";
                   }}
                   onMouseLeave={(e) => {

@@ -152,7 +152,10 @@ export function RunModal({
               />
             </span>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold" style={{ color: "var(--c-text)" }}>
+              <h2
+                className="text-base font-semibold"
+                style={{ color: "var(--c-text)" }}
+              >
                 {workflow.name}
               </h2>
               <div
@@ -191,7 +194,10 @@ export function RunModal({
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium" style={{ color: "var(--c-text-secondary)" }}>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--c-text-secondary)" }}
+                  >
                     {ageOpt.label}
                   </p>
                   <span
@@ -200,7 +206,9 @@ export function RunModal({
                       backgroundColor: everything
                         ? "rgba(169,146,125,0.08)"
                         : `${workflow.color}22`,
-                      color: everything ? "var(--c-text-subtle)" : workflow.color,
+                      color: everything
+                        ? "var(--c-text-subtle)"
+                        : workflow.color,
                     }}
                   >
                     {ageLabel(days)}
@@ -227,7 +235,10 @@ export function RunModal({
                 </div>
 
                 {!everything && (
-                  <p className="text-[11px] leading-relaxed" style={{ color: "var(--c-text-muted)" }}>
+                  <p
+                    className="text-[11px] leading-relaxed"
+                    style={{ color: "var(--c-text-muted)" }}
+                  >
                     Files created or modified within the last {days} day
                     {days !== 1 ? "s" : ""} will be skipped.
                   </p>
@@ -298,7 +309,10 @@ export function RunModal({
           </span>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold leading-snug" style={{ color: "var(--c-text)" }}>
+            <h2
+              className="text-base font-semibold leading-snug"
+              style={{ color: "var(--c-text)" }}
+            >
               {workflow.name}
             </h2>
             <div
@@ -386,7 +400,10 @@ export function RunModal({
             </p>
           )}
           {failed && result?.output && result?.error && (
-            <p className="mt-2 text-xs" style={{ color: "rgba(220,100,100,0.9)" }}>
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "rgba(220,100,100,0.9)" }}
+            >
               {result.error}
             </p>
           )}

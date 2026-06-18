@@ -200,7 +200,10 @@ export function CalendarModal({ workflow, onClose }: Props) {
             >
               {workflow.name}
             </h2>
-            <p className="text-xs truncate" style={{ color: "var(--c-text-muted)" }}>
+            <p
+              className="text-xs truncate"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               {workflow.summary ?? workflow.description}
             </p>
           </div>
@@ -399,7 +402,10 @@ export function CalendarModal({ workflow, onClose }: Props) {
                 Events created
               </p>
               {runOutput && (
-                <p className="text-xs mt-1" style={{ color: "var(--c-text-muted)" }}>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--c-text-muted)" }}
+                >
                   {runOutput}
                 </p>
               )}

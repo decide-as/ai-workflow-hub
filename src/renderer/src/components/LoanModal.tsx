@@ -32,7 +32,10 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium" style={{ color: "var(--c-text-muted)" }}>
+      <label
+        className="text-xs font-medium"
+        style={{ color: "var(--c-text-muted)" }}
+      >
         {label}
       </label>
       {children}
@@ -118,8 +121,7 @@ export function LoanModal({ workflow, onClose }: Props) {
   const effectiveBorrowerName =
     receiving === OTHER ? customBorrowerName : receiving;
   const sameParty =
-    effectiveLenderName !== "" &&
-    effectiveLenderName === effectiveBorrowerName;
+    effectiveLenderName !== "" && effectiveLenderName === effectiveBorrowerName;
 
   const lenderReady = giving !== OTHER || customLenderName.trim() !== "";
   const borrowerReady =
@@ -163,10 +165,16 @@ export function LoanModal({ workflow, onClose }: Props) {
             <FileText size={16} style={{ color }} strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--c-text)" }}>
+            <h2
+              className="text-sm font-semibold"
+              style={{ color: "var(--c-text)" }}
+            >
               New loan agreement
             </h2>
-            <p className="text-xs truncate" style={{ color: "var(--c-text-muted)" }}>
+            <p
+              className="text-xs truncate"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               {workflow.summary ?? workflow.description}
             </p>
           </div>
@@ -190,7 +198,10 @@ export function LoanModal({ workflow, onClose }: Props) {
         {/* Body */}
         <div className="px-5 py-5 flex flex-col gap-4">
           {phase === "loading" && (
-            <div className="flex items-center justify-center gap-2 py-10" style={{ color: "var(--c-text-muted)" }}>
+            <div
+              className="flex items-center justify-center gap-2 py-10"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">Loading parties…</span>
             </div>
@@ -309,7 +320,10 @@ export function LoanModal({ workflow, onClose }: Props) {
           )}
 
           {phase === "generating" && (
-            <div className="flex flex-col items-center gap-3 py-10" style={{ color: "var(--c-text-muted)" }}>
+            <div
+              className="flex flex-col items-center gap-3 py-10"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               <Loader2 size={24} className="animate-spin" />
               <p className="text-sm">
                 Fetching interest rate and generating PDF…
@@ -322,10 +336,16 @@ export function LoanModal({ workflow, onClose }: Props) {
               <div className="w-10 h-10 rounded-full bg-green-950/60 border border-green-700/40 flex items-center justify-center text-green-400 text-lg mb-1">
                 ✓
               </div>
-              <p className="text-sm font-medium" style={{ color: "var(--c-text)" }}>
+              <p
+                className="text-sm font-medium"
+                style={{ color: "var(--c-text)" }}
+              >
                 PDF saved and opened in Finder
               </p>
-              <p className="text-xs mt-1" style={{ color: "var(--c-text-muted)" }}>
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--c-text-muted)" }}
+              >
                 Saved to workflow-hub-data/loan-agreement/data/
               </p>
             </div>

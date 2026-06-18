@@ -107,7 +107,10 @@ export function TranscribeModal({ workflow, onClose }: Props) {
             >
               {workflow.name}
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "var(--c-text-muted)" }}>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               Transcription log
             </p>
           </div>
@@ -140,7 +143,9 @@ export function TranscribeModal({ workflow, onClose }: Props) {
           <Info size={13} className="shrink-0 mt-0.5" />
           <p className="text-xs leading-relaxed">
             Transcriptions are stored locally for{" "}
-            <strong style={{ color: "var(--c-text-secondary)" }}>24 hours</strong>{" "}
+            <strong style={{ color: "var(--c-text-secondary)" }}>
+              24 hours
+            </strong>{" "}
             and then automatically deleted. Each result is also auto-copied to
             your clipboard when recorded.
           </p>
