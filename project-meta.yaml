@@ -1,7 +1,7 @@
 # Identity
 name: workflow-hub
 display_name: Workflow Hub
-version: 0.17.0
+version: 0.17.1
 description: >
   Desktop Electron app for managing and launching AI workflow sessions.
   Displays registered workflows as clickable cards grouped by auto-detected
