@@ -156,20 +156,19 @@ function daysBetween(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-// Returns 1st of the next bimonthly period after the given date.
-// Bimonth periods start on Jan 1, Mar 1, May 1, Jul 1, Sep 1, Nov 1.
-function nextBimonthStart(d: Date): Date {
-  const month = d.getMonth() + 1; // 1-based
-  const idx = bimonthIdx(month);
-  const nextIdx = idx + 1;
-  if (nextIdx > 5) {
-    return new Date(d.getFullYear() + 1, 0, 1); // Jan 1 next year
-  }
-  const startMonth = nextIdx * 2 + 1; // idx 0→1, 1→3, 2→5, 3→7, 4→9, 5→11
-  return new Date(d.getFullYear(), startMonth - 1, 1);
+function toNorwegianDate(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
 }
 
 // ── Interest calculation ──────────────────────────────────────────────────────
+//
+// Each loan tranche carries the skjermingsrente that was in effect on the day
+// the loan was made. That rate is frozen for the life of the tranche — it does
+// NOT change when the bimonthly rate changes. Repayments reduce the oldest
+// tranche first (FIFO). Breakpoints are only transaction dates + toDate.
+
+type Tranche = { amount: number; rate: number };
 
 export async function calculateInterest(
   lender: string,
@@ -190,36 +189,43 @@ export async function calculateInterest(
         error: "Sluttdato må være etter første transaksjon",
       };
 
-    // Build sorted breakpoints: transaction dates + bimonth boundaries + toDate
+    // Pre-fetch rates for all years that contain loan transactions —
+    // we only need rates on the day each tranche is created.
+    const loanYears = new Set<number>(
+      transactions
+        .filter((t) => t.type === "loan")
+        .map((t) => parseInt(t.date.slice(0, 4), 10)),
+    );
+    const yearRatesMap = new Map<number, YearRates>();
+    for (const yr of loanYears) {
+      yearRatesMap.set(yr, await fetchYearRates(yr));
+    }
+
+    function rateForDate(iso: string): number {
+      const year = parseInt(iso.slice(0, 4), 10);
+      const month = parseInt(iso.slice(5, 7), 10);
+      const idx = bimonthIdx(month);
+      const rate = yearRatesMap.get(year)?.get(idx);
+      if (rate === undefined) {
+        const label = `${BIMONTH_LABELS[idx]} ${year}`;
+        throw new Error(
+          `Skjermingsrenten for ${label} er ikke publisert ennå — sjekk skatteetaten.no`,
+        );
+      }
+      return rate;
+    }
+
+    // Breakpoints: transaction dates + toDate (no bimonth boundaries — each
+    // tranche's rate is frozen, so period splits don't change anything).
     const breakpointSet = new Set<string>();
     breakpointSet.add(firstDate);
     breakpointSet.add(toDate);
     for (const tx of transactions) {
       if (tx.date > firstDate && tx.date < toDate) breakpointSet.add(tx.date);
     }
-
-    // Add bimonth boundaries strictly between firstDate and toDate
-    let boundary = nextBimonthStart(new Date(firstDate));
-    while (boundary.toISOString().slice(0, 10) < toDate) {
-      const iso = boundary.toISOString().slice(0, 10);
-      if (iso > firstDate) breakpointSet.add(iso);
-      boundary = nextBimonthStart(boundary);
-    }
-
     const breakpoints = Array.from(breakpointSet).sort();
 
-    // Pre-fetch rates for all years needed
-    const years = new Set<number>();
-    for (const bp of breakpoints) {
-      years.add(parseInt(bp.slice(0, 4), 10));
-    }
-    const yearRatesMap = new Map<number, YearRates>();
-    for (const yr of years) {
-      yearRatesMap.set(yr, await fetchYearRates(yr));
-    }
-
-    // FIFO tranches: list of remaining principal amounts, oldest first
-    const tranches: number[] = [];
+    const tranches: Tranche[] = [];
     let txIdx = 0;
     const periods: LoanInterestPeriod[] = [];
 
@@ -227,20 +233,24 @@ export async function calculateInterest(
       const segStart = breakpoints[i];
       const segEnd = breakpoints[i + 1];
 
-      // Apply all transactions on segStart
-      while (txIdx < transactions.length && transactions[txIdx].date === segStart) {
+      // Apply all transactions that fall on segStart
+      while (
+        txIdx < transactions.length &&
+        transactions[txIdx].date === segStart
+      ) {
         const tx = transactions[txIdx];
         if (tx.type === "loan") {
-          tranches.push(tx.amount);
+          // Lock in the rate at the time this tranche is created
+          tranches.push({ amount: tx.amount, rate: rateForDate(tx.date) });
         } else {
-          // FIFO repayment
+          // FIFO repayment: reduce oldest tranches first
           let remaining = tx.amount;
           while (remaining > 0 && tranches.length > 0) {
-            if (tranches[0] <= remaining) {
-              remaining -= tranches[0];
+            if (tranches[0].amount <= remaining) {
+              remaining -= tranches[0].amount;
               tranches.shift();
             } else {
-              tranches[0] -= remaining;
+              tranches[0].amount -= remaining;
               remaining = 0;
             }
           }
@@ -248,42 +258,23 @@ export async function calculateInterest(
         txIdx++;
       }
 
-      const balance = tranches.reduce((s, v) => s + v, 0);
+      const balance = tranches.reduce((s, t) => s + t.amount, 0);
       if (balance <= 0) continue;
 
-      const startDateObj = new Date(segStart);
-      const endDateObj = new Date(segEnd);
-      const days = daysBetween(startDateObj, endDateObj);
+      const days = daysBetween(new Date(segStart), new Date(segEnd));
       if (days <= 0) continue;
 
-      const year = parseInt(segStart.slice(0, 4), 10);
-      const month = parseInt(segStart.slice(5, 7), 10);
-      const idx = bimonthIdx(month);
-      const yearRates = yearRatesMap.get(year);
-      const rate = yearRates?.get(idx);
+      // Each tranche accrues at its own locked-in rate
+      const interest = tranches.reduce(
+        (s, t) => s + (t.amount * (t.rate / 100) * days) / 365,
+        0,
+      );
+      // Weighted average rate for display only
+      const avgRate =
+        tranches.reduce((s, t) => s + t.amount * t.rate, 0) / balance;
 
-      if (rate === undefined) {
-        const label = `${BIMONTH_LABELS[idx]} ${year}`;
-        throw new Error(
-          `Skjermingsrenten for ${label} er ikke publisert ennå — sjekk skatteetaten.no`,
-        );
-      }
-
-      const interest = (balance * (rate / 100) * days) / 365;
-      const label = `${BIMONTH_LABELS[idx]} ${year}`;
-
-      // Merge with previous period if same label
-      const prev = periods[periods.length - 1];
-      if (prev && prev.label === label) {
-        prev.days += days;
-        prev.interest += interest;
-        // weighted average balance
-        prev.balance = Math.round(
-          (prev.balance * (prev.days - days) + balance * days) / prev.days,
-        );
-      } else {
-        periods.push({ label, rate, balance, days, interest });
-      }
+      const label = `${toNorwegianDate(segStart)} – ${toNorwegianDate(segEnd)}`;
+      periods.push({ label, rate: avgRate, balance, days, interest });
     }
 
     const totalInterest = periods.reduce((s, p) => s + p.interest, 0);
