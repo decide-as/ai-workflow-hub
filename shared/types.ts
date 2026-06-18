@@ -50,6 +50,8 @@ export interface LoanFormData {
   amount: number;
   date: string;
   location: string;
+  customGiving?: LoanStakeholder;
+  customReceiving?: LoanStakeholder;
 }
 
 export interface LoanStakeholdersResult {

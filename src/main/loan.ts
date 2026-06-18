@@ -241,10 +241,14 @@ export async function generateLoanAgreement(
     if (!success || !lenders || !borrowers)
       return { success: false, error: error ?? "Could not load stakeholders" };
 
-    const giving = lenders.find((s) => s.name === data.givingStakeholder);
-    const receiving = borrowers.find(
-      (s) => s.name === data.receivingStakeholder,
-    );
+    const giving =
+      data.givingStakeholder === "__other__"
+        ? data.customGiving
+        : lenders.find((s) => s.name === data.givingStakeholder);
+    const receiving =
+      data.receivingStakeholder === "__other__"
+        ? data.customReceiving
+        : borrowers.find((s) => s.name === data.receivingStakeholder);
     if (!giving)
       return {
         success: false,

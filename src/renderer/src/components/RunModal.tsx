@@ -48,7 +48,13 @@ interface Props {
 
 function Spinner() {
   return (
-    <span className="w-3 h-3 border border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
+    <span
+      className="w-3 h-3 rounded-full animate-spin"
+      style={{
+        border: "1px solid var(--c-border)",
+        borderTopColor: "var(--c-text-muted)",
+      }}
+    />
   );
 }
 
@@ -121,22 +127,23 @@ export function RunModal({
         className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={onClose}
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="modal-overlay absolute inset-0" />
         <div
-          className="relative z-10 w-full max-w-lg mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
-                     shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
+          className="modal-panel relative z-10 w-full max-w-lg mx-6 animate-slide-up flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="h-1 w-full rounded-t-2xl shrink-0"
-            style={{ backgroundColor: workflow.color }}
+            className="h-px w-full rounded-t-[18px] shrink-0"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${workflow.color}99, transparent)`,
+            }}
           />
 
           {/* Header */}
           <div className="flex items-start gap-4 px-6 pt-5 pb-4">
             <span
               className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
-              style={{ backgroundColor: `${workflow.color}22` }}
+              style={{ backgroundColor: `${workflow.color}18` }}
             >
               <Icon
                 size={22}
@@ -145,18 +152,32 @@ export function RunModal({
               />
             </span>
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-zinc-100">
+              <h2
+                className="text-base font-semibold"
+                style={{ color: "var(--c-text)" }}
+              >
                 {workflow.name}
               </h2>
-              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500">
+              <div
+                className="flex items-center gap-1.5 mt-1 text-[11px]"
+                style={{ color: "var(--c-text-muted)" }}
+              >
                 <FolderInput size={11} className="shrink-0" />
                 <span className="truncate font-mono">{folder}</span>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
-                         text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+              className="btn shrink-0 w-8 h-8"
+              style={{ color: "var(--c-text-muted)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(169,146,125,0.06)";
+                e.currentTarget.style.color = "var(--c-text)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--c-text-muted)";
+              }}
             >
               <X size={16} />
             </button>
@@ -165,18 +186,29 @@ export function RunModal({
           {/* Slider */}
           {ageOpt && ageVal && (
             <div className="px-6 pb-6 space-y-4">
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 space-y-4">
+              <div
+                className="rounded-xl border p-4 space-y-4"
+                style={{
+                  background: "var(--c-surface-inset)",
+                  borderColor: "var(--c-border)",
+                }}
+              >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-zinc-200">
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--c-text-secondary)" }}
+                  >
                     {ageOpt.label}
                   </p>
                   <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
                     style={{
                       backgroundColor: everything
-                        ? "#52525b33"
+                        ? "rgba(169,146,125,0.08)"
                         : `${workflow.color}22`,
-                      color: everything ? "#a1a1aa" : workflow.color,
+                      color: everything
+                        ? "var(--c-text-subtle)"
+                        : workflow.color,
                     }}
                   >
                     {ageLabel(days)}
@@ -194,13 +226,19 @@ export function RunModal({
                   style={{ accentColor: workflow.color }}
                 />
 
-                <div className="flex justify-between text-[11px] text-zinc-600">
+                <div
+                  className="flex justify-between text-[11px]"
+                  style={{ color: "var(--c-text-subtle)" }}
+                >
                   <span>Everything</span>
                   <span>90 days</span>
                 </div>
 
                 {!everything && (
-                  <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  <p
+                    className="text-[11px] leading-relaxed"
+                    style={{ color: "var(--c-text-muted)" }}
+                  >
                     Files created or modified within the last {days} day
                     {days !== 1 ? "s" : ""} will be skipped.
                   </p>
@@ -210,20 +248,23 @@ export function RunModal({
           )}
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-zinc-800">
-            <button
-              onClick={onClose}
-              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300
-                         border border-zinc-700/60 hover:text-zinc-100 hover:border-zinc-600
-                         hover:bg-zinc-800/60 transition-colors"
-            >
+          <div
+            className="flex items-center justify-end gap-2 px-6 py-4"
+            style={{ borderTop: "1px solid var(--c-border)" }}
+          >
+            <button onClick={onClose} className="btn btn-sm">
               Cancel
             </button>
             <button
               onClick={() => onConfigure(optValues)}
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
-                         text-zinc-950 transition-all hover:brightness-110"
-              style={{ backgroundColor: workflow.color }}
+              className="btn"
+              style={{
+                backgroundColor: workflow.color,
+                color: "var(--c-base)",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "8px 16px",
+              }}
             >
               <Play size={14} strokeWidth={2.5} />
               Preview
@@ -240,24 +281,25 @@ export function RunModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
       onClick={() => !busy && onClose()}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="modal-overlay absolute inset-0" />
 
       <div
-        className="relative z-10 w-full max-w-2xl mx-6 rounded-2xl bg-zinc-900 border border-zinc-800
-                   shadow-2xl shadow-black/60 animate-fade-in flex flex-col"
+        className="modal-panel relative z-10 w-full max-w-2xl mx-6 animate-slide-up flex flex-col"
         style={{ maxHeight: "calc(100vh - 80px)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="h-1 w-full rounded-t-2xl shrink-0"
-          style={{ backgroundColor: workflow.color }}
+          className="h-px w-full rounded-t-[18px] shrink-0"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${workflow.color}99, transparent)`,
+          }}
         />
 
         {/* Header */}
         <div className="flex items-start gap-4 px-6 pt-5 pb-4 shrink-0">
           <span
             className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
-            style={{ backgroundColor: `${workflow.color}22` }}
+            style={{ backgroundColor: `${workflow.color}18` }}
           >
             <Icon
               size={22}
@@ -267,10 +309,16 @@ export function RunModal({
           </span>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-zinc-100 leading-snug">
+            <h2
+              className="text-base font-semibold leading-snug"
+              style={{ color: "var(--c-text)" }}
+            >
               {workflow.name}
             </h2>
-            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 min-w-0">
+            <div
+              className="flex items-center gap-1.5 mt-1 text-[11px] min-w-0"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               <FolderInput size={11} className="shrink-0" />
               <span className="truncate font-mono">{folder}</span>
             </div>
@@ -279,9 +327,18 @@ export function RunModal({
           <button
             onClick={onClose}
             disabled={busy}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
-                       text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors
-                       disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn shrink-0 w-8 h-8 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ color: "var(--c-text-muted)" }}
+            onMouseEnter={(e) => {
+              if (!busy) {
+                e.currentTarget.style.background = "rgba(169,146,125,0.06)";
+                e.currentTarget.style.color = "var(--c-text)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--c-text-muted)";
+            }}
           >
             <X size={16} />
           </button>
@@ -295,7 +352,11 @@ export function RunModal({
               <CheckCircle2 size={13} className="text-emerald-400" />
             )}
             {failed && <AlertCircle size={13} className="text-red-400" />}
-            <span className={failed ? "text-red-300" : "text-zinc-400"}>
+            <span
+              style={{
+                color: failed ? "rgba(220,100,100,0.9)" : "var(--c-text-muted)",
+              }}
+            >
               {phaseLabel}
             </span>
           </div>
@@ -309,8 +370,11 @@ export function RunModal({
             return (
               <div className="px-6 pb-3 shrink-0">
                 <span
-                  className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1
-                               border border-zinc-700/60 text-zinc-400"
+                  className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1 border"
+                  style={{
+                    borderColor: "var(--c-border)",
+                    color: "var(--c-text-muted)",
+                  }}
                 >
                   {days === 0
                     ? "All files (no age filter)"
@@ -323,39 +387,48 @@ export function RunModal({
         {/* Output */}
         <div className="overflow-y-auto flex-1 px-6 pb-4">
           {result?.output ? (
-            <pre
-              className="text-[11px] leading-relaxed font-mono text-zinc-300 whitespace-pre-wrap break-words
-                            bg-zinc-950/60 border border-zinc-800 rounded-lg p-3"
-            >
+            <pre className="code-block whitespace-pre-wrap break-words">
               {result.output}
             </pre>
           ) : failed ? (
-            <p className="text-sm text-red-300">{result?.error}</p>
+            <p className="text-sm" style={{ color: "rgba(220,100,100,0.9)" }}>
+              {result?.error}
+            </p>
           ) : (
-            <p className="text-sm text-zinc-500">Working…</p>
+            <p className="text-sm" style={{ color: "var(--c-text-muted)" }}>
+              Working…
+            </p>
           )}
           {failed && result?.output && result?.error && (
-            <p className="mt-2 text-xs text-red-300">{result.error}</p>
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "rgba(220,100,100,0.9)" }}
+            >
+              {result.error}
+            </p>
           )}
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-zinc-800 shrink-0">
+        <div
+          className="flex items-center justify-end gap-2 px-6 py-4 shrink-0"
+          style={{ borderTop: "1px solid var(--c-border)" }}
+        >
           {phase === "preview" && result?.success && (
             <>
-              <button
-                onClick={onClose}
-                className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300
-                           border border-zinc-700/60 hover:text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800/60
-                           transition-colors"
-              >
+              <button onClick={onClose} className="btn btn-sm">
                 Cancel
               </button>
               <button
                 onClick={onApply}
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
-                           text-zinc-950 transition-all hover:brightness-110"
-                style={{ backgroundColor: workflow.color }}
+                className="btn"
+                style={{
+                  backgroundColor: workflow.color,
+                  color: "var(--c-base)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  padding: "8px 16px",
+                }}
               >
                 <Play size={14} strokeWidth={2.5} />
                 Apply moves
@@ -368,9 +441,14 @@ export function RunModal({
               onClick={() =>
                 onReveal(destFromOutput(result?.output ?? "", folder))
               }
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
-                         text-zinc-950 transition-all hover:brightness-110"
-              style={{ backgroundColor: workflow.color }}
+              className="btn"
+              style={{
+                backgroundColor: workflow.color,
+                color: "var(--c-base)",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "8px 16px",
+              }}
             >
               <FolderOpen size={14} strokeWidth={2.5} />
               Open in Finder
@@ -378,17 +456,16 @@ export function RunModal({
           )}
 
           {(phase === "done" || (phase === "preview" && failed)) && (
-            <button
-              onClick={onClose}
-              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-200
-                         border border-zinc-700/60 hover:border-zinc-500 hover:bg-zinc-800/60 transition-colors"
-            >
+            <button onClick={onClose} className="btn btn-sm">
               Close
             </button>
           )}
 
           {busy && (
-            <span className="inline-flex items-center gap-2 text-sm text-zinc-400 px-2">
+            <span
+              className="inline-flex items-center gap-2 text-sm px-2"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               <Spinner />
               {phase === "applying" ? "Moving files…" : "Scanning…"}
             </span>

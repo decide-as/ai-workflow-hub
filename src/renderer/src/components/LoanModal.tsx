@@ -9,8 +9,18 @@ interface Props {
 
 type Phase = "loading" | "form" | "generating" | "done" | "error";
 
+const OTHER = "__other__";
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function formatAccount(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
+  }
+  return raw;
 }
 
 function allowedBorrowersFor(
@@ -52,6 +62,9 @@ export function LoanModal({ workflow, onClose }: Props) {
   const [borrowers, setBorrowers] = useState<LoanStakeholder[]>([]);
   const [giving, setGiving] = useState("");
   const [receiving, setReceiving] = useState("");
+  const [customLenderName, setCustomLenderName] = useState("");
+  const [customBorrowerName, setCustomBorrowerName] = useState("");
+  const [customBorrowerAccount, setCustomBorrowerAccount] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
   const [location, setLocation] = useState("Oslo");
@@ -87,7 +100,7 @@ export function LoanModal({ workflow, onClose }: Props) {
   }, []);
 
   async function handleGenerate() {
-    if (!giving || !receiving || !amount || giving === receiving) return;
+    if (!canSubmit) return;
     setPhase("generating");
     setErrorMsg("");
     const result = await window.api.loanGenerate({
@@ -96,6 +109,18 @@ export function LoanModal({ workflow, onClose }: Props) {
       amount: Number(amount),
       date,
       location,
+      customGiving:
+        giving === OTHER
+          ? { name: customLenderName, account: "", type: "person" }
+          : undefined,
+      customReceiving:
+        receiving === OTHER
+          ? {
+              name: customBorrowerName,
+              account: formatAccount(customBorrowerAccount),
+              type: "company",
+            }
+          : undefined,
     });
     if (result.success) {
       setPhase("done");
@@ -110,9 +135,28 @@ export function LoanModal({ workflow, onClose }: Props) {
   const filteredBorrowers = selectedLender
     ? allowedBorrowersFor(selectedLender, borrowers)
     : borrowers;
-  const sameParty = giving !== "" && giving === receiving;
+
+  const effectiveLenderName = giving === OTHER ? customLenderName : giving;
+  const effectiveBorrowerName =
+    receiving === OTHER ? customBorrowerName : receiving;
+  const sameParty =
+    effectiveLenderName !== "" &&
+    effectiveLenderName === effectiveBorrowerName;
+
+  const lenderReady = giving !== OTHER || customLenderName.trim() !== "";
+  const borrowerReady =
+    receiving !== OTHER ||
+    (customBorrowerName.trim() !== "" &&
+      customBorrowerAccount.replace(/\D/g, "").length === 11);
+
   const canSubmit =
-    phase === "form" && giving && receiving && amount && !sameParty;
+    phase === "form" &&
+    giving &&
+    receiving &&
+    amount &&
+    !sameParty &&
+    lenderReady &&
+    borrowerReady;
 
   return (
     <div
@@ -201,59 +245,99 @@ export function LoanModal({ workflow, onClose }: Props) {
           {(phase === "form" || (phase === "error" && lenders.length > 0)) && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Lender">
-                  <div className="relative">
-                    <select
-                      value={giving}
-                      onChange={(e) => {
-                        const next = lenders.find(
-                          (l) => l.name === e.target.value,
-                        );
-                        setGiving(e.target.value);
-                        if (next) {
-                          const allowed = allowedBorrowersFor(next, borrowers);
-                          if (!allowed.find((b) => b.name === receiving)) {
-                            setReceiving(allowed[0]?.name ?? "");
+                <div className="flex flex-col gap-2">
+                  <Field label="Lender">
+                    <div className="relative">
+                      <select
+                        value={giving}
+                        onChange={(e) => {
+                          const next = lenders.find(
+                            (l) => l.name === e.target.value,
+                          );
+                          setGiving(e.target.value);
+                          if (next) {
+                            const allowed = allowedBorrowersFor(
+                              next,
+                              borrowers,
+                            );
+                            if (!allowed.find((b) => b.name === receiving)) {
+                              setReceiving(allowed[0]?.name ?? "");
+                            }
                           }
+                        }}
+                        className="form-input form-select"
+                      >
+                        {lenders.map((s) => (
+                          <option key={s.name} value={s.name}>
+                            {s.name}
+                          </option>
+                        ))}
+                        <option value={OTHER}>Other…</option>
+                      </select>
+                      <ChevronDown
+                        size={12}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: "var(--c-text-muted)" }}
+                      />
+                    </div>
+                  </Field>
+                  {giving === OTHER && (
+                    <input
+                      type="text"
+                      value={customLenderName}
+                      onChange={(e) => setCustomLenderName(e.target.value)}
+                      placeholder="Full name"
+                      className="form-input"
+                      autoFocus
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Borrower">
+                    <div className="relative">
+                      <select
+                        value={receiving}
+                        onChange={(e) => setReceiving(e.target.value)}
+                        className="form-input form-select"
+                      >
+                        {filteredBorrowers.map((s) => (
+                          <option key={s.name} value={s.name}>
+                            {s.type === "company"
+                              ? `${s.name} (${formatAccount(s.account)})`
+                              : s.name}
+                          </option>
+                        ))}
+                        <option value={OTHER}>Other…</option>
+                      </select>
+                      <ChevronDown
+                        size={12}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: "var(--c-text-muted)" }}
+                      />
+                    </div>
+                  </Field>
+                  {receiving === OTHER && (
+                    <>
+                      <input
+                        type="text"
+                        value={customBorrowerName}
+                        onChange={(e) => setCustomBorrowerName(e.target.value)}
+                        placeholder="Full name"
+                        className="form-input"
+                        autoFocus
+                      />
+                      <input
+                        type="text"
+                        value={customBorrowerAccount}
+                        onChange={(e) =>
+                          setCustomBorrowerAccount(e.target.value)
                         }
-                      }}
-                      className="form-input form-select"
-                    >
-                      {lenders.map((s) => (
-                        <option key={s.name} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={12}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: "var(--c-text-muted)" }}
-                    />
-                  </div>
-                </Field>
-                <Field label="Borrower">
-                  <div className="relative">
-                    <select
-                      value={receiving}
-                      onChange={(e) => setReceiving(e.target.value)}
-                      className="form-input form-select"
-                    >
-                      {filteredBorrowers.map((s) => (
-                        <option key={s.name} value={s.name}>
-                          {s.type === "company"
-                            ? `${s.name} (${s.account})`
-                            : s.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={12}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: "var(--c-text-muted)" }}
-                    />
-                  </div>
-                </Field>
+                        placeholder="xxxx.xx.xxxxx"
+                        className="form-input"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
 
               {sameParty && (
