@@ -58,4 +58,4 @@ The modal always displays `updated` as the workflow's version number — "Update
 - [ ] Icon name is registered in `src/renderer/src/lib/icons.tsx`
 - [ ] `added` and `updated` are real dates derived from `date +%Y-%m-%d`
 - [ ] `inputs` and `outputs` are both present (even if empty list for inputs on action-driven cards)
-- [ ] Version bumped if outputs or behavior changed
+- [ ] `updated` set to today if description, action, inputs, outputs, color, icon, or behavior changed
