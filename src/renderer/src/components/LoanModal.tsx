@@ -9,8 +9,18 @@ interface Props {
 
 type Phase = "loading" | "form" | "generating" | "done" | "error";
 
+const OTHER = "__other__";
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function formatAccount(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
+  }
+  return raw;
 }
 
 function Field({
@@ -39,6 +49,9 @@ export function LoanModal({ workflow, onClose }: Props) {
   const [borrowers, setBorrowers] = useState<LoanStakeholder[]>([]);
   const [giving, setGiving] = useState("");
   const [receiving, setReceiving] = useState("");
+  const [customLenderName, setCustomLenderName] = useState("");
+  const [customBorrowerName, setCustomBorrowerName] = useState("");
+  const [customBorrowerAccount, setCustomBorrowerAccount] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
   const [location, setLocation] = useState("Oslo");
@@ -72,7 +85,7 @@ export function LoanModal({ workflow, onClose }: Props) {
   }, []);
 
   async function handleGenerate() {
-    if (!giving || !receiving || !amount || giving === receiving) return;
+    if (!canSubmit) return;
     setPhase("generating");
     setErrorMsg("");
     const result = await window.api.loanGenerate({
@@ -81,6 +94,18 @@ export function LoanModal({ workflow, onClose }: Props) {
       amount: Number(amount),
       date,
       location,
+      customGiving:
+        giving === OTHER
+          ? { name: customLenderName, account: "", type: "person" }
+          : undefined,
+      customReceiving:
+        receiving === OTHER
+          ? {
+              name: customBorrowerName,
+              account: formatAccount(customBorrowerAccount),
+              type: "company",
+            }
+          : undefined,
     });
     if (result.success) {
       setPhase("done");
@@ -91,9 +116,28 @@ export function LoanModal({ workflow, onClose }: Props) {
   }
 
   const color = workflow.color ?? "#6366f1";
-  const sameParty = giving !== "" && giving === receiving;
+
+  const effectiveLenderName = giving === OTHER ? customLenderName : giving;
+  const effectiveBorrowerName =
+    receiving === OTHER ? customBorrowerName : receiving;
+  const sameParty =
+    effectiveLenderName !== "" &&
+    effectiveLenderName === effectiveBorrowerName;
+
+  const lenderReady = giving !== OTHER || customLenderName.trim() !== "";
+  const borrowerReady =
+    receiving !== OTHER ||
+    (customBorrowerName.trim() !== "" &&
+      customBorrowerAccount.replace(/\D/g, "").length === 11);
+
   const canSubmit =
-    phase === "form" && giving && receiving && amount && !sameParty;
+    phase === "form" &&
+    giving &&
+    receiving &&
+    amount &&
+    !sameParty &&
+    lenderReady &&
+    borrowerReady;
 
   return (
     <div
@@ -137,34 +181,71 @@ export function LoanModal({ workflow, onClose }: Props) {
           {(phase === "form" || (phase === "error" && lenders.length > 0)) && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Lender">
-                  <select
-                    value={giving}
-                    onChange={(e) => setGiving(e.target.value)}
-                    className={SELECT_CLS}
-                  >
-                    {lenders.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Borrower">
-                  <select
-                    value={receiving}
-                    onChange={(e) => setReceiving(e.target.value)}
-                    className={SELECT_CLS}
-                  >
-                    {borrowers.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.type === "company"
-                          ? `${s.name} (${s.account})`
-                          : s.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+                <div className="flex flex-col gap-2">
+                  <Field label="Lender">
+                    <select
+                      value={giving}
+                      onChange={(e) => setGiving(e.target.value)}
+                      className={SELECT_CLS}
+                    >
+                      {lenders.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                      <option value={OTHER}>Other…</option>
+                    </select>
+                  </Field>
+                  {giving === OTHER && (
+                    <input
+                      type="text"
+                      value={customLenderName}
+                      onChange={(e) => setCustomLenderName(e.target.value)}
+                      placeholder="Full name"
+                      className={INPUT_CLS}
+                      autoFocus
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Borrower">
+                    <select
+                      value={receiving}
+                      onChange={(e) => setReceiving(e.target.value)}
+                      className={SELECT_CLS}
+                    >
+                      {borrowers.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.type === "company"
+                            ? `${s.name} (${formatAccount(s.account)})`
+                            : s.name}
+                        </option>
+                      ))}
+                      <option value={OTHER}>Other…</option>
+                    </select>
+                  </Field>
+                  {receiving === OTHER && (
+                    <>
+                      <input
+                        type="text"
+                        value={customBorrowerName}
+                        onChange={(e) => setCustomBorrowerName(e.target.value)}
+                        placeholder="Full name"
+                        className={INPUT_CLS}
+                        autoFocus
+                      />
+                      <input
+                        type="text"
+                        value={customBorrowerAccount}
+                        onChange={(e) =>
+                          setCustomBorrowerAccount(e.target.value)
+                        }
+                        placeholder="xxxx.xx.xxxxx"
+                        className={INPUT_CLS}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
 
               {sameParty && (
