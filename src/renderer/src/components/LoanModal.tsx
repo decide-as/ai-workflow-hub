@@ -13,6 +13,14 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function allowedBorrowersFor(
+  lender: LoanStakeholder,
+  allBorrowers: LoanStakeholder[],
+): LoanStakeholder[] {
+  if (!lender.allowedBorrowers?.length) return allBorrowers;
+  return allBorrowers.filter((b) => lender.allowedBorrowers!.includes(b.name));
+}
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -66,8 +74,10 @@ export function LoanModal({ workflow, onClose }: Props) {
       ) {
         setLenders(result.lenders);
         setBorrowers(result.borrowers);
-        setGiving(result.lenders[0].name);
-        setReceiving(result.borrowers[0].name);
+        const firstLender = result.lenders[0];
+        setGiving(firstLender.name);
+        const allowed = allowedBorrowersFor(firstLender, result.borrowers);
+        setReceiving(allowed[0]?.name ?? "");
         setPhase("form");
       } else {
         setErrorMsg(result.error ?? "Could not load parties");
@@ -96,6 +106,10 @@ export function LoanModal({ workflow, onClose }: Props) {
   }
 
   const color = workflow.color ?? "#6366f1";
+  const selectedLender = lenders.find((l) => l.name === giving);
+  const filteredBorrowers = selectedLender
+    ? allowedBorrowersFor(selectedLender, borrowers)
+    : borrowers;
   const sameParty = giving !== "" && giving === receiving;
   const canSubmit =
     phase === "form" && giving && receiving && amount && !sameParty;
@@ -191,7 +205,18 @@ export function LoanModal({ workflow, onClose }: Props) {
                   <div className="relative">
                     <select
                       value={giving}
-                      onChange={(e) => setGiving(e.target.value)}
+                      onChange={(e) => {
+                        const next = lenders.find(
+                          (l) => l.name === e.target.value,
+                        );
+                        setGiving(e.target.value);
+                        if (next) {
+                          const allowed = allowedBorrowersFor(next, borrowers);
+                          if (!allowed.find((b) => b.name === receiving)) {
+                            setReceiving(allowed[0]?.name ?? "");
+                          }
+                        }
+                      }}
                       className="form-input form-select"
                     >
                       {lenders.map((s) => (
@@ -214,7 +239,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                       onChange={(e) => setReceiving(e.target.value)}
                       className="form-input form-select"
                     >
-                      {borrowers.map((s) => (
+                      {filteredBorrowers.map((s) => (
                         <option key={s.name} value={s.name}>
                           {s.type === "company"
                             ? `${s.name} (${s.account})`
