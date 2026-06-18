@@ -268,10 +268,8 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC.LOAN_INTEREST_DELETE_TRANSACTION, (_, id) =>
     loanInterestDeleteTransaction(id),
   );
-  ipcMain.handle(
-    IPC.LOAN_INTEREST_CALCULATE,
-    (_, lender, borrower, toDate) =>
-      loanInterestCalculate(lender, borrower, toDate),
+  ipcMain.handle(IPC.LOAN_INTEREST_CALCULATE, (_, lender, borrower, toDate) =>
+    loanInterestCalculate(lender, borrower, toDate),
   );
 
   ipcMain.handle(

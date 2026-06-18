@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { X, TrendingUp, Loader2, Plus, Pencil, Trash2, Check } from "lucide-react";
+import {
+  X,
+  TrendingUp,
+  Loader2,
+  Plus,
+  Pencil,
+  Trash2,
+  Check,
+} from "lucide-react";
 import type {
   LoanStakeholder,
   LoanTransaction,
@@ -99,7 +107,11 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
   // Load stakeholders
   useEffect(() => {
     window.api.loanGetStakeholders().then((result) => {
-      if (result.success && result.lenders?.length && result.borrowers?.length) {
+      if (
+        result.success &&
+        result.lenders?.length &&
+        result.borrowers?.length
+      ) {
         setLenders(result.lenders);
         setBorrowers(result.borrowers);
         const firstLender = result.lenders[0];
@@ -116,7 +128,8 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
 
   // Load transactions when pair changes
   useEffect(() => {
-    if (!giving || !receiving || phase === "loading" || phase === "error") return;
+    if (!giving || !receiving || phase === "loading" || phase === "error")
+      return;
     setPhase("managing");
     setPeriods([]);
     setEditingId(null);
@@ -128,7 +141,7 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
         setErrorMsg(result.error ?? "Could not load transactions");
       }
     });
-  }, [giving, receiving]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [giving, receiving]);
 
   async function handleSaveEdit(tx: LoanTransaction) {
     setSaving(true);
@@ -188,7 +201,11 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
   async function handleCalculate() {
     setPhase("calculating");
     setErrorMsg("");
-    const result = await window.api.loanInterestCalculate(giving, receiving, toDate);
+    const result = await window.api.loanInterestCalculate(
+      giving,
+      receiving,
+      toDate,
+    );
     if (result.success && result.periods) {
       setPeriods(result.periods);
       setTotalInterest(result.totalInterest ?? 0);
@@ -262,7 +279,9 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
                   <select
                     value={giving}
                     onChange={(e) => {
-                      const next = lenders.find((l) => l.name === e.target.value);
+                      const next = lenders.find(
+                        (l) => l.name === e.target.value,
+                      );
                       setGiving(e.target.value);
                       if (next) {
                         const allowed = allowedBorrowersFor(next, borrowers);
@@ -338,7 +357,9 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
                                 onChange={(e) =>
                                   setEditForm((f) => ({
                                     ...f,
-                                    type: e.target.value as "loan" | "repayment",
+                                    type: e.target.value as
+                                      | "loan"
+                                      | "repayment",
                                   }))
                                 }
                                 className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-100 focus:outline-none"
@@ -573,7 +594,8 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
                     </div>
                   </div>
                   <p className="text-xs text-zinc-600">
-                    Calculated to {toDate} using skjermingsrente from skatteetaten.no
+                    Calculated to {toDate} using skjermingsrente from
+                    skatteetaten.no
                   </p>
                 </div>
               )}
