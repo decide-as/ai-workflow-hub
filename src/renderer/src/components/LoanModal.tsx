@@ -32,16 +32,13 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-zinc-400">{label}</label>
+      <label className="text-xs font-medium" style={{ color: "var(--c-text-muted)" }}>
+        {label}
+      </label>
       {children}
     </div>
   );
 }
-
-const SELECT_CLS =
-  "w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-zinc-500 transition-colors";
-const INPUT_CLS =
-  "w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors";
 
 export function LoanModal({ workflow, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("loading");
@@ -141,38 +138,59 @@ export function LoanModal({ workflow, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="relative w-full max-w-lg bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl flex flex-col">
+      <div className="modal-overlay absolute inset-0" />
+      <div className="modal-panel relative z-10 w-full max-w-lg animate-slide-up flex flex-col">
+        {/* Accent stripe */}
+        <div
+          className="h-px w-full rounded-t-[18px] shrink-0"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${color}99, transparent)`,
+          }}
+        />
+
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-zinc-800 shrink-0">
+        <div
+          className="flex items-center gap-3 px-5 py-4 shrink-0"
+          style={{ borderBottom: "1px solid var(--c-border)" }}
+        >
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${color}22` }}
+            style={{ backgroundColor: `${color}18` }}
           >
             <FileText size={16} style={{ color }} strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-zinc-100">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--c-text)" }}>
               New loan agreement
             </h2>
-            <p className="text-xs text-zinc-500 truncate">
+            <p className="text-xs truncate" style={{ color: "var(--c-text-muted)" }}>
               {workflow.summary ?? workflow.description}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded"
+            className="btn shrink-0 w-8 h-8"
+            style={{ color: "var(--c-text-muted)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(169,146,125,0.06)";
+              e.currentTarget.style.color = "var(--c-text)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--c-text-muted)";
+            }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
         {/* Body */}
         <div className="px-5 py-5 flex flex-col gap-4">
           {phase === "loading" && (
-            <div className="flex items-center justify-center gap-2 py-10 text-zinc-500">
+            <div className="flex items-center justify-center gap-2 py-10" style={{ color: "var(--c-text-muted)" }}>
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">Loading parties…</span>
             </div>
@@ -186,7 +204,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     <select
                       value={giving}
                       onChange={(e) => setGiving(e.target.value)}
-                      className={SELECT_CLS}
+                      className="form-input form-select"
                     >
                       {lenders.map((s) => (
                         <option key={s.name} value={s.name}>
@@ -202,7 +220,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                       value={customLenderName}
                       onChange={(e) => setCustomLenderName(e.target.value)}
                       placeholder="Full name"
-                      className={INPUT_CLS}
+                      className="form-input"
                       autoFocus
                     />
                   )}
@@ -212,7 +230,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     <select
                       value={receiving}
                       onChange={(e) => setReceiving(e.target.value)}
-                      className={SELECT_CLS}
+                      className="form-input form-select"
                     >
                       {borrowers.map((s) => (
                         <option key={s.name} value={s.name}>
@@ -231,7 +249,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                         value={customBorrowerName}
                         onChange={(e) => setCustomBorrowerName(e.target.value)}
                         placeholder="Full name"
-                        className={INPUT_CLS}
+                        className="form-input"
                         autoFocus
                       />
                       <input
@@ -241,7 +259,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                           setCustomBorrowerAccount(e.target.value)
                         }
                         placeholder="xxxx.xx.xxxxx"
-                        className={INPUT_CLS}
+                        className="form-input"
                       />
                     </>
                   )}
@@ -249,7 +267,7 @@ export function LoanModal({ workflow, onClose }: Props) {
               </div>
 
               {sameParty && (
-                <p className="text-xs text-red-400 bg-red-950/30 border border-red-700/30 rounded-lg px-3 py-2">
+                <p className="error-banner text-xs">
                   Lender and borrower cannot be the same party.
                 </p>
               )}
@@ -261,7 +279,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="500 000"
-                  className={INPUT_CLS}
+                  className="form-input"
                 />
               </Field>
 
@@ -271,7 +289,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className={INPUT_CLS}
+                    className="form-input"
                   />
                 </Field>
                 <Field label="Location">
@@ -279,22 +297,20 @@ export function LoanModal({ workflow, onClose }: Props) {
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className={INPUT_CLS}
+                    className="form-input"
                   />
                 </Field>
               </div>
 
               {phase === "error" && errorMsg && (
-                <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
-                  {errorMsg}
-                </p>
+                <p className="error-banner text-xs">{errorMsg}</p>
               )}
             </>
           )}
 
           {phase === "generating" && (
-            <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
-              <Loader2 size={24} className="animate-spin text-zinc-500" />
+            <div className="flex flex-col items-center gap-3 py-10" style={{ color: "var(--c-text-muted)" }}>
+              <Loader2 size={24} className="animate-spin" />
               <p className="text-sm">
                 Fetching interest rate and generating PDF…
               </p>
@@ -306,44 +322,47 @@ export function LoanModal({ workflow, onClose }: Props) {
               <div className="w-10 h-10 rounded-full bg-green-950/60 border border-green-700/40 flex items-center justify-center text-green-400 text-lg mb-1">
                 ✓
               </div>
-              <p className="text-sm font-medium text-zinc-100">
+              <p className="text-sm font-medium" style={{ color: "var(--c-text)" }}>
                 PDF saved and opened in Finder
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs mt-1" style={{ color: "var(--c-text-muted)" }}>
                 Saved to workflow-hub-data/loan-agreement/data/
               </p>
             </div>
           )}
 
           {phase === "error" && lenders.length === 0 && (
-            <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
-              {errorMsg}
-            </p>
+            <p className="error-banner text-xs">{errorMsg}</p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-zinc-800 shrink-0">
+        <div
+          className="flex items-center justify-end gap-2 px-5 py-3 shrink-0"
+          style={{ borderTop: "1px solid var(--c-border)" }}
+        >
           {phase === "done" ? (
-            <button
-              onClick={onClose}
-              className="px-4 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-            >
+            <button onClick={onClose} className="btn btn-sm">
               Close
             </button>
           ) : (
             <>
-              <button
-                onClick={onClose}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-              >
+              <button onClick={onClose} className="btn btn-sm">
                 Cancel
               </button>
               <button
                 onClick={handleGenerate}
                 disabled={!canSubmit}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ backgroundColor: canSubmit ? color : undefined }}
+                className="btn"
+                style={{
+                  backgroundColor: canSubmit ? color : undefined,
+                  color: canSubmit ? "var(--c-base)" : undefined,
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  padding: "5px 14px",
+                  opacity: canSubmit ? 1 : 0.38,
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                }}
               >
                 <FileText size={12} />
                 Generate →
