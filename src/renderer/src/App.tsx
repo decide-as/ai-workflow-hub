@@ -34,6 +34,7 @@ import { TranscribeModal } from "./components/TranscribeModal";
 import { ReadingListModal } from "./components/ReadingListModal";
 import { CalendarModal } from "./components/CalendarModal";
 import { LoanModal } from "./components/LoanModal";
+import { LoanInterestModal } from "./components/LoanInterestModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -150,6 +151,8 @@ export default function App() {
     null,
   );
   const [loanWorkflow, setLoanWorkflow] = useState<Workflow | null>(null);
+  const [loanInterestWorkflow, setLoanInterestWorkflow] =
+    useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -345,6 +348,8 @@ export default function App() {
       setCalendarWorkflow(w);
     } else if (w?.action === "loan") {
       setLoanWorkflow(w);
+    } else if (w?.action === "loan-interest") {
+      setLoanInterestWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -540,6 +545,13 @@ export default function App() {
         <LoanModal
           workflow={loanWorkflow}
           onClose={() => setLoanWorkflow(null)}
+        />
+      )}
+
+      {loanInterestWorkflow && (
+        <LoanInterestModal
+          workflow={loanInterestWorkflow}
+          onClose={() => setLoanInterestWorkflow(null)}
         />
       )}
 

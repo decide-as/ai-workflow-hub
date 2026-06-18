@@ -166,6 +166,50 @@ workflows:
         description: >
           Print-ready Norwegian loan agreement (HTML → browser print-to-PDF)
           with auto-fetched interest rate, party names, positions, and account numbers.
+  - id: 0db025cf-dae4-40d2-bbd6-7e2e93a0ce0c
+    name: Accrued Loan Interest
+    summary: Calculate accumulated interest on inter-company and personal loans.
+    description: >
+      Select a lender and borrower, manage all loan disbursements and repayments,
+      then calculate the accrued interest expense for bookkeeping. Uses the current
+      skjermingsrente from skatteetaten.no, respects bimonthly rate changes, and
+      applies the FIFO method when repayments reduce outstanding principal.
+      Transactions are stored in workflow-hub-data/loan-interest/transactions.json.
+    tags: [finance, loan, accounting, interest]
+    repo_path: /Users/christianbraathen/Repositories/upon
+    color: "#6366f1"
+    icon: TrendingUp
+    cluster_id: finance
+    added: "2026-06-18"
+    updated: "2026-06-18"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: loan-interest
+    inputs:
+      - name: lender
+        type: string
+        description: Party lending the money
+        required: true
+        example: Christian Braathen
+      - name: borrower
+        type: string
+        description: Party borrowing the money
+        required: true
+        example: Bæredyktig AS
+      - name: to_date
+        type: date
+        description: Calculate accrued interest up to this date (defaults to today)
+        required: false
+        example: "2026-06-18"
+    outputs:
+      - name: interest_calculation
+        type: json
+        description: >
+          Period-by-period interest breakdown with rate, balance, days, and interest
+          amount per bimonthly period, plus total accrued interest for bookkeeping.
   - id: 145bb544-5270-4288-9afd-1284a7edcce7
     name: Voice Transcriber
     summary: Record speech → text, auto-copied to clipboard.
