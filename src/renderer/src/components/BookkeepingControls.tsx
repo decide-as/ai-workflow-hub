@@ -49,9 +49,7 @@ export function BookkeepingControls({ workflow }: Props) {
     );
 
     if (imageFiles.length === 0) {
-      setErrorMsg(
-        "No image or PDF files found. Drop bank statement screenshots.",
-      );
+      setErrorMsg("No image or PDF files found.");
       setPhase("error");
       return;
     }
@@ -61,21 +59,17 @@ export function BookkeepingControls({ workflow }: Props) {
     setFolders([]);
     setErrorMsg("");
 
-    // Open folder picker with the default dir pre-selected
     const outputDir = await window.api.pickFolder(
       "Choose where to create voucher folders",
       defaultOutputDir,
     );
 
     if (!outputDir) {
-      // User cancelled
       setPhase("idle");
       return;
     }
 
-    setStatus(
-      `Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`,
-    );
+    setStatus(`Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`);
 
     let droppedFiles: DroppedFile[];
     try {
@@ -93,10 +87,7 @@ export function BookkeepingControls({ workflow }: Props) {
 
     setStatus("Claude is reading the bank statement…");
 
-    const result = await window.api.createVoucherFolders(
-      droppedFiles,
-      outputDir,
-    );
+    const result = await window.api.createVoucherFolders(droppedFiles, outputDir);
 
     if (!result.success) {
       setErrorMsg(result.error ?? "Unknown error");
@@ -149,84 +140,55 @@ export function BookkeepingControls({ workflow }: Props) {
   if (phase === "processing") {
     return (
       <div
-        className="flex flex-col items-center justify-center gap-2 py-4"
+        className="flex items-center gap-1.5"
         onClick={(e) => e.stopPropagation()}
       >
-        <Loader2 size={18} className="animate-spin text-zinc-400" />
-        <p className="text-xs text-zinc-500 text-center">{status}</p>
+        <Loader2 size={11} className="animate-spin shrink-0" style={{ color: "var(--c-text-muted)" }} />
+        <span className="text-[11px] truncate" style={{ color: "var(--c-text-muted)" }}>
+          {status}
+        </span>
       </div>
     );
   }
 
   if (phase === "done") {
     return (
-      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start gap-2">
-          <CheckCircle2
-            size={15}
-            className="text-emerald-400 shrink-0 mt-0.5"
-          />
-          <p className="text-xs text-emerald-400 font-medium">
-            {folders.length} folder{folders.length !== 1 ? "s" : ""} created
-          </p>
-        </div>
-        {folders.length > 0 && (
-          <ul className="text-[11px] text-zinc-500 space-y-0.5 max-h-28 overflow-y-auto">
-            {folders.map((f) => (
-              <li key={f} className="truncate leading-snug">
-                📁 {f}
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="flex gap-1.5 pt-1">
-          <button
-            onClick={handleReveal}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium
-                       border border-zinc-700/60 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600
-                       hover:bg-zinc-800/60 transition-all duration-150
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-          >
-            <FolderOpen size={13} />
-            Show in Finder
-          </button>
-          <button
-            onClick={reset}
-            className="w-9 h-9 flex items-center justify-center rounded-xl border border-zinc-700/60
-                       text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 hover:bg-zinc-800/60
-                       transition-all duration-150
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-            title="Process another statement"
-          >
-            <RotateCcw size={13} />
-          </button>
-        </div>
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CheckCircle2 size={11} className="shrink-0 text-emerald-400" />
+        <span className="text-[11px] text-emerald-400 flex-1 truncate">
+          {folders.length} folder{folders.length !== 1 ? "s" : ""} created
+        </span>
+        <button onClick={handleReveal} className="btn btn-sm shrink-0">
+          <FolderOpen size={11} />
+          Reveal
+        </button>
+        <button onClick={reset} className="btn btn-sm w-7 h-7 p-0 shrink-0" title="Process another">
+          <RotateCcw size={11} />
+        </button>
       </div>
     );
   }
 
   if (phase === "error") {
     return (
-      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start gap-2">
-          <XCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-red-400 leading-snug">{errorMsg}</p>
-        </div>
-        <button
-          onClick={reset}
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium
-                     border border-zinc-700/60 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600
-                     hover:bg-zinc-800/60 transition-all duration-150
-                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900"
-        >
-          <RotateCcw size={12} />
-          Try again
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <XCircle size={11} className="shrink-0 text-red-400" />
+        <span className="text-[11px] text-red-400 flex-1 truncate">{errorMsg}</span>
+        <button onClick={reset} className="btn btn-sm shrink-0">
+          <RotateCcw size={11} />
+          Retry
         </button>
       </div>
     );
   }
 
-  // idle — drop zone
+  // idle — compact single-row drop strip
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <label
@@ -235,19 +197,16 @@ export function BookkeepingControls({ workflow }: Props) {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={[
-          "flex flex-col items-center justify-center gap-2 rounded-xl py-4 cursor-pointer",
-          "border-2 border-dashed transition-all duration-150",
+          "flex items-center gap-2 rounded-lg px-3 cursor-pointer w-full",
+          "border border-dashed transition-all duration-150",
           dragOver
             ? "border-zinc-500 bg-zinc-800/60 text-zinc-300"
             : "border-zinc-700/60 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/30",
         ].join(" ")}
+        style={{ height: "28px" }}
       >
-        <Upload size={16} className="shrink-0" />
-        <span className="text-xs text-center leading-snug px-2">
-          Drop bank statement
-          <br />
-          screenshots here
-        </span>
+        <Upload size={11} className="shrink-0" />
+        <span className="text-[11px] truncate">Drop bank statement screenshots here</span>
         <input
           type="file"
           accept="image/*,.pdf"
