@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2026-06-18
+
+### Added
+
+- "Other…" option in Loan Agreement lender and borrower dropdowns — selecting it reveals a name field (lender) or name + bank account fields (borrower), allowing ad-hoc parties not in the registry.
+- Bank account formatting helper that auto-formats 11-digit Norwegian account numbers as `xxxx.xx.xxxxx` in dropdown labels and PDF generation.
+
+### Changed
+
+- Loan Agreement modal now filters available borrowers based on the selected lender's `allowedBorrowers` list, with ChevronDown indicator and updated layout matching main branch improvements.
+- Six native modals (LoanModal, RunModal, LogModal, CalendarModal, TranscribeModal, ReadingListModal) rethemed from hardcoded dark zinc Tailwind classes to the app's CSS variable design system, enabling correct rendering in both dark and light themes.
+
+### Removed
+
+- Valentina Valkova and Vshape Nails AS removed from the loan agreement stakeholder registry.
+
 ## [0.18.0] - 2026-06-18
 
 ### Added
