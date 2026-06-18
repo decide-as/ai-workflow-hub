@@ -40,6 +40,7 @@ export interface LoanStakeholder {
   name: string;
   account: string;
   type: "person" | "company";
+  allowedBorrowers?: string[];
 }
 
 export interface LoanFormData {
