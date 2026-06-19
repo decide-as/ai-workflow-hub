@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.3] - 2026-06-19
+
+### Fixed
+
+- Bundle registry into production app build so workflow cards load correctly in packaged builds.
+- Compact `BookkeepingControls` idle state to a single-row drop target, eliminating the card height inconsistency in the grid.
+- Ensure all workflow cards share a uniform minimum height via CSS `min-height` on the description element.
+
 ## [0.19.2] - 2026-06-18
 
 ### Fixed
