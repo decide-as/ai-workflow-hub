@@ -6,6 +6,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.2] - 2026-06-18
+
+### Fixed
+
+- `stage-all-files.sh` now detects and unstages symlinks pointing to gitignored directories (e.g. a `node_modules` worktree symlink), preventing accidental commits of ignored paths.
+
+## [0.19.1] - 2026-06-18
+
+### Fixed
+
+- Remove accidentally committed `node_modules` symlink from the repository.
+
+## [0.19.0] - 2026-06-18
+
+### Added
+
+- "Other…" option in Loan Agreement lender and borrower dropdowns — selecting it reveals a name field (lender) or name + bank account fields (borrower), allowing ad-hoc parties not in the registry.
+- Bank account formatting helper that auto-formats 11-digit Norwegian account numbers as `xxxx.xx.xxxxx` in dropdown labels and PDF generation.
+
+### Changed
+
+- Loan Agreement modal now filters available borrowers based on the selected lender's `allowedBorrowers` list, with ChevronDown indicator and updated layout matching main branch improvements.
+- Six native modals (LoanModal, RunModal, LogModal, CalendarModal, TranscribeModal, ReadingListModal) rethemed from hardcoded dark zinc Tailwind classes to the app's CSS variable design system, enabling correct rendering in both dark and light themes.
+
+### Removed
+
+- Valentina Valkova and Vshape Nails AS removed from the loan agreement stakeholder registry.
+
+## [0.18.0] - 2026-06-18
+
+### Added
+
+- New lender "Valentina Valkova" and borrower "Vshape Nails AS" registered in loan stakeholders
+- Conditional borrower filtering per lender: each lender now has an `allowedBorrowers` list so only relevant counterparties appear in the dropdown
+- New "Accrued Loan Interest" workstream (`loan-interest` action) with a full transaction management modal — add, edit, delete loan disbursements and repayments per lender/borrower pair
+- Skjermingsrente lookup from skatteetaten.no for automatic rate retrieval per bimonthly period
+
+### Fixed
+
+- Interest calculation now locks the skjermingsrente at the tranche creation date; rate changes after a loan is made no longer retroactively affect outstanding tranches (FIFO repayment order preserved)
+
+## [0.17.1] - 2026-06-18
+
+### Changed
+
+- Workflow modal now always shows the `updated` date as the version ("Updated DD Mon YYYY") instead of the optional semver version field — the date is always visible and always meaningful to users.
+- LoanModal restyled to use the app's shared design tokens (`modal-panel`, `form-input`, `btn`, CSS variables) for visual consistency with other modals.
+- Registry rule updated to document `updated` as the canonical user-facing version, with a corrected checklist item.
+
 ## [0.17.0] - 2026-06-17
 
 ### Added

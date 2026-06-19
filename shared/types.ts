@@ -34,12 +34,14 @@ export type WorkflowAction =
   | "reading-list"
   | "calendar"
   | "loan"
+  | "loan-interest"
   | "bookkeeping";
 
 export interface LoanStakeholder {
   name: string;
   account: string;
   type: "person" | "company";
+  allowedBorrowers?: string[];
 }
 
 export interface LoanFormData {
@@ -48,6 +50,8 @@ export interface LoanFormData {
   amount: number;
   date: string;
   location: string;
+  customGiving?: LoanStakeholder;
+  customReceiving?: LoanStakeholder;
 }
 
 export interface LoanStakeholdersResult {
@@ -280,6 +284,47 @@ export interface VoucherFolderResult {
   success: boolean;
   output: string;
   folders: string[];
+  error?: string;
+}
+
+export interface LoanTransaction {
+  id: string;
+  lender: string;
+  borrower: string;
+  date: string;
+  type: "loan" | "repayment";
+  amount: number;
+}
+
+export interface LoanTransactionsResult {
+  success: boolean;
+  transactions?: LoanTransaction[];
+  error?: string;
+}
+
+export interface LoanTransactionSaveResult {
+  success: boolean;
+  transaction?: LoanTransaction;
+  error?: string;
+}
+
+export interface LoanTransactionDeleteResult {
+  success: boolean;
+  error?: string;
+}
+
+export interface LoanInterestPeriod {
+  label: string;
+  rate: number;
+  balance: number;
+  days: number;
+  interest: number;
+}
+
+export interface LoanInterestResult {
+  success: boolean;
+  periods?: LoanInterestPeriod[];
+  totalInterest?: number;
   error?: string;
 }
 

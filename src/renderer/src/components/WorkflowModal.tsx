@@ -10,7 +10,6 @@ import {
   Zap,
   DollarSign,
   Cpu,
-  GitBranch,
   User,
   AlertCircle,
   CheckCircle2,
@@ -341,14 +340,13 @@ export function WorkflowModal({
                   <span className="capitalize">{cluster.name}</span>
                 </span>
               )}
-              {workflow.version && (
-                <span
-                  className="inline-flex items-center gap-1 text-[11px]"
-                  style={{ color: "var(--c-text-subtle)" }}
-                >
-                  <GitBranch size={10} />v{workflow.version}
-                </span>
-              )}
+              <span
+                className="inline-flex items-center gap-1 text-[11px]"
+                style={{ color: "var(--c-text-subtle)" }}
+              >
+                <Calendar size={10} />
+                Updated {formatDate(workflow.updated)}
+              </span>
               {workflow.complexity && (
                 <span
                   className="text-[11px] capitalize"

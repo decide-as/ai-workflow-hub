@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, FileText, Loader2 } from "lucide-react";
+import { X, FileText, Loader2, Calendar, ChevronDown } from "lucide-react";
 import type { LoanStakeholder, Workflow } from "../../../../shared/types";
 
 interface Props {
@@ -9,8 +9,34 @@ interface Props {
 
 type Phase = "loading" | "form" | "generating" | "done" | "error";
 
+const OTHER = "__other__";
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function formatAccount(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
+  }
+  return raw;
+}
+
+function allowedBorrowersFor(
+  lender: LoanStakeholder,
+  allBorrowers: LoanStakeholder[],
+): LoanStakeholder[] {
+  if (!lender.allowedBorrowers?.length) return allBorrowers;
+  return allBorrowers.filter((b) => lender.allowedBorrowers!.includes(b.name));
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function Field({
@@ -22,16 +48,13 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-zinc-400">{label}</label>
+      <label className="text-[11px]" style={{ color: "var(--c-text-muted)" }}>
+        {label}
+      </label>
       {children}
     </div>
   );
 }
-
-const SELECT_CLS =
-  "w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-zinc-500 transition-colors";
-const INPUT_CLS =
-  "w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors";
 
 export function LoanModal({ workflow, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("loading");
@@ -39,6 +62,9 @@ export function LoanModal({ workflow, onClose }: Props) {
   const [borrowers, setBorrowers] = useState<LoanStakeholder[]>([]);
   const [giving, setGiving] = useState("");
   const [receiving, setReceiving] = useState("");
+  const [customLenderName, setCustomLenderName] = useState("");
+  const [customBorrowerName, setCustomBorrowerName] = useState("");
+  const [customBorrowerAccount, setCustomBorrowerAccount] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
   const [location, setLocation] = useState("Oslo");
@@ -61,8 +87,10 @@ export function LoanModal({ workflow, onClose }: Props) {
       ) {
         setLenders(result.lenders);
         setBorrowers(result.borrowers);
-        setGiving(result.lenders[0].name);
-        setReceiving(result.borrowers[0].name);
+        const firstLender = result.lenders[0];
+        setGiving(firstLender.name);
+        const allowed = allowedBorrowersFor(firstLender, result.borrowers);
+        setReceiving(allowed[0]?.name ?? "");
         setPhase("form");
       } else {
         setErrorMsg(result.error ?? "Could not load parties");
@@ -72,7 +100,7 @@ export function LoanModal({ workflow, onClose }: Props) {
   }, []);
 
   async function handleGenerate() {
-    if (!giving || !receiving || !amount || giving === receiving) return;
+    if (!canSubmit) return;
     setPhase("generating");
     setErrorMsg("");
     const result = await window.api.loanGenerate({
@@ -81,6 +109,18 @@ export function LoanModal({ workflow, onClose }: Props) {
       amount: Number(amount),
       date,
       location,
+      customGiving:
+        giving === OTHER
+          ? { name: customLenderName, account: "", type: "person" }
+          : undefined,
+      customReceiving:
+        receiving === OTHER
+          ? {
+              name: customBorrowerName,
+              account: formatAccount(customBorrowerAccount),
+              type: "company",
+            }
+          : undefined,
     });
     if (result.success) {
       setPhase("done");
@@ -91,84 +131,224 @@ export function LoanModal({ workflow, onClose }: Props) {
   }
 
   const color = workflow.color ?? "#6366f1";
-  const sameParty = giving !== "" && giving === receiving;
+  const selectedLender = lenders.find((l) => l.name === giving);
+  const filteredBorrowers = selectedLender
+    ? allowedBorrowersFor(selectedLender, borrowers)
+    : borrowers;
+
+  const effectiveLenderName = giving === OTHER ? customLenderName : giving;
+  const effectiveBorrowerName =
+    receiving === OTHER ? customBorrowerName : receiving;
+  const sameParty =
+    effectiveLenderName !== "" &&
+    effectiveLenderName === effectiveBorrowerName;
+
+  const lenderReady = giving !== OTHER || customLenderName.trim() !== "";
+  const borrowerReady =
+    receiving !== OTHER ||
+    (customBorrowerName.trim() !== "" &&
+      customBorrowerAccount.replace(/\D/g, "").length === 11);
+
   const canSubmit =
-    phase === "form" && giving && receiving && amount && !sameParty;
+    phase === "form" &&
+    giving &&
+    receiving &&
+    amount &&
+    !sameParty &&
+    lenderReady &&
+    borrowerReady;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="relative w-full max-w-lg bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl flex flex-col">
+      <div className="modal-overlay absolute inset-0" />
+
+      <div
+        className="modal-panel relative z-10 w-full max-w-lg mx-6 animate-slide-up flex flex-col"
+        style={{ maxHeight: "calc(100vh - 80px)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Accent stripe */}
+        <div
+          className="h-px w-full rounded-t-[18px] shrink-0"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${color}99, transparent)`,
+          }}
+        />
+
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-zinc-800 shrink-0">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${color}22` }}
+        <div className="flex items-start gap-4 px-6 pt-5 pb-4 shrink-0">
+          <span
+            className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
+            style={{ backgroundColor: `${color}18` }}
           >
-            <FileText size={16} style={{ color }} strokeWidth={1.75} />
-          </div>
+            <FileText size={22} style={{ color }} strokeWidth={1.75} />
+          </span>
+
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-zinc-100">
+            <h2
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: "var(--c-text)" }}
+            >
               New loan agreement
             </h2>
-            <p className="text-xs text-zinc-500 truncate">
-              {workflow.summary ?? workflow.description}
-            </p>
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <p
+                className="text-[11px] truncate"
+                style={{ color: "var(--c-text-muted)" }}
+              >
+                {workflow.summary ?? workflow.description}
+              </p>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] shrink-0"
+                style={{ color: "var(--c-text-subtle)" }}
+              >
+                <Calendar size={10} />
+                Updated {formatDate(workflow.updated)}
+              </span>
+            </div>
           </div>
+
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded"
+            className="btn shrink-0 w-8 h-8"
+            style={{ color: "var(--c-text-muted)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(169,146,125,0.06)";
+              e.currentTarget.style.color = "var(--c-text)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--c-text-muted)";
+            }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-5 py-5 flex flex-col gap-4">
+        <div className="overflow-y-auto flex-1 px-6 pb-6">
+          <div className="divider mb-5" />
+
           {phase === "loading" && (
-            <div className="flex items-center justify-center gap-2 py-10 text-zinc-500">
+            <div
+              className="flex items-center justify-center gap-2 py-10"
+              style={{ color: "var(--c-text-muted)" }}
+            >
               <Loader2 size={18} className="animate-spin" />
               <span className="text-sm">Loading parties…</span>
             </div>
           )}
 
           {(phase === "form" || (phase === "error" && lenders.length > 0)) && (
-            <>
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Lender">
-                  <select
-                    value={giving}
-                    onChange={(e) => setGiving(e.target.value)}
-                    className={SELECT_CLS}
-                  >
-                    {lenders.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Borrower">
-                  <select
-                    value={receiving}
-                    onChange={(e) => setReceiving(e.target.value)}
-                    className={SELECT_CLS}
-                  >
-                    {borrowers.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.type === "company"
-                          ? `${s.name} (${s.account})`
-                          : s.name}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+                <div className="flex flex-col gap-2">
+                  <Field label="Lender">
+                    <div className="relative">
+                      <select
+                        value={giving}
+                        onChange={(e) => {
+                          const next = lenders.find(
+                            (l) => l.name === e.target.value,
+                          );
+                          setGiving(e.target.value);
+                          if (next) {
+                            const allowed = allowedBorrowersFor(
+                              next,
+                              borrowers,
+                            );
+                            if (!allowed.find((b) => b.name === receiving)) {
+                              setReceiving(allowed[0]?.name ?? "");
+                            }
+                          }
+                        }}
+                        className="form-input form-select"
+                      >
+                        {lenders.map((s) => (
+                          <option key={s.name} value={s.name}>
+                            {s.name}
+                          </option>
+                        ))}
+                        <option value={OTHER}>Other…</option>
+                      </select>
+                      <ChevronDown
+                        size={12}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: "var(--c-text-muted)" }}
+                      />
+                    </div>
+                  </Field>
+                  {giving === OTHER && (
+                    <input
+                      type="text"
+                      value={customLenderName}
+                      onChange={(e) => setCustomLenderName(e.target.value)}
+                      placeholder="Full name"
+                      className="form-input"
+                      autoFocus
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Borrower">
+                    <div className="relative">
+                      <select
+                        value={receiving}
+                        onChange={(e) => setReceiving(e.target.value)}
+                        className="form-input form-select"
+                      >
+                        {filteredBorrowers.map((s) => (
+                          <option key={s.name} value={s.name}>
+                            {s.type === "company"
+                              ? `${s.name} (${formatAccount(s.account)})`
+                              : s.name}
+                          </option>
+                        ))}
+                        <option value={OTHER}>Other…</option>
+                      </select>
+                      <ChevronDown
+                        size={12}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                        style={{ color: "var(--c-text-muted)" }}
+                      />
+                    </div>
+                  </Field>
+                  {receiving === OTHER && (
+                    <>
+                      <input
+                        type="text"
+                        value={customBorrowerName}
+                        onChange={(e) => setCustomBorrowerName(e.target.value)}
+                        placeholder="Full name"
+                        className="form-input"
+                        autoFocus
+                      />
+                      <input
+                        type="text"
+                        value={customBorrowerAccount}
+                        onChange={(e) =>
+                          setCustomBorrowerAccount(e.target.value)
+                        }
+                        placeholder="xxxx.xx.xxxxx"
+                        className="form-input"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
 
               {sameParty && (
-                <p className="text-xs text-red-400 bg-red-950/30 border border-red-700/30 rounded-lg px-3 py-2">
+                <p
+                  className="text-xs px-3 py-2 rounded-lg border"
+                  style={{
+                    color: "rgba(220,100,100,0.9)",
+                    background: "rgba(220,100,100,0.06)",
+                    borderColor: "rgba(220,100,100,0.2)",
+                  }}
+                >
                   Lender and borrower cannot be the same party.
                 </p>
               )}
@@ -180,7 +360,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="500 000"
-                  className={INPUT_CLS}
+                  className="form-input"
                 />
               </Field>
 
@@ -190,7 +370,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className={INPUT_CLS}
+                    className="form-input"
                   />
                 </Field>
                 <Field label="Location">
@@ -198,22 +378,57 @@ export function LoanModal({ workflow, onClose }: Props) {
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className={INPUT_CLS}
+                    className="form-input"
                   />
                 </Field>
               </div>
 
               {phase === "error" && errorMsg && (
-                <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
+                <p
+                  className="text-xs px-3 py-2 rounded-lg border"
+                  style={{
+                    color: "rgba(220,100,100,0.9)",
+                    background: "rgba(220,100,100,0.06)",
+                    borderColor: "rgba(220,100,100,0.2)",
+                  }}
+                >
                   {errorMsg}
                 </p>
               )}
-            </>
+
+              <div className="divider" />
+
+              <div className="flex items-center justify-end gap-2">
+                <button onClick={onClose} className="btn btn-ghost btn-sm">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleGenerate}
+                  disabled={!canSubmit}
+                  className="btn btn-sm"
+                  style={
+                    canSubmit
+                      ? {
+                          backgroundColor: color,
+                          color: "#fff",
+                          borderColor: color,
+                        }
+                      : undefined
+                  }
+                >
+                  <FileText size={12} />
+                  Generate →
+                </button>
+              </div>
+            </div>
           )}
 
           {phase === "generating" && (
-            <div className="flex flex-col items-center gap-3 py-10 text-zinc-400">
-              <Loader2 size={24} className="animate-spin text-zinc-500" />
+            <div
+              className="flex flex-col items-center gap-3 py-10"
+              style={{ color: "var(--c-text-muted)" }}
+            >
+              <Loader2 size={24} className="animate-spin" />
               <p className="text-sm">
                 Fetching interest rate and generating PDF…
               </p>
@@ -222,52 +437,47 @@ export function LoanModal({ workflow, onClose }: Props) {
 
           {phase === "done" && (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
-              <div className="w-10 h-10 rounded-full bg-green-950/60 border border-green-700/40 flex items-center justify-center text-green-400 text-lg mb-1">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-lg mb-1"
+                style={{
+                  background: "rgba(122,158,126,0.12)",
+                  border: "1px solid rgba(122,158,126,0.3)",
+                  color: "#7a9e7e",
+                }}
+              >
                 ✓
               </div>
-              <p className="text-sm font-medium text-zinc-100">
+              <p
+                className="text-sm font-medium"
+                style={{ color: "var(--c-text)" }}
+              >
                 PDF saved and opened in Finder
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--c-text-subtle)" }}
+              >
                 Saved to workflow-hub-data/loan-agreement/data/
               </p>
+              <div className="mt-4">
+                <button onClick={onClose} className="btn btn-ghost btn-sm">
+                  Close
+                </button>
+              </div>
             </div>
           )}
 
           {phase === "error" && lenders.length === 0 && (
-            <p className="text-xs text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2">
+            <p
+              className="text-xs px-3 py-2 rounded-lg border"
+              style={{
+                color: "rgba(220,100,100,0.9)",
+                background: "rgba(220,100,100,0.06)",
+                borderColor: "rgba(220,100,100,0.2)",
+              }}
+            >
               {errorMsg}
             </p>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-zinc-800 shrink-0">
-          {phase === "done" ? (
-            <button
-              onClick={onClose}
-              className="px-4 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-            >
-              Close
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={onClose}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleGenerate}
-                disabled={!canSubmit}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ backgroundColor: canSubmit ? color : undefined }}
-              >
-                <FileText size={12} />
-                Generate →
-              </button>
-            </>
           )}
         </div>
       </div>
