@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2026-06-19
+
+### Added
+
+- Workspace badge added to each workflow card (top-right of the title row in grid view, inline with the workflow name in list view), color-tinted from the workspace's hashed color. Badge is shown only when viewing "All workflows" — hidden when a workspace is selected from the sidebar.
+- Schedule indicator moved next to the workspace badge on the name line in list view.
+- Action button fixed to a uniform width (`w-24`) across all list rows so Open/Run buttons align consistently.
+- Always-rendered `w-5` overflow slot ensures the `+N` tag pill right-aligns with other rows even when fewer than 4 tags are present.
+
+### Changed
+
+- Workspace section dividers (colored header bars) removed from the main content area; the layout is now a single unbroken workflow grid/list.
+
 ## [0.22.0] - 2026-06-19
 
 ### Added
