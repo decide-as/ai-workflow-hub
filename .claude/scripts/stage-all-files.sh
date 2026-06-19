@@ -18,6 +18,37 @@ echo "Staging all changes (respects .gitignore)..."
 git add -u          # modified + deleted tracked files
 git add .           # new files, respecting .gitignore
 
+# --- Unstage symlinks whose names are gitignored -------------------------
+# `git add .` stages symlinks even when the symlink points to a directory
+# whose name is covered by .gitignore (e.g. a node_modules symlink in a
+# worktree). git check-ignore cannot traverse symlinks, so we temporarily
+# replace each staged symlink with an empty real directory, test ignore
+# status, then restore the symlink.
+while IFS= read -r staged_symlink; do
+  sym_path="$GIT_ROOT/$staged_symlink"
+  [[ -L "$sym_path" ]] || continue
+  target=$(readlink "$sym_path")
+  # Only care about symlinks pointing to directories
+  resolved="$target"
+  [[ "$resolved" != /* ]] && resolved="$(dirname "$sym_path")/$target"
+  [[ -d "$resolved" ]] || continue
+  # Swap symlink → real dir, test, restore
+  rm "$sym_path"
+  mkdir "$sym_path"
+  if git check-ignore --no-index -q "$staged_symlink" 2>/dev/null; then
+    echo "  [skip] $staged_symlink → gitignored directory name, unstaging"
+    git rm --cached "$staged_symlink" 2>/dev/null || true
+    rmdir "$sym_path"
+    ln -s "$target" "$sym_path"
+  else
+    rmdir "$sym_path"
+    ln -s "$target" "$sym_path"
+  fi
+done < <(git diff --cached --name-only --diff-filter=A | \
+         while IFS= read -r f; do
+           [[ -L "$GIT_ROOT/$f" ]] && echo "$f"
+         done)
+
 # --- Show staged files --------------------------------------------------
 STAGED_FILES=$(git diff --cached --name-only)
 if [[ -z "$STAGED_FILES" ]]; then

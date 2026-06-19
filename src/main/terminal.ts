@@ -57,29 +57,39 @@ function classifyError(stderr: string): {
 // This avoids double-escaping the prompt through both bash and osascript
 // string layers. The launcher file is intentionally NOT cleaned up here —
 // it runs asynchronously after osascript returns.
-function makeLauncherCommand(repoPath: string, initialPrompt?: string): string {
+//
+// activateScript: optional path to a shell activate script (e.g. .venv/bin/activate).
+// When provided it is sourced at the top of the launcher so the venv is live for
+// every command Claude runs in that session.
+function makeLauncherCommand(
+  repoPath: string,
+  initialPrompt?: string,
+  activateScript?: string,
+): string {
   if (!initialPrompt) {
-    // The command is embedded inside a double-quoted osascript string literal,
-    // so the path's inner quotes must be backslash-escaped (\").
-    return `cd \\"${escapeForOsascript(repoPath)}\\" && claude`;
+    const activate = activateScript
+      ? `source \\"${escapeForOsascript(activateScript)}\\" && `
+      : "";
+    return `${activate}cd \\"${escapeForOsascript(repoPath)}\\" && claude`;
   }
 
   const id = Date.now();
   const promptFile = join(tmpdir(), `ai-hub-prompt-${id}.txt`);
   const shScript = join(tmpdir(), `ai-hub-launch-${id}.sh`);
 
+  const sq = (s: string) => s.replace(/'/g, "'\\''");
+  const lines = ["#!/bin/bash"];
+  if (activateScript) {
+    // Tolerate missing activate (e.g. after a cache wipe) so the session still opens.
+    lines.push(`source '${sq(activateScript)}' 2>/dev/null || true`);
+  }
+  lines.push(`cd '${sq(repoPath)}'`);
+  lines.push(`PROMPT=$(cat '${sq(promptFile)}')`);
+  lines.push("");
+  lines.push(`exec claude "$PROMPT"`);
+
   writeFileSync(promptFile, initialPrompt, "utf-8");
-  writeFileSync(
-    shScript,
-    [
-      "#!/bin/bash",
-      `cd '${repoPath.replace(/'/g, "'\\''")}'`,
-      `PROMPT=$(cat '${promptFile.replace(/'/g, "'\\''")}')`,
-      "",
-      `exec claude "$PROMPT"`,
-    ].join("\n"),
-    "utf-8",
-  );
+  writeFileSync(shScript, lines.join("\n"), "utf-8");
   chmodSync(shScript, 0o755);
 
   // The osascript just needs to run this file path.
@@ -89,6 +99,7 @@ function makeLauncherCommand(repoPath: string, initialPrompt?: string): string {
 export function openInTerminal(
   repoPath: string,
   initialPrompt?: string,
+  activateScript?: string,
 ): OpenResult {
   if (!existsSync(repoPath)) {
     return {
@@ -107,7 +118,7 @@ export function openInTerminal(
   }
 
   const useITerm = isIterm2Running();
-  const cmd = makeLauncherCommand(repoPath, initialPrompt);
+  const cmd = makeLauncherCommand(repoPath, initialPrompt, activateScript);
 
   // For the simple (no prompt) case, cmd is a shell inline like
   // `cd "/repo" && claude`. For the prompt case, cmd is a path to a .sh file.

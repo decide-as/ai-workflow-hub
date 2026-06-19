@@ -8,14 +8,26 @@ import type {
   BranchListResult,
   ActivityEntry,
   TranscriptionEntry,
+  ReadingListEntry,
+  ReadingListImportResult,
+  ReadingListAddResult,
+  LoanFormData,
+  LoanStakeholdersResult,
+  LoanGenerateResult,
+  LoanTransaction,
+  LoanTransactionsResult,
+  LoanTransactionSaveResult,
+  LoanTransactionDeleteResult,
+  LoanInterestResult,
+  VoucherFolderResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
   getRegistry: (): Promise<Registry> => ipcRenderer.invoke(IPC.GET_REGISTRY),
-  openWorkflow: (id: string): Promise<OpenResult> =>
-    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id),
-  pickFolder: (prompt?: string): Promise<string | null> =>
-    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt),
+  openWorkflow: (id: string, initialPrompt?: string): Promise<OpenResult> =>
+    ipcRenderer.invoke(IPC.OPEN_WORKFLOW, id, initialPrompt),
+  pickFolder: (prompt?: string, defaultPath?: string): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.PICK_FOLDER, prompt, defaultPath),
   runWorkflow: (
     id: string,
     folder: string,
@@ -59,4 +71,50 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.GET_TRANSCRIPTION_LOG),
   saveTranscription: (text: string): Promise<TranscriptionEntry> =>
     ipcRenderer.invoke(IPC.SAVE_TRANSCRIPTION, text),
+  readingListImport: (): Promise<ReadingListImportResult> =>
+    ipcRenderer.invoke(IPC.READING_LIST_IMPORT),
+  readingListAddUrl: (url: string): Promise<ReadingListAddResult> =>
+    ipcRenderer.invoke(IPC.READING_LIST_ADD_URL, url),
+  readingListGetEntries: (limit?: number): Promise<ReadingListEntry[]> =>
+    ipcRenderer.invoke(IPC.READING_LIST_GET_ENTRIES, limit),
+  execOsascript: (
+    script: string,
+  ): Promise<{ success: boolean; output: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.EXEC_OSASCRIPT, script),
+  readClipboardImage: (): Promise<string | null> =>
+    ipcRenderer.invoke(IPC.READ_CLIPBOARD_IMAGE),
+  generateCalendarScript: (
+    text: string,
+    imageDataUrl: string | null,
+    today: string,
+  ): Promise<{ success: boolean; script: string; error?: string }> =>
+    ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrl, today),
+  loanGetStakeholders: (): Promise<LoanStakeholdersResult> =>
+    ipcRenderer.invoke(IPC.LOAN_GET_STAKEHOLDERS),
+  loanGenerate: (data: LoanFormData): Promise<LoanGenerateResult> =>
+    ipcRenderer.invoke(IPC.LOAN_GENERATE, data),
+  loanInterestGetTransactions: (
+    lender: string,
+    borrower: string,
+  ): Promise<LoanTransactionsResult> =>
+    ipcRenderer.invoke(IPC.LOAN_INTEREST_GET_TRANSACTIONS, lender, borrower),
+  loanInterestSaveTransaction: (
+    tx: Omit<LoanTransaction, "id"> & { id?: string },
+  ): Promise<LoanTransactionSaveResult> =>
+    ipcRenderer.invoke(IPC.LOAN_INTEREST_SAVE_TRANSACTION, tx),
+  loanInterestDeleteTransaction: (
+    id: string,
+  ): Promise<LoanTransactionDeleteResult> =>
+    ipcRenderer.invoke(IPC.LOAN_INTEREST_DELETE_TRANSACTION, id),
+  loanInterestCalculate: (
+    lender: string,
+    borrower: string,
+    toDate: string,
+  ): Promise<LoanInterestResult> =>
+    ipcRenderer.invoke(IPC.LOAN_INTEREST_CALCULATE, lender, borrower, toDate),
+  createVoucherFolders: (
+    files: Array<{ name: string; dataUrl: string }>,
+    outputDir: string,
+  ): Promise<VoucherFolderResult> =>
+    ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
 });

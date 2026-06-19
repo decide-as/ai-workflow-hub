@@ -6,6 +6,180 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.0] - 2026-06-19
+
+### Added
+
+- Voice Transcriber workflow card with in-card Record/Stop button, 5-minute countdown timer with auto-stop, and live transcription via OpenAI Whisper (gpt-4o-transcribe model).
+- Transcriptions are automatically copied to clipboard after each recording.
+- Last transcription shown on the card with a one-click Copy button.
+- Transcription log persists for 24 hours; accessible via a modal by clicking the card body.
+- OpenAI API key loaded from a `.env` file at the repo root — works from both the main checkout and any worktree via `git rev-parse --git-common-dir`.
+- `.prettierignore` added; full codebase formatted with Prettier so `make lint` now passes cleanly.
+
+## [0.21.0] - 2026-06-19
+
+### Added
+
+- Web Scraper workflow card — paste any URL (web article, Instagram, LinkedIn, YouTube, PDF) and Claude runs the scrapers repo with `--output-dir` routing all output to `workflow-hub-data/web-scraper/data`
+- `workflow-data-repo` rule mandating a corresponding data folder in `workflow-hub-data` for every registry workflow, with symlink/routing conventions for scaffold and external-repo workflows
+
+## [0.20.0] - 2026-06-19
+
+### Added
+
+- Voucher Folder Creator workflow: drag-and-drop bank statement screenshots onto the card, Claude reads them via the local `claude -p` CLI subprocess, and one sub-folder per transaction is created in the configured output directory with Norwegian Title Case naming rules.
+- `bookkeeping` action type for workflow cards with a full multi-phase inline UI (idle drop zone, processing spinner, done list, error state).
+- `pickFolder` IPC call now accepts an optional `defaultPath` so the Finder folder picker opens pre-navigated to the configured output directory.
+- `.claude/guides/claude-subprocess.md` documenting the preferred pattern for invoking Claude headlessly from the Electron main process without calling the Anthropic API directly.
+
+## [0.19.3] - 2026-06-19
+
+### Fixed
+
+- Bundle registry into production app build so workflow cards load correctly in packaged builds.
+- Compact `BookkeepingControls` idle state to a single-row drop target, eliminating the card height inconsistency in the grid.
+- Ensure all workflow cards share a uniform minimum height via CSS `min-height` on the description element.
+
+## [0.19.2] - 2026-06-18
+
+### Fixed
+
+- `stage-all-files.sh` now detects and unstages symlinks pointing to gitignored directories (e.g. a `node_modules` worktree symlink), preventing accidental commits of ignored paths.
+
+## [0.19.1] - 2026-06-18
+
+### Fixed
+
+- Remove accidentally committed `node_modules` symlink from the repository.
+
+## [0.19.0] - 2026-06-18
+
+### Added
+
+- "Other…" option in Loan Agreement lender and borrower dropdowns — selecting it reveals a name field (lender) or name + bank account fields (borrower), allowing ad-hoc parties not in the registry.
+- Bank account formatting helper that auto-formats 11-digit Norwegian account numbers as `xxxx.xx.xxxxx` in dropdown labels and PDF generation.
+
+### Changed
+
+- Loan Agreement modal now filters available borrowers based on the selected lender's `allowedBorrowers` list, with ChevronDown indicator and updated layout matching main branch improvements.
+- Six native modals (LoanModal, RunModal, LogModal, CalendarModal, TranscribeModal, ReadingListModal) rethemed from hardcoded dark zinc Tailwind classes to the app's CSS variable design system, enabling correct rendering in both dark and light themes.
+
+### Removed
+
+- Valentina Valkova and Vshape Nails AS removed from the loan agreement stakeholder registry.
+
+## [0.18.0] - 2026-06-18
+
+### Added
+
+- New lender "Valentina Valkova" and borrower "Vshape Nails AS" registered in loan stakeholders
+- Conditional borrower filtering per lender: each lender now has an `allowedBorrowers` list so only relevant counterparties appear in the dropdown
+- New "Accrued Loan Interest" workstream (`loan-interest` action) with a full transaction management modal — add, edit, delete loan disbursements and repayments per lender/borrower pair
+- Skjermingsrente lookup from skatteetaten.no for automatic rate retrieval per bimonthly period
+
+### Fixed
+
+- Interest calculation now locks the skjermingsrente at the tranche creation date; rate changes after a loan is made no longer retroactively affect outstanding tranches (FIFO repayment order preserved)
+
+## [0.17.1] - 2026-06-18
+
+### Changed
+
+- Workflow modal now always shows the `updated` date as the version ("Updated DD Mon YYYY") instead of the optional semver version field — the date is always visible and always meaningful to users.
+- LoanModal restyled to use the app's shared design tokens (`modal-panel`, `form-input`, `btn`, CSS variables) for visual consistency with other modals.
+- Registry rule updated to document `updated` as the canonical user-facing version, with a corrected checklist item.
+
+## [0.17.0] - 2026-06-17
+
+### Added
+
+- Loan Agreement Generator: structured form modal that collects lender, borrower, amount, date, and location, fetches the current skjermingsrente (shielding interest rate) from skatteetaten.no for the correct bimonthly period, generates a Norwegian-language PDF via Electron's printToPDF, saves it to `workflow-hub-data/loan-agreement/data/`, and reveals it in Finder.
+- Separate lender and borrower party lists: all three parties (Christian Braathen, Decide AS, Bæredyktig AS) are available as lenders; only companies (Decide AS, Bæredyktig AS) are available as borrowers.
+- Same-party validation in the loan modal: Generate button is disabled with a red warning when the same party is selected as both lender and borrower.
+
+## [0.16.0] - 2026-06-17
+
+### Added
+
+- `setup_command` field on scaffold workflows: runs once after first clone (re-runs on command change) to install dependencies into the cache directory — no manual venv setup needed
+- Automatic venv activation: if `setup_command` creates a `.venv`, it is sourced before Claude opens so all CLI tools are on PATH for the entire session
+- Web Scraper now clones from GitHub (authoritative, committed state) and installs its own venv on first use
+
+## [0.15.0] - 2026-06-17
+
+### Added
+
+- Voucher Folder Creator workflow: drag-and-drop bank statement screenshots onto the card, Claude reads them via the local `claude -p` CLI subprocess, and one sub-folder per transaction is created in the configured output directory with Norwegian Title Case naming rules.
+- `bookkeeping` action type for workflow cards with a full multi-phase inline UI (idle drop zone, processing spinner, done list, error state).
+- `pickFolder` IPC call now accepts an optional `defaultPath` so the Finder folder picker opens pre-navigated to the configured output directory.
+- `.claude/guides/claude-subprocess.md` documenting the preferred pattern for invoking Claude headlessly from the Electron main process without calling the Anthropic API directly.
+
+## [0.14.0] - 2026-06-17
+
+### Added
+
+- Web Scraper workflow card — paste any URL (web article, Instagram, LinkedIn, YouTube, PDF) and Claude runs the scrapers repo with `--output-dir` routing all output to `workflow-hub-data/web-scraper/data`
+- `workflow-data-repo` rule mandating a corresponding data folder in `workflow-hub-data` for every registry workflow, with symlink/routing conventions for scaffold and external-repo workflows
+
+## [0.13.0] - 2026-06-17
+
+### Added
+
+- Dark/light mode theming with automatic macOS system preference detection (`prefers-color-scheme`), manual Sun/Moon toggle in header, and localStorage persistence for override.
+- Light theme using the lanserbart beige palette (`#f9f6f2` warm white base) via CSS custom properties.
+- No-flash inline script in `index.html` applies the correct theme before React mounts.
+
+### Changed
+
+- Schedule status controls (cadence, last run, enable/disable, logs) moved from workflow cards into the workflow detail modal as a live Schedule section.
+- Workflow cards now show a uniform footer with only the primary CTA button — schedule state no longer clutters the card grid.
+- `InlineRecordButton` renamed to `TranscribeControls` with an `onTranscribed` callback and proper error state handling.
+- `WorkflowCard` accepts new `clusterColor?` prop and `onOpen(id, initialPrompt?)` signature, consistent with the rest of the component tree.
+
+## [0.12.0] - 2026-06-17
+
+### Added
+
+- Calendar Event Creator workflow: describe events in text, record voice, or paste a transit/flight screenshot — Claude generates AppleScript and runs it directly in Apple Calendar.
+- New `calendar` workflow action type with `CalendarModal` component for the generate-review-execute flow.
+- Main-process IPC handlers for `exec-osascript`, `read-clipboard-image`, and `generate-calendar-script`.
+- `src/main/calendar.ts` with AppleScript conventions: programmatic date building, Oslo timezone, emoji titles, per-calendar alarm rules, walking legs in descriptions.
+
+## [0.11.0] - 2026-06-17
+
+### Added
+
+- Add `transcribe_to_claude` flag to workflow registry — when set on a `claude`-action workflow, an inline voice recorder appears on the card below the "Open in Claude" button, separated by an "or transcribe" divider.
+- After transcription completes, the text is automatically passed as the initial prompt when opening Claude, seeding the session with the spoken content (clipboard copy still occurs as well).
+- Extend `openWorkflow` IPC call through the full stack (handler, preload bridge, type declarations, `handleOpen`) to accept an optional `initialPrompt` parameter; the no-prompt path is unchanged.
+
+## [0.10.0] - 2026-06-17
+
+### Added
+
+- Reading List workflow card with inline controls: "Get from Reminders" button imports URLs from the "Leseliste" and "Prioritert leseliste" macOS Reminders lists, and a URL paste input lets users add links directly. Both import from and add to a local SQLite database at `workflows/reading-list/data/reading_list.db`.
+- `ReadingListModal` for browsing all saved URLs, sorted by timestamp descending (entries without a timestamp sort last).
+- Three IPC channels (`reading-list-import`, `reading-list-add-url`, `reading-list-get-entries`) bridging the renderer to Python scripts via `spawnSync`.
+- Workflow registry rule (`.claude/rules/workflow-registry.md`) enforcing required fields on all registry entries.
+
+### Changed
+
+- Sidebar type `"run"` renamed to `"routine"` — label changes from "Script" to "Routine" in the filter panel. The `routine` type now covers `run`, `reading-list`, and `transcribe` actions.
+
+## [0.9.0] - 2026-06-17
+
+### Added
+
+- Workspace badge added to each workflow card (top-right of the title row in grid view, inline with the workflow name in list view), color-tinted from the workspace's hashed color. Badge is shown only when viewing "All workflows" — hidden when a workspace is selected from the sidebar.
+- Schedule indicator moved next to the workspace badge on the name line in list view.
+- Action button fixed to a uniform width (`w-24`) across all list rows so Open/Run buttons align consistently.
+- Always-rendered `w-5` overflow slot ensures the `+N` tag pill right-aligns with other rows even when fewer than 4 tags are present.
+
+### Changed
+
+- Workspace section dividers (colored header bars) removed from the main content area; the layout is now a single unbroken workflow grid/list.
+
 ## [0.8.0] - 2026-06-17
 
 ### Added

@@ -1,5 +1,6 @@
 import { spawnSync } from "child_process";
-import { existsSync, mkdirSync } from "fs";
+import { createHash } from "crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import type {
@@ -144,6 +145,44 @@ function cloneOrFetch(
   return { ok: true };
 }
 
+// Runs setup_command in dest if it has never been run or the command changed.
+// Uses a .wh-setup marker file containing the SHA-256 of the last successful
+// setup_command. Re-runs automatically when the command string changes (e.g.
+// a new dependency is added). Returns an error string on failure.
+function runSetupIfNeeded(
+  dest: string,
+  setupCommand: string,
+): { ok: boolean; error?: string } {
+  const marker = join(dest, ".wh-setup");
+  const hash = createHash("sha256").update(setupCommand).digest("hex");
+
+  if (existsSync(marker)) {
+    try {
+      const stored = readFileSync(marker, "utf-8").trim();
+      if (stored === hash) return { ok: true }; // already done
+    } catch {
+      /* marker unreadable — re-run setup */
+    }
+  }
+
+  const r = spawnSync("bash", ["-c", setupCommand], {
+    cwd: dest,
+    encoding: "utf-8",
+    timeout: 300_000, // 5 min ceiling for slow pip installs
+  });
+
+  if (r.error || r.status !== 0) {
+    const msg =
+      r.error?.message ||
+      r.stderr?.trim() ||
+      `setup_command exited with code ${r.status}`;
+    return { ok: false, error: msg };
+  }
+
+  writeFileSync(marker, hash, "utf-8");
+  return { ok: true };
+}
+
 function checkoutBranch(
   dest: string,
   branch: string,
@@ -194,9 +233,20 @@ export function scaffoldWorkflow(
     };
   }
 
+  if (cfg.setup_command) {
+    const setupResult = runSetupIfNeeded(dest, cfg.setup_command);
+    if (!setupResult.ok) {
+      return { success: false, error: setupResult.error, errorKind: "unknown" };
+    }
+  }
+
+  // Auto-activate a venv if setup created one at the conventional location.
+  const venvActivate = join(dest, ".venv", "bin", "activate");
+  const activateScript = existsSync(venvActivate) ? venvActivate : undefined;
+
   const prompt = cfg.initial_prompt_template.replace(
     "{description}",
     description,
   );
-  return openInTerminal(dest, prompt);
+  return openInTerminal(dest, prompt, activateScript);
 }

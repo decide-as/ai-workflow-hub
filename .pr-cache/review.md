@@ -1,28 +1,15 @@
 ### Code Review
 
-**Stage:** MVP | **Scope:** Changed files in this PR
+**Stage:** MVP | **Scope:** bundle-registry-fix branch (3 changed files)
 
-**Verdict:** WORLD-CLASS FOR THIS STAGE
+**Verdict for current stage:** WORLD-CLASS FOR THIS STAGE
 
-**Ready to advance:** NOT READY FOR NEXT STAGE (alpha would require broader test coverage of UI components)
+**Ready to advance?:** NOT READY FOR NEXT STAGE (scope not related to Alpha criteria)
 
-**Summary:** Four feature additions (list view, log modal, type filter, configure phase) are well-structured, correctly wired end-to-end, and cleanly separated. Two issues found and fixed during review.
+**Summary:** Two small, clean bug fixes. `BookkeepingControls` idle state compacted to a single-row CTA matching other cards. CSS `min-height` added to card descriptions to enforce uniform card height. Registry bundling fix ensures production builds include the workflow registry.
 
-#### Issues found and resolved
+**Blocking issues in scope:** None
 
-- **[fixed] LogModal run indices** — `#1` displayed the oldest run instead of the most recent after `.reverse()`. Fixed: re-number after reversing so `#1 = most recent`.
-- **[fixed] `readLog` IPC path scope** — Handler accepted arbitrary renderer-supplied paths. Fixed: scoped to `homedir()` to make trust boundary explicit.
+**Advancement blockers:** Not applicable to this PR's scope
 
-#### Confirmed correct
-
-- **Polling cleanup** — `alive` flag + `clearInterval` in `useEffect` return prevents stale state after unmount.
-- **Slider state threading** — `optValues` initializes from `state.options`; `onConfigure(optValues)` passes current slider state through `handleConfigure` → `startDryRun` → `buildExtraArgs` correctly.
-- **Legacy label migration** — `cmd_enable` checks `launchctl print` before `bootout`; idempotent if legacy job already removed.
-- **No XSS** — LogModal renders all values as JSX children, escaped by React.
-
-#### Advisory (not blocking for MVP)
-
-- SchedulePanel hides `lastRunAt` when disabled — could show it unconditionally when available.
-
-#### Out-of-scope issues noticed
-None.
+**Out-of-scope issues noticed:** None
