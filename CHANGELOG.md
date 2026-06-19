@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] - 2026-06-19
+
+### Added
+
+- Employee Gift Tracker workflow with a three-phase modal (form → confirm → result) for documenting employee gifts under the Norwegian tax-free gift rule (5 000 NOK per employee per calendar year). Calculates the tax-free portion and taxable income split automatically.
+- `shared/gift-tax.ts` — pure calculation module for the Norwegian gift tax rule, importable by both the renderer and the test suite.
+- 17 new unit tests covering all three user-specified scenarios (first gift exceeding limit, first gift within limit, second gift with prior total) plus four edge cases (exact limit, exhausted limit, straddle, over-limit previous total).
+
 ## [0.23.0] - 2026-06-19
 
 ### Added
