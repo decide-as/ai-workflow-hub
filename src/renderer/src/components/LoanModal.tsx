@@ -140,8 +140,7 @@ export function LoanModal({ workflow, onClose }: Props) {
   const effectiveBorrowerName =
     receiving === OTHER ? customBorrowerName : receiving;
   const sameParty =
-    effectiveLenderName !== "" &&
-    effectiveLenderName === effectiveBorrowerName;
+    effectiveLenderName !== "" && effectiveLenderName === effectiveBorrowerName;
 
   const lenderReady = giving !== OTHER || customLenderName.trim() !== "";
   const borrowerReady =

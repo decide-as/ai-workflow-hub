@@ -497,6 +497,7 @@ workflows:
 
         The virtual environment is already activated — `scrapers` is on your PATH.
 
+
         1. Run the unified scraper, routing all output to the workflow data folder:
 
            scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
