@@ -14,6 +14,9 @@ import type {
   ReadingListEntry,
   ReadingListImportResult,
   ReadingListAddResult,
+  LoanFormData,
+  LoanStakeholdersResult,
+  LoanGenerateResult,
 } from "../../../shared/types";
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
@@ -30,6 +33,8 @@ import {
 import { TranscribeModal } from "./components/TranscribeModal";
 import { ReadingListModal } from "./components/ReadingListModal";
 import { CalendarModal } from "./components/CalendarModal";
+import { LoanModal } from "./components/LoanModal";
+import { LoanInterestModal } from "./components/LoanInterestModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -113,6 +118,8 @@ declare global {
         imageDataUrl: string | null,
         today: string,
       ) => Promise<{ success: boolean; script: string; error?: string }>;
+      loanGetStakeholders: () => Promise<LoanStakeholdersResult>;
+      loanGenerate: (data: LoanFormData) => Promise<LoanGenerateResult>;
     };
   }
 }
@@ -143,6 +150,9 @@ export default function App() {
   const [calendarWorkflow, setCalendarWorkflow] = useState<Workflow | null>(
     null,
   );
+  const [loanWorkflow, setLoanWorkflow] = useState<Workflow | null>(null);
+  const [loanInterestWorkflow, setLoanInterestWorkflow] =
+    useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -336,6 +346,10 @@ export default function App() {
       setReadingListWorkflow(w);
     } else if (w?.action === "calendar") {
       setCalendarWorkflow(w);
+    } else if (w?.action === "loan") {
+      setLoanWorkflow(w);
+    } else if (w?.action === "loan-interest") {
+      setLoanInterestWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -524,6 +538,20 @@ export default function App() {
         <CalendarModal
           workflow={calendarWorkflow}
           onClose={() => setCalendarWorkflow(null)}
+        />
+      )}
+
+      {loanWorkflow && (
+        <LoanModal
+          workflow={loanWorkflow}
+          onClose={() => setLoanWorkflow(null)}
+        />
+      )}
+
+      {loanInterestWorkflow && (
+        <LoanInterestModal
+          workflow={loanInterestWorkflow}
+          onClose={() => setLoanInterestWorkflow(null)}
         />
       )}
 

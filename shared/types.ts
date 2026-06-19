@@ -24,6 +24,7 @@ export interface WorkflowOutput {
 //   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
 //   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
 //   'calendar'     — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
+//   'loan'         — structured form modal that generates a Norwegian loan agreement PDF.
 //   'bookkeeping'  — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
 export type WorkflowAction =
   | "claude"
@@ -32,7 +33,38 @@ export type WorkflowAction =
   | "transcribe"
   | "reading-list"
   | "calendar"
+  | "loan"
+  | "loan-interest"
   | "bookkeeping";
+
+export interface LoanStakeholder {
+  name: string;
+  account: string;
+  type: "person" | "company";
+  allowedBorrowers?: string[];
+}
+
+export interface LoanFormData {
+  givingStakeholder: string;
+  receivingStakeholder: string;
+  amount: number;
+  date: string;
+  location: string;
+  customGiving?: LoanStakeholder;
+  customReceiving?: LoanStakeholder;
+}
+
+export interface LoanStakeholdersResult {
+  success: boolean;
+  lenders?: LoanStakeholder[];
+  borrowers?: LoanStakeholder[];
+  error?: string;
+}
+
+export interface LoanGenerateResult {
+  success: boolean;
+  error?: string;
+}
 
 // Configuration for the 'bookkeeping' action type.
 export interface BookkeepingConfig {
@@ -50,6 +82,10 @@ export interface ScaffoldConfig {
   command: string;
   // Template for Claude's initial prompt. Use {description} as the placeholder.
   initial_prompt_template: string;
+  // Shell command run once after first clone (and re-run when this string changes).
+  // Executed via `bash -c` in the cache directory. Typical use: venv creation and
+  // dependency installation, e.g. "python3 -m venv .venv && .venv/bin/pip install -e ."
+  setup_command?: string;
 }
 
 // Result of listing branches for a scaffold repo.
@@ -248,6 +284,47 @@ export interface VoucherFolderResult {
   success: boolean;
   output: string;
   folders: string[];
+  error?: string;
+}
+
+export interface LoanTransaction {
+  id: string;
+  lender: string;
+  borrower: string;
+  date: string;
+  type: "loan" | "repayment";
+  amount: number;
+}
+
+export interface LoanTransactionsResult {
+  success: boolean;
+  transactions?: LoanTransaction[];
+  error?: string;
+}
+
+export interface LoanTransactionSaveResult {
+  success: boolean;
+  transaction?: LoanTransaction;
+  error?: string;
+}
+
+export interface LoanTransactionDeleteResult {
+  success: boolean;
+  error?: string;
+}
+
+export interface LoanInterestPeriod {
+  label: string;
+  rate: number;
+  balance: number;
+  days: number;
+  interest: number;
+}
+
+export interface LoanInterestResult {
+  success: boolean;
+  periods?: LoanInterestPeriod[];
+  totalInterest?: number;
   error?: string;
 }
 

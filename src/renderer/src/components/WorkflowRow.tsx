@@ -23,10 +23,11 @@ export function WorkflowRow({
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isRun = workflow.action === "run";
   const isCalendar = workflow.action === "calendar";
+  const isLoan = workflow.action === "loan";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isCalendar) {
+    if (isCalendar || isLoan) {
       onClick(workflow.id);
       return;
     }
@@ -115,6 +116,8 @@ export function WorkflowRow({
             <ExternalLink size={11} />
             Create
           </>
+        ) : isLoan ? (
+          "New →"
         ) : (
           <>
             <ExternalLink size={11} />

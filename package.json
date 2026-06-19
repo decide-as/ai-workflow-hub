@@ -20,7 +20,8 @@
     "productName": "Workflow Hub",
     "files": [
       "out/**/*",
-      "package.json"
+      "package.json",
+      "registry/**"
     ],
     "mac": {
       "target": [

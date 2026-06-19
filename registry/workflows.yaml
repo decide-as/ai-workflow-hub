@@ -115,12 +115,12 @@ workflows:
     name: Loan Agreement Generator
     summary: Lender + borrower + amount → a print-ready Norwegian loan agreement.
     description: >
-      Pick a lender and borrower (Christian Braathen, Decide AS, or Bæredyktig AS),
-      enter the loan amount in NOK, and confirm the date and signing location.
-      Claude opens the upon Django app, fetches the current skjermingsrente
-      (shielding interest rate) from skatteetaten.no, and renders a Norwegian-language
-      loan agreement ready for browser print-to-PDF. Both parties' positions are
-      auto-derived (e.g. "Styreleder, Decide AS").
+      Pick a lender and borrower from your stakeholder list, enter the loan amount
+      in NOK, and confirm the date and signing location. The hub fetches the current
+      skjermingsrente (shielding interest rate) from skatteetaten.no, generates a
+      Norwegian-language loan agreement, and opens it in the browser ready for
+      print-to-PDF. Party positions are auto-derived (e.g. "Styreleder, Decide AS").
+      Stakeholders are managed in workflow-hub-data/loan-agreement/stakeholders.json.
     tags: [finance, legal, loan, agreement, contracts]
     repo_path: /Users/christianbraathen/Repositories/upon
     color: "#6366f1"
@@ -131,8 +131,9 @@ workflows:
     status: active
     trigger_type: manual
     complexity: simple
-    version: "0.1.0"
+    version: "0.2.0"
     owner: Christian Braathen — christian@decide.as
+    action: loan
     inputs:
       - name: giving_stakeholder
         type: string
@@ -165,6 +166,50 @@ workflows:
         description: >
           Print-ready Norwegian loan agreement (HTML → browser print-to-PDF)
           with auto-fetched interest rate, party names, positions, and account numbers.
+  - id: 0db025cf-dae4-40d2-bbd6-7e2e93a0ce0c
+    name: Accrued Loan Interest
+    summary: Calculate accumulated interest on inter-company and personal loans.
+    description: >
+      Select a lender and borrower, manage all loan disbursements and repayments,
+      then calculate the accrued interest expense for bookkeeping. Uses the current
+      skjermingsrente from skatteetaten.no, respects bimonthly rate changes, and
+      applies the FIFO method when repayments reduce outstanding principal.
+      Transactions are stored in workflow-hub-data/loan-interest/transactions.json.
+    tags: [finance, loan, accounting, interest]
+    repo_path: /Users/christianbraathen/Repositories/upon
+    color: "#6366f1"
+    icon: TrendingUp
+    cluster_id: finance
+    added: "2026-06-18"
+    updated: "2026-06-18"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: loan-interest
+    inputs:
+      - name: lender
+        type: string
+        description: Party lending the money
+        required: true
+        example: Christian Braathen
+      - name: borrower
+        type: string
+        description: Party borrowing the money
+        required: true
+        example: Bæredyktig AS
+      - name: to_date
+        type: date
+        description: Calculate accrued interest up to this date (defaults to today)
+        required: false
+        example: "2026-06-18"
+    outputs:
+      - name: interest_calculation
+        type: json
+        description: >
+          Period-by-period interest breakdown with rate, balance, days, and interest
+          amount per bimonthly period, plus total accrued interest for bookkeeping.
   - id: 145bb544-5270-4288-9afd-1284a7edcce7
     name: Voice Transcriber
     summary: Record speech → text, auto-copied to clipboard.
@@ -441,15 +486,17 @@ workflows:
           Structured metadata (title, author, date, text, keywords, insights) written
           to workflow-hub-data/web-scraper/data/structured/, media downloads to data/downloads/.
     scaffold:
-      repo: /Users/christianbraathen/Repositories/scrapers
+      repo: https://github.com/decide-as/scrapers.git
       branch_default: master
+      setup_command: python3 -m venv .venv && .venv/bin/pip install -e .
       command: scrapers "<url>" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data
       initial_prompt_template: |
         I want to scrape the following URL:
 
         {description}
 
-        Please do the following:
+        The virtual environment is already activated — `scrapers` is on your PATH.
+
         1. Run the unified scraper, routing all output to the workflow data folder:
 
            scrapers "{description}" --output-dir /Users/christianbraathen/Repositories/workflow-hub-data/web-scraper/data

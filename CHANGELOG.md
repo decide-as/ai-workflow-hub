@@ -6,6 +6,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.3] - 2026-06-19
+
+### Fixed
+
+- Bundle registry into production app build so workflow cards load correctly in packaged builds.
+- Compact `BookkeepingControls` idle state to a single-row drop target, eliminating the card height inconsistency in the grid.
+- Ensure all workflow cards share a uniform minimum height via CSS `min-height` on the description element.
+
+## [0.19.2] - 2026-06-18
+
+### Fixed
+
+- `stage-all-files.sh` now detects and unstages symlinks pointing to gitignored directories (e.g. a `node_modules` worktree symlink), preventing accidental commits of ignored paths.
+
+## [0.19.1] - 2026-06-18
+
+### Fixed
+
+- Remove accidentally committed `node_modules` symlink from the repository.
+
+## [0.19.0] - 2026-06-18
+
+### Added
+
+- "Other…" option in Loan Agreement lender and borrower dropdowns — selecting it reveals a name field (lender) or name + bank account fields (borrower), allowing ad-hoc parties not in the registry.
+- Bank account formatting helper that auto-formats 11-digit Norwegian account numbers as `xxxx.xx.xxxxx` in dropdown labels and PDF generation.
+
+### Changed
+
+- Loan Agreement modal now filters available borrowers based on the selected lender's `allowedBorrowers` list, with ChevronDown indicator and updated layout matching main branch improvements.
+- Six native modals (LoanModal, RunModal, LogModal, CalendarModal, TranscribeModal, ReadingListModal) rethemed from hardcoded dark zinc Tailwind classes to the app's CSS variable design system, enabling correct rendering in both dark and light themes.
+
+### Removed
+
+- Valentina Valkova and Vshape Nails AS removed from the loan agreement stakeholder registry.
+
+## [0.18.0] - 2026-06-18
+
+### Added
+
+- New lender "Valentina Valkova" and borrower "Vshape Nails AS" registered in loan stakeholders
+- Conditional borrower filtering per lender: each lender now has an `allowedBorrowers` list so only relevant counterparties appear in the dropdown
+- New "Accrued Loan Interest" workstream (`loan-interest` action) with a full transaction management modal — add, edit, delete loan disbursements and repayments per lender/borrower pair
+- Skjermingsrente lookup from skatteetaten.no for automatic rate retrieval per bimonthly period
+
+### Fixed
+
+- Interest calculation now locks the skjermingsrente at the tranche creation date; rate changes after a loan is made no longer retroactively affect outstanding tranches (FIFO repayment order preserved)
+
+## [0.17.1] - 2026-06-18
+
+### Changed
+
+- Workflow modal now always shows the `updated` date as the version ("Updated DD Mon YYYY") instead of the optional semver version field — the date is always visible and always meaningful to users.
+- LoanModal restyled to use the app's shared design tokens (`modal-panel`, `form-input`, `btn`, CSS variables) for visual consistency with other modals.
+- Registry rule updated to document `updated` as the canonical user-facing version, with a corrected checklist item.
+
+## [0.17.0] - 2026-06-17
+
+### Added
+
+- Loan Agreement Generator: structured form modal that collects lender, borrower, amount, date, and location, fetches the current skjermingsrente (shielding interest rate) from skatteetaten.no for the correct bimonthly period, generates a Norwegian-language PDF via Electron's printToPDF, saves it to `workflow-hub-data/loan-agreement/data/`, and reveals it in Finder.
+- Separate lender and borrower party lists: all three parties (Christian Braathen, Decide AS, Bæredyktig AS) are available as lenders; only companies (Decide AS, Bæredyktig AS) are available as borrowers.
+- Same-party validation in the loan modal: Generate button is disabled with a red warning when the same party is selected as both lender and borrower.
+
+## [0.16.0] - 2026-06-17
+
+### Added
+
+- `setup_command` field on scaffold workflows: runs once after first clone (re-runs on command change) to install dependencies into the cache directory — no manual venv setup needed
+- Automatic venv activation: if `setup_command` creates a `.venv`, it is sourced before Claude opens so all CLI tools are on PATH for the entire session
+- Web Scraper now clones from GitHub (authoritative, committed state) and installs its own venv on first use
+
+## [0.15.0] - 2026-06-17
+
+### Added
+
+- Voucher Folder Creator workflow: drag-and-drop bank statement screenshots onto the card, Claude reads them via the local `claude -p` CLI subprocess, and one sub-folder per transaction is created in the configured output directory with Norwegian Title Case naming rules.
+- `bookkeeping` action type for workflow cards with a full multi-phase inline UI (idle drop zone, processing spinner, done list, error state).
+- `pickFolder` IPC call now accepts an optional `defaultPath` so the Finder folder picker opens pre-navigated to the configured output directory.
+- `.claude/guides/claude-subprocess.md` documenting the preferred pattern for invoking Claude headlessly from the Electron main process without calling the Anthropic API directly.
+
 ## [0.14.0] - 2026-06-17
 
 ### Added
