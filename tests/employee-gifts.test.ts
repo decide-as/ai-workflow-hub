@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  calculateGiftTax,
-  ANNUAL_GIFT_LIMIT_NOK,
-} from "../shared/gift-tax";
+import { calculateGiftTax, ANNUAL_GIFT_LIMIT_NOK } from "../shared/gift-tax";
 
 describe("calculateGiftTax()", () => {
   it("annual limit is 5 000 NOK", () => {

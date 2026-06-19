@@ -201,7 +201,13 @@ function InlineActionButton({
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isScaffold || isCalendar || isLoan || isLoanInterest || isEmployeeGifts) {
+    if (
+      isScaffold ||
+      isCalendar ||
+      isLoan ||
+      isLoanInterest ||
+      isEmployeeGifts
+    ) {
       onClick(workflow.id);
       return;
     }

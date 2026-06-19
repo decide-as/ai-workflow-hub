@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { X, Gift, Calendar, ChevronDown, AlertTriangle, Printer } from "lucide-react";
+import {
+  X,
+  Gift,
+  Calendar,
+  ChevronDown,
+  AlertTriangle,
+  Printer,
+} from "lucide-react";
 import type { Workflow } from "../../../../shared/types";
 import {
   calculateGiftTax,
@@ -49,7 +56,10 @@ function Field({
           {label}
         </label>
         {hint && (
-          <span className="text-[10px]" style={{ color: "var(--c-text-subtle)" }}>
+          <span
+            className="text-[10px]"
+            style={{ color: "var(--c-text-subtle)" }}
+          >
             {hint}
           </span>
         )}
@@ -320,9 +330,9 @@ export function EmployeeGiftsModal({ workflow, onClose }: Props) {
                 }}
               >
                 Norwegian rule: gifts up to{" "}
-                <strong>{formatNok(ANNUAL_GIFT_LIMIT_NOK)}</strong> per
-                employee per calendar year are tax-free. Any amount above the
-                annual aggregate must be reported as income.
+                <strong>{formatNok(ANNUAL_GIFT_LIMIT_NOK)}</strong> per employee
+                per calendar year are tax-free. Any amount above the annual
+                aggregate must be reported as income.
               </div>
 
               <div className="divider" />
@@ -422,7 +432,10 @@ export function EmployeeGiftsModal({ workflow, onClose }: Props) {
                   border: "1px solid var(--c-border)",
                 }}
               >
-                <span className="font-medium" style={{ color: "var(--c-text)" }}>
+                <span
+                  className="font-medium"
+                  style={{ color: "var(--c-text)" }}
+                >
                   {effectiveEmployee}
                 </span>{" "}
                 — {formatDate(giftDate)}
@@ -482,10 +495,7 @@ export function EmployeeGiftsModal({ workflow, onClose }: Props) {
               <div className="divider" />
 
               <div className="flex items-center justify-end gap-2">
-                <button
-                  onClick={handleReset}
-                  className="btn btn-ghost btn-sm"
-                >
+                <button onClick={handleReset} className="btn btn-ghost btn-sm">
                   New entry
                 </button>
                 <button
