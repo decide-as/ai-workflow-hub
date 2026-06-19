@@ -35,6 +35,7 @@ import { ReadingListModal } from "./components/ReadingListModal";
 import { CalendarModal } from "./components/CalendarModal";
 import { LoanModal } from "./components/LoanModal";
 import { LoanInterestModal } from "./components/LoanInterestModal";
+import { EmployeeGiftsModal } from "./components/EmployeeGiftsModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -152,6 +153,8 @@ export default function App() {
   );
   const [loanWorkflow, setLoanWorkflow] = useState<Workflow | null>(null);
   const [loanInterestWorkflow, setLoanInterestWorkflow] =
+    useState<Workflow | null>(null);
+  const [employeeGiftsWorkflow, setEmployeeGiftsWorkflow] =
     useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -350,6 +353,8 @@ export default function App() {
       setLoanWorkflow(w);
     } else if (w?.action === "loan-interest") {
       setLoanInterestWorkflow(w);
+    } else if (w?.action === "employee-gifts") {
+      setEmployeeGiftsWorkflow(w);
     } else {
       setActiveWorkflow(w);
     }
@@ -552,6 +557,13 @@ export default function App() {
         <LoanInterestModal
           workflow={loanInterestWorkflow}
           onClose={() => setLoanInterestWorkflow(null)}
+        />
+      )}
+
+      {employeeGiftsWorkflow && (
+        <EmployeeGiftsModal
+          workflow={employeeGiftsWorkflow}
+          onClose={() => setEmployeeGiftsWorkflow(null)}
         />
       )}
 
