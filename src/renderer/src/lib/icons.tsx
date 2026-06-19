@@ -19,6 +19,10 @@ import {
   Code,
   FolderTree,
   FolderCog,
+  CalendarDays,
+  FolderPlus,
+  TrendingUp,
+  Percent,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +47,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Code,
   FolderTree,
   FolderCog,
+  CalendarDays,
+  FolderPlus,
+  TrendingUp,
+  Percent,
 };
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {

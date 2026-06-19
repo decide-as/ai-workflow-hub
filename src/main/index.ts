@@ -30,11 +30,31 @@ import {
   disableSchedule,
   readLog,
 } from "./schedule";
+import { listBranches, scaffoldWorkflow } from "./scaffolder";
+import { writeActivityLog, type ActivityEntry } from "./logger";
 import {
   transcribeAudio,
   getTranscriptionLog,
   saveTranscription,
 } from "./transcriber";
+import {
+  importFromReminders,
+  addUrl as readingListAddUrl,
+  getEntries as readingListGetEntries,
+} from "./reading-list";
+import {
+  execOsascript,
+  readClipboardImage,
+  generateCalendarScript,
+} from "./calendar";
+import { getLoanStakeholders, generateLoanAgreement } from "./loan";
+import {
+  getTransactions as loanInterestGetTransactions,
+  saveTransaction as loanInterestSaveTransaction,
+  deleteTransaction as loanInterestDeleteTransaction,
+  calculateInterest as loanInterestCalculate,
+} from "./loanInterest";
+import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -77,7 +97,7 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry());
-  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string) => {
+  ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string, initialPrompt?: string) => {
     const reg = getRegistry();
     const workflow = reg.workflows.find((w) => w.id === id);
     if (!workflow) return { success: false, error: "Workflow not found" };
@@ -85,11 +105,20 @@ app.whenReady().then(() => {
     const repoPath = isAbsolute(workflow.repo_path)
       ? workflow.repo_path
       : join(getBaseDir(), workflow.repo_path);
-    return openInTerminal(repoPath);
+    const result = openInTerminal(repoPath, initialPrompt);
+    writeActivityLog({
+      timestamp: new Date().toISOString(),
+      workflow_id: workflow.id,
+      workflow_name: workflow.name,
+      action: "claude",
+      success: result.success,
+      error: result.error,
+    });
+    return result;
   });
 
-  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string) =>
-    pickFolder(mainWindow, prompt),
+  ipcMain.handle(IPC.PICK_FOLDER, (_, prompt?: string, defaultPath?: string) =>
+    pickFolder(mainWindow, prompt, defaultPath),
   );
 
   // Open a folder in Finder. Returns '' on success or an error string.
@@ -153,6 +182,40 @@ app.whenReady().then(() => {
     },
   );
 
+  ipcMain.handle(IPC.LIST_BRANCHES, (_, repo: string, defaultBranch?: string) =>
+    listBranches(repo, defaultBranch),
+  );
+
+  ipcMain.handle(
+    IPC.SCAFFOLD_WORKFLOW,
+    (_, id: string, branch: string, description: string) => {
+      const workflow = getRegistry().workflows.find((w) => w.id === id);
+      if (!workflow)
+        return {
+          success: false,
+          error: "Workflow not found",
+          errorKind: "unknown",
+        };
+      const result = scaffoldWorkflow(workflow, branch, description);
+      writeActivityLog({
+        timestamp: new Date().toISOString(),
+        workflow_id: workflow.id,
+        workflow_name: workflow.name,
+        action: "scaffold",
+        branch,
+        description,
+        success: result.success,
+        error: result.error,
+      });
+      return result;
+    },
+  );
+
+  ipcMain.handle(IPC.WRITE_ACTIVITY_LOG, (_, entry: ActivityEntry) => {
+    writeActivityLog(entry);
+    return { success: true };
+  });
+
   ipcMain.handle(IPC.COPY_TO_CLIPBOARD, (_, text: string) => {
     clipboard.writeText(text);
   });
@@ -167,6 +230,53 @@ app.whenReady().then(() => {
     const buf = Buffer.from(audioData);
     return transcribeAudio(buf);
   });
+
+  ipcMain.handle(IPC.READING_LIST_IMPORT, () =>
+    importFromReminders(getBaseDir()),
+  );
+
+  ipcMain.handle(IPC.READING_LIST_ADD_URL, (_, url: string) =>
+    readingListAddUrl(getBaseDir(), url),
+  );
+
+  ipcMain.handle(IPC.READING_LIST_GET_ENTRIES, (_, limit?: number) =>
+    readingListGetEntries(getBaseDir(), limit),
+  );
+
+  ipcMain.handle(IPC.EXEC_OSASCRIPT, (_, script: string) =>
+    execOsascript(script),
+  );
+
+  ipcMain.handle(IPC.READ_CLIPBOARD_IMAGE, () => readClipboardImage());
+
+  ipcMain.handle(
+    IPC.GENERATE_CALENDAR_SCRIPT,
+    (_, text: string, imageDataUrl: string | null, today: string) =>
+      generateCalendarScript(text, imageDataUrl, today),
+  );
+
+  ipcMain.handle(IPC.LOAN_GET_STAKEHOLDERS, () => getLoanStakeholders());
+
+  ipcMain.handle(IPC.LOAN_GENERATE, (_, data) => generateLoanAgreement(data));
+
+  ipcMain.handle(IPC.LOAN_INTEREST_GET_TRANSACTIONS, (_, lender, borrower) =>
+    loanInterestGetTransactions(lender, borrower),
+  );
+  ipcMain.handle(IPC.LOAN_INTEREST_SAVE_TRANSACTION, (_, tx) =>
+    loanInterestSaveTransaction(tx),
+  );
+  ipcMain.handle(IPC.LOAN_INTEREST_DELETE_TRANSACTION, (_, id) =>
+    loanInterestDeleteTransaction(id),
+  );
+  ipcMain.handle(IPC.LOAN_INTEREST_CALCULATE, (_, lender, borrower, toDate) =>
+    loanInterestCalculate(lender, borrower, toDate),
+  );
+
+  ipcMain.handle(
+    IPC.CREATE_VOUCHER_FOLDERS,
+    (_, files: Array<{ name: string; dataUrl: string }>, outputDir: string) =>
+      createVoucherFolders(files, outputDir),
+  );
 
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
