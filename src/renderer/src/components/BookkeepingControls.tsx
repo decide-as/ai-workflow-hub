@@ -69,7 +69,9 @@ export function BookkeepingControls({ workflow }: Props) {
       return;
     }
 
-    setStatus(`Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`);
+    setStatus(
+      `Sending ${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} to Claude…`,
+    );
 
     let droppedFiles: DroppedFile[];
     try {
@@ -87,7 +89,10 @@ export function BookkeepingControls({ workflow }: Props) {
 
     setStatus("Claude is reading the bank statement…");
 
-    const result = await window.api.createVoucherFolders(droppedFiles, outputDir);
+    const result = await window.api.createVoucherFolders(
+      droppedFiles,
+      outputDir,
+    );
 
     if (!result.success) {
       setErrorMsg(result.error ?? "Unknown error");
@@ -143,8 +148,15 @@ export function BookkeepingControls({ workflow }: Props) {
         className="flex items-center gap-1.5"
         onClick={(e) => e.stopPropagation()}
       >
-        <Loader2 size={11} className="animate-spin shrink-0" style={{ color: "var(--c-text-muted)" }} />
-        <span className="text-[11px] truncate" style={{ color: "var(--c-text-muted)" }}>
+        <Loader2
+          size={11}
+          className="animate-spin shrink-0"
+          style={{ color: "var(--c-text-muted)" }}
+        />
+        <span
+          className="text-[11px] truncate"
+          style={{ color: "var(--c-text-muted)" }}
+        >
           {status}
         </span>
       </div>
@@ -165,7 +177,11 @@ export function BookkeepingControls({ workflow }: Props) {
           <FolderOpen size={11} />
           Reveal
         </button>
-        <button onClick={reset} className="btn btn-sm w-7 h-7 p-0 shrink-0" title="Process another">
+        <button
+          onClick={reset}
+          className="btn btn-sm w-7 h-7 p-0 shrink-0"
+          title="Process another"
+        >
           <RotateCcw size={11} />
         </button>
       </div>
@@ -179,7 +195,9 @@ export function BookkeepingControls({ workflow }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <XCircle size={11} className="shrink-0 text-red-400" />
-        <span className="text-[11px] text-red-400 flex-1 truncate">{errorMsg}</span>
+        <span className="text-[11px] text-red-400 flex-1 truncate">
+          {errorMsg}
+        </span>
         <button onClick={reset} className="btn btn-sm shrink-0">
           <RotateCcw size={11} />
           Retry
@@ -206,7 +224,9 @@ export function BookkeepingControls({ workflow }: Props) {
         style={{ height: "28px" }}
       >
         <Upload size={11} className="shrink-0" />
-        <span className="text-[11px] truncate">Drop bank statement screenshots here</span>
+        <span className="text-[11px] truncate">
+          Drop bank statement screenshots here
+        </span>
         <input
           type="file"
           accept="image/*,.pdf"
