@@ -18,14 +18,15 @@ export interface WorkflowOutput {
 }
 
 // How the primary action button behaves:
-//   'claude'       — open a Claude terminal session in the repo (default).
-//   'run'          — pick a folder and run a bundled script against it.
-//   'scaffold'     — clone an external repo, pick a branch, open Claude with a seeded prompt.
-//   'transcribe'   — in-card voice recorder that transcribes via Whisper and copies to clipboard.
-//   'reading-list' — in-card controls to import from Reminders or paste a URL; stored in SQLite.
-//   'calendar'     — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
-//   'loan'         — structured form modal that generates a Norwegian loan agreement PDF.
-//   'bookkeeping'  — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
+//   'claude'         — open a Claude terminal session in the repo (default).
+//   'run'            — pick a folder and run a bundled script against it.
+//   'scaffold'       — clone an external repo, pick a branch, open Claude with a seeded prompt.
+//   'transcribe'     — in-card voice recorder that transcribes via Whisper and copies to clipboard.
+//   'reading-list'   — in-card controls to import from Reminders or paste a URL; stored in SQLite.
+//   'calendar'       — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
+//   'loan'           — structured form modal that generates a Norwegian loan agreement PDF.
+//   'bookkeeping'    — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
+//   'employee-gifts' — modal to document employee gifts and calculate Norwegian tax-free/taxable split.
 export type WorkflowAction =
   | "claude"
   | "run"
@@ -35,7 +36,8 @@ export type WorkflowAction =
   | "calendar"
   | "loan"
   | "loan-interest"
-  | "bookkeeping";
+  | "bookkeeping"
+  | "employee-gifts";
 
 export interface LoanStakeholder {
   name: string;

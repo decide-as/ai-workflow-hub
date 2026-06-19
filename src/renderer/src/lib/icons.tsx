@@ -23,6 +23,7 @@ import {
   FolderPlus,
   TrendingUp,
   Percent,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -51,6 +52,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   FolderPlus,
   TrendingUp,
   Percent,
+  Gift,
 };
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {

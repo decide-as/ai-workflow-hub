@@ -197,10 +197,11 @@ function InlineActionButton({
   const isCalendar = workflow.action === "calendar";
   const isLoan = workflow.action === "loan";
   const isLoanInterest = workflow.action === "loan-interest";
+  const isEmployeeGifts = workflow.action === "employee-gifts";
 
   async function handleAction(e: React.MouseEvent) {
     e.stopPropagation();
-    if (isScaffold || isCalendar || isLoan || isLoanInterest) {
+    if (isScaffold || isCalendar || isLoan || isLoanInterest || isEmployeeGifts) {
       onClick(workflow.id);
       return;
     }
@@ -227,7 +228,7 @@ function InlineActionButton({
           <GitBranch size={11} />
           Create
         </>
-      ) : isLoan || isLoanInterest ? (
+      ) : isLoan || isLoanInterest || isEmployeeGifts ? (
         <>
           <Plus size={11} />
           New

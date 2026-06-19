@@ -545,23 +545,52 @@ workflows:
         type: json
         description: SQLite database at workflows/reading-list/data/reading_list.db with all saved URLs
 
+  - id: e801db8a-ec91-46d4-9674-f6a0f81bb08b
+    name: Employee Gift Tracker
+    summary: Document employee gifts and calculate the Norwegian 5 000 kr tax-free split.
+    description: >
+      Register a gift given to an employee and instantly see how much is tax-free
+      and how much must be reported as taxable income. Norwegian law allows up to
+      5 000 NOK per employee per calendar year as a tax-free gift. Any amount
+      above the annual aggregate is taxable and must be processed through payroll.
+      Enter the employee name, the gift amount, and the previous total for this
+      year — the modal calculates the split and shows how much of the annual
+      allowance remains.
+    tags: [finance, hr, gifts, tax, bookkeeping, norway]
+    repo_path: .
+    color: "#ec4899"
+    icon: Gift
+    cluster_id: finance
+    added: "2026-06-19"
+    updated: "2026-06-19"
+    status: active
+    trigger_type: manual
+    complexity: simple
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: employee-gifts
+    inputs: []  # all input is collected in the modal
+    outputs:
+      - name: gift_summary
+        type: text
+        description: >
+          On-screen summary showing tax-free portion, taxable income, total given
+          this year, and remaining annual allowance for the employee.
+
 clusters:
   - id: finance
     name: Finance
-    tags: [finance, expense, reimbursement, accounting, bank, bookkeeping, voucher, legal, loan]
+    tags: [finance, expense, reimbursement, accounting, bank, bookkeeping, voucher, legal, loan, gifts, hr]
     workflow_ids:
       - 1e66a6fe-42f3-40fc-b831-a0bea33de71f
       - 7bc57d10-d082-4905-8aa6-535744725c82
       - db3104eb-04ac-47b1-87d6-6e369b7724f3
       - d288500b-64f0-4323-9298-030050bfe4ac
       - d38a76f2-0530-40b8-ab82-33b2edd52240
+      - e801db8a-ec91-46d4-9674-f6a0f81bb08b
   - id: utilities
     name: Utilities
-<<<<<<< HEAD
-    tags: [files, organization, utility, voice, transcription]
-=======
     tags: [files, organization, utility, voice, transcription, calendar]
->>>>>>> origin/main
     workflow_ids:
       - 145bb544-5270-4288-9afd-1284a7edcce7
       - c339825f-f476-4a4d-a96c-8a4aa989fe36
