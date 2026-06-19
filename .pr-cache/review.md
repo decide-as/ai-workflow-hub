@@ -1,18 +1,15 @@
 ### Code Review
 
-**Stage:** MVP | **Scope:** 6 changed files + 1 test file
+**Stage:** MVP | **Scope:** bundle-registry-fix branch (3 changed files)
 
 **Verdict for current stage:** WORLD-CLASS FOR THIS STAGE
 
-**Ready to advance?:** NOT READY FOR NEXT STAGE
+**Ready to advance?:** NOT READY FOR NEXT STAGE (scope not related to Alpha criteria)
 
-**Summary:** Feature is correctly wired end-to-end. `initialPrompt` threads cleanly through the full stack (IPC handler → preload bridge → App type declaration → `handleOpen` → `WorkflowCard`) with no behavioural change to the zero-arg path. Security posture is sound — transcribed text is written to a temp file and read via `$(cat '...')` inside a single-quoted bash variable, correctly handling arbitrary content including quotes, newlines, and shell metacharacters. UI separation (divider + "or transcribe" label) is clean and unambiguous. Two minor issues found and resolved: typo `hasTranscribeToClaud` → `hasTranscribeToClaude`, and unused `workflow` prop removed from `TranscribeControls`. Test coverage added for the `initialPrompt` path.
+**Summary:** Two small, clean bug fixes. `BookkeepingControls` idle state compacted to a single-row CTA matching other cards. CSS `min-height` added to card descriptions to enforce uniform card height. Registry bundling fix ensures production builds include the workflow registry.
 
-**Blocking issues in scope:** None.
+**Blocking issues in scope:** None
 
-**Advancement blockers (for Alpha):**
-- No tests cover the IPC wiring in `index.ts` directly (only `openInTerminal` is unit-tested). Acceptable at MVP; add integration test for Alpha.
+**Advancement blockers:** Not applicable to this PR's scope
 
-**Out-of-scope issues noticed:** None.
-
-**Next improvements:** IPC handler integration test for `OPEN_WORKFLOW` + `initialPrompt` forwarding.
+**Out-of-scope issues noticed:** None
