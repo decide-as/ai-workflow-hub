@@ -7,7 +7,7 @@ import { resolveIcon } from "../lib/icons";
 interface Props {
   workflow: Workflow;
   clusterName?: string;
-  onOpen: (id: string) => void;
+  onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
 }
@@ -80,7 +80,7 @@ export function WorkflowRow({
         </p>
       </div>
 
-      {/* Tags */}
+      {/* Tags — right side, hidden on small screens. +N slot always rendered for alignment */}
       {workflow.tags.length > 0 && (
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {workflow.tags.slice(0, 3).map((tag) => (

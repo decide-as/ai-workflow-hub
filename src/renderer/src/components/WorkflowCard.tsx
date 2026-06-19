@@ -18,7 +18,6 @@ import { BookkeepingControls } from "./BookkeepingControls";
 interface Props {
   workflow: Workflow;
   clusterName?: string;
-  clusterColor?: string;
   onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
