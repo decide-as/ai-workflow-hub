@@ -15,7 +15,7 @@
     <a href="https://github.com/decide-as/workflow-hub"><strong>Explore »</strong></a>
   </p>
 
-![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.19.3-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
+![Category](https://img.shields.io/badge/category-tool-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Phase](https://img.shields.io/badge/phase-mvp-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Stage](https://img.shields.io/badge/stage-build-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Version](https://img.shields.io/badge/version-0.20.0-d4bc9a?style=flat-square&labelColor=2a2a2a) ![Node](https://img.shields.io/badge/node-20+-d4bc9a?style=flat-square&labelColor=2a2a2a) ![License](https://img.shields.io/badge/license-proprietary-d4bc9a?style=flat-square&labelColor=2a2a2a)
 
 </div>
 
