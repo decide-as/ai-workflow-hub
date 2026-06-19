@@ -33,11 +33,13 @@ export function findInterpreter(interpreter?: string): string | null {
 export async function pickFolder(
   win: BrowserWindow | null,
   prompt?: string,
+  defaultPath?: string,
 ): Promise<string | null> {
   const options = {
     title: prompt ?? "Choose a folder",
     buttonLabel: "Choose folder",
     properties: ["openDirectory" as const, "createDirectory" as const],
+    ...(defaultPath ? { defaultPath } : {}),
   };
   const result = win
     ? await dialog.showOpenDialog(win, options)

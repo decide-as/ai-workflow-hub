@@ -45,9 +45,11 @@ outputs:
 
 Every `cluster_id` used in a workflow must appear in the `clusters` list at the bottom of the file. When adding a workflow to a new cluster, add the cluster entry too.
 
-## When to update `updated`
+## `updated` is the version shown in the modal
 
-Set `updated` to today's date (run `date +%Y-%m-%d`) any time the workflow's `description`, `action`, `inputs`, `outputs`, `color`, `icon`, or operational fields change. Do not update it for registry-internal changes like tag additions.
+The modal always displays `updated` as the workflow's version number — "Updated DD Mon YYYY" in the header subtitle. This is the canonical version that users see.
+
+**Always keep `updated` current.** Set it to today's date (run `date +%Y-%m-%d`) any time the workflow's `description`, `action`, `inputs`, `outputs`, `color`, `icon`, or operational fields change. Do not update it for registry-internal changes like tag additions.
 
 ## Checklist before committing a new or modified workflow entry
 
@@ -56,4 +58,4 @@ Set `updated` to today's date (run `date +%Y-%m-%d`) any time the workflow's `de
 - [ ] Icon name is registered in `src/renderer/src/lib/icons.tsx`
 - [ ] `added` and `updated` are real dates derived from `date +%Y-%m-%d`
 - [ ] `inputs` and `outputs` are both present (even if empty list for inputs on action-driven cards)
-- [ ] Version bumped if outputs or behavior changed
+- [ ] `updated` set to today if description, action, inputs, outputs, color, icon, or behavior changed
