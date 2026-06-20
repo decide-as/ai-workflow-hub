@@ -1,20 +1,15 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { app } from "electron";
 import yaml from "js-yaml";
 import chokidar from "chokidar";
 import type { Registry } from "../../shared/types";
 
 const EMPTY: Registry = { workflows: [], clusters: [] };
 
-// Resolves the project/app root regardless of cwd. app.getAppPath() returns the
-// dir containing package.json; electron-vite bundles to out/main/, so climb two
-// levels when we're inside out/.
+// electron-vite bundles the main process to out/main/index.js in both dev and
+// packaged (inside app.asar/out/main/). Two levels up is always the app root.
 export function getBaseDir(): string {
-  const appPath = app.getAppPath();
-  return appPath.endsWith("/out/main") || appPath.endsWith("\\out\\main")
-    ? join(appPath, "..", "..")
-    : appPath;
+  return join(__dirname, "..", "..");
 }
 
 export function getRegistryPath(): string {
