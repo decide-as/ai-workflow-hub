@@ -161,8 +161,11 @@ def _fetch_stdlib(url: str) -> str:
         return resp.read().decode("utf-8", errors="replace")
 
 
+MAX_LISTINGS_PER_RUN = 25
+
+
 def extract_all_listings(html: str) -> dict[str, dict]:
-    """Extract title, company, and published ISO date for all jobs on the search page.
+    """Extract title, company, and published ISO date for the first 25 jobs on the page.
 
     Parses the job card HTML structure where:
     - title: text after hidden <span> in the <a job-card-link> element
@@ -173,6 +176,8 @@ def extract_all_listings(html: str) -> dict[str, dict]:
     for m in re.finditer(
         r'href="(?:https://www\.finn\.no)?/job/(?:[a-z]+/)?ad/(\d+)"', html
     ):
+        if len(result) >= MAX_LISTINGS_PER_RUN:
+            break
         finn_id = m.group(1)
         if finn_id in result:
             continue
