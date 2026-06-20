@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
+import { app } from "electron";
 import yaml from "js-yaml";
 import chokidar from "chokidar";
 import type { Registry } from "../../shared/types";
@@ -9,7 +10,6 @@ const EMPTY: Registry = { workflows: [], clusters: [] };
 // In packaged builds, the registry is placed outside the asar via extraResources
 // so it lives as a real file at process.resourcesPath/registry/workflows.yaml.
 // In dev, two levels up from out/main/ reaches the project root.
-import { app } from "electron";
 export function getBaseDir(): string {
   return app.isPackaged ? process.resourcesPath : join(__dirname, "..", "..");
 }
