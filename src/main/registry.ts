@@ -7,14 +7,11 @@ import type { Registry } from "../../shared/types";
 
 const EMPTY: Registry = { workflows: [], clusters: [] };
 
-// Resolves the project/app root regardless of cwd. app.getAppPath() returns the
-// dir containing package.json; electron-vite bundles to out/main/, so climb two
-// levels when we're inside out/.
+// In packaged builds, the registry is placed outside the asar via extraResources
+// so it lives as a real file at process.resourcesPath/registry/workflows.yaml.
+// In dev, two levels up from out/main/ reaches the project root.
 export function getBaseDir(): string {
-  const appPath = app.getAppPath();
-  return appPath.endsWith("/out/main") || appPath.endsWith("\\out\\main")
-    ? join(appPath, "..", "..")
-    : appPath;
+  return app.isPackaged ? process.resourcesPath : join(__dirname, "..", "..");
 }
 
 export function getRegistryPath(): string {
