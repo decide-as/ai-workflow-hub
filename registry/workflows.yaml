@@ -121,7 +121,7 @@ workflows:
       Norwegian-language loan agreement, and opens it in the browser ready for
       print-to-PDF. Party positions are auto-derived (e.g. "Styreleder, Decide AS").
       Stakeholders are managed in workflow-hub-data/loan-agreement/stakeholders.json.
-    tags: [finance, legal, loan, agreement, contracts]
+    tags: [finance, legal, loan, agreement, contracts, local-dependency]
     repo_path: /Users/christianbraathen/Repositories/upon
     color: "#6366f1"
     icon: FileText
@@ -175,7 +175,7 @@ workflows:
       skjermingsrente from skatteetaten.no, respects bimonthly rate changes, and
       applies the FIFO method when repayments reduce outstanding principal.
       Transactions are stored in workflow-hub-data/loan-interest/transactions.json.
-    tags: [finance, loan, accounting, interest]
+    tags: [finance, loan, accounting, interest, local-dependency]
     repo_path: /Users/christianbraathen/Repositories/upon
     color: "#6366f1"
     icon: TrendingUp
@@ -302,7 +302,7 @@ workflows:
       the full lifecycle — idea capture, drafting against post-type templates,
       quality scoring (5 weighted criteria, publish at ≥75), weekly scheduling,
       and post-publish analytics — backed by a SQLite store.
-    tags: [content, linkedin, writing, marketing]
+    tags: [content, linkedin, writing, marketing, local-dependency]
     repo_path: /Users/christianbraathen/Repositories/linkedin_posts
     color: "#0a66c2"
     icon: PenLine
@@ -336,7 +336,7 @@ workflows:
       from your description and runs `cp create --from-answers answers.yaml` to
       scaffold a complete project — directory structure, config, CI, tests, rules,
       and all.
-    tags: [scaffold, code_practices, project, setup, developer-tools]
+    tags: [scaffold, code_practices, project, setup, developer-tools, local-dependency]
     repo_path: /Users/christianbraathen/Repositories/code_practices
     color: '#8b5cf6'
     icon: Wand2
@@ -460,7 +460,7 @@ workflows:
       automatically, and returns structured metadata, extracted text, and downloaded
       media. Powered by ScrapingBee + Gemini; uses yt-dlp for YouTube and
       cookie-based fallbacks for authenticated content.
-    tags: [scraping, research, web, data-extraction]
+    tags: [scraping, research, web, data-extraction, local-dependency]
     repo_path: /Users/christianbraathen/Repositories/scrapers
     color: "#06b6d4"
     icon: Globe
@@ -542,6 +542,40 @@ workflows:
         type: json
         description: SQLite database at workflows/reading-list/data/reading_list.db with all saved URLs
 
+  - id: 91581e28-e0a6-4e16-950d-194c6488e2f1
+    name: Job Strategy
+    summary: Feed in job postings → Claude builds and tracks your career pipeline.
+    description: >
+      A persistent career strategy thinking partner. Open a Claude session in the
+      job-strategy repo, paste in job postings, company profiles, or market intel,
+      and Claude accumulates context across sessions using its memory system. It
+      builds a strategic picture of your pipeline, challenges weak reasoning, flags
+      gaps, and proposes concrete next steps — from outreach scripts to interview prep.
+    tags: [career, jobs, strategy, job-search, local-dependency]
+    repo_path: /Users/christianbraathen/Repositories/job-strategy
+    color: "#7c3aed"
+    icon: Briefcase
+    cluster_id: career
+    added: "2026-06-20"
+    updated: "2026-06-20"
+    status: active
+    trigger_type: manual
+    complexity: complex
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: job_or_context
+        type: string
+        description: A job posting, company name, role description, or strategic context to feed into Claude
+        required: false
+        example: "Senior PM at Stripe, Oslo office — product-led growth focus"
+    outputs:
+      - name: strategy_update
+        type: text
+        description: >
+          Updated pipeline notes, company assessments, and next actions stored in
+          the job-strategy memory system across sessions.
+
   - id: e801db8a-ec91-46d4-9674-f6a0f81bb08b
     name: Employee Gift Tracker
     summary: Document employee gifts and calculate the Norwegian 5 000 kr tax-free split.
@@ -612,3 +646,8 @@ clusters:
     tags: [reading, bookmarks, resources, knowledge]
     workflow_ids:
       - f6be9ab2-7165-414c-bd89-0d3af1c5ab7b
+  - id: career
+    name: Career
+    tags: [career, jobs, strategy, job-search]
+    workflow_ids:
+      - 91581e28-e0a6-4e16-950d-194c6488e2f1

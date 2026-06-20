@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Percent,
   Gift,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,6 +54,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   TrendingUp,
   Percent,
   Gift,
+  Briefcase,
 };
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {

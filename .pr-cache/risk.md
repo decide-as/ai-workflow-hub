@@ -1,42 +1,45 @@
 ### Risk Assessment
 
-**Phase:** mvp | **Tier:** basic | **Changed files:** 8
+**Phase:** mvp | **Tier:** basic | **Changed files:** 2
 
-**Deterministic checks:** PASS (ESLint + Prettier passed in CI pre-flight)
+**Deterministic checks:** PASS (ESLint + Prettier via ci-preflight; Python risk script not applicable to this Node/TypeScript project)
 
 **Semantic evaluation:**
 
 #### Blocking risks
-None
+None.
 
 #### Advisory risks
-None
+None.
 
 #### Applicable risks
 
 <details>
-<summary><strong>Applicable risks</strong> — 3/3 PASS</summary>
+<summary><strong>Applicable risks</strong> — all PASS</summary>
 
-- [x] **CRED** — No secrets, tokens, API keys, or credentials in any changed file. `shared/gift-tax.ts` is pure math; `EmployeeGiftsModal.tsx` renders user-supplied strings into React DOM (no eval, no dangerouslySetInnerHTML). Employee name from the `customEmployee` text field is rendered via JSX interpolation only — no raw HTML injection path.
-- [x] **INJ** — No shell command invocations, no `exec`/`spawn`, no SQL, no template engines. The modal's "Print" button calls `window.print()` which is a browser API with no injection surface. All user input (employee name, NOK amounts, date) is used only for display and arithmetic — never passed to a subprocess or shell.
-- [x] **GIT** — No git operations introduced by the PR changes. CI pre-flight passed with no force-push or history-rewriting commands.
+- [x] **CRED-01–13** — No secrets or credentials in either changed file. `repo_path` is a known-local path constant, not a secret.
+- [x] **INJ-01–10** — No subprocess calls, no user-controlled input, no template injection. Changes are pure YAML data and a TypeScript import.
+- [x] **GIT-01–11** — Read-only registry change; no git operations introduced.
+- [x] **PATH-01** — `repo_path` values are hardcoded constants, not derived from user input. No traversal risk.
+- [x] **DATA-01** — No data mutation; registry is read-only at runtime. New workflow entry is additive.
+- [x] **SCHEMA-01** — New workflow entry satisfies all required fields per `workflow-registry.md`. UUID is valid. Icon registered in `icons.tsx`. `cluster_id` exists in the clusters list.
 
 </details>
 
 #### AI risk controls
 
-- [x] Hallucination — Calculation logic is deterministic and unit-tested (17 tests, 3 user scenarios + 4 edge cases). The Norwegian 5,000 NOK annual limit is hardcoded as `ANNUAL_GIFT_LIMIT_NOK = 5_000` and verified by test `"annual limit is 5 000 NOK"`.
-- [x] Deprecated patterns — No deprecated React patterns; functional components with hooks only. `window.print()` is stable. `toLocaleDateString("nb-NO", ...)` is standard Web API.
-- [x] Security — No external network calls, no file system writes, no IPC. Renderer runs in Electron sandbox; no Node.js APIs exposed. `has_api_keys: false` confirmed.
-- [x] Prompt injection — Not applicable. No LLM calls, no prompt construction, no AI invocation in this feature.
-- [x] Trust boundaries — User input (employee name text, NOK numbers, date) is consumed only within the modal: displayed in JSX or passed to `calculateGiftTax()` as parsed numbers. No boundary crossing to main process or external service.
-- [x] Destructive ops — `window.print()` opens the system print dialog only; no file deletion, no data mutation outside component state, no IPC writes.
-- [x] Code quality — `shared/gift-tax.ts` is 32 lines, pure, well-typed, with correct edge-case handling (`Math.max(0, ...)` guards against negative values when previous total exceeds limit). Modal phase machine (`"form" | "confirm" | "result"`) is clean and easy to reason about.
-- [x] Documentation — `shared/gift-tax.ts` has a header comment explaining the Norwegian rule. `registry/workflows.yaml` entry is fully populated with all required fields per workflow-registry rules.
-- [x] Supply chain — No new dependencies added; `lucide-react` (`Gift` icon) was already in the project.
-- [x] Operational — Personal-use desktop app (`visibility: personal`). No external users, no production deployment, no rollback concerns for this addition.
-- [x] Meta-assessment — Every N/A category has a stated reason. Assessment references the specific diff (8 files). Files were read before evaluation.
+- [x] Hallucination — All `repo_path`, UUID, icon, and cluster values verified by file read and command output.
+- [x] Deprecated patterns — `Briefcase` confirmed available in lucide-react ^0.477.0.
+- [x] Security — No secrets, no user input, no injection surface.
+- [x] Prompt injection — Not applicable; no prompt or LLM interaction in this change.
+- [x] Trust boundaries — `repo_path` is a local-only constant; no external data fed into the registry.
+- [x] Destructive ops — Additive-only change; no deletions.
+- [x] Code quality — TypeScript import follows existing pattern exactly; YAML follows registry schema.
+- [x] Documentation — `workflow-hub-data/job-strategy/README.md` documents data routing and cross-device setup.
+- [x] Supply chain — No new dependencies introduced.
+- [x] Operational — `local-dependency` tags are backward-compatible; existing app behaviour unchanged.
+- [x] Meta-assessment — All risk categories evaluated against the actual diff.
 
 #### Sign-off
-3/3 applicable risks evaluated against 8 changed files.
+6/6 applicable risks evaluated against 2 changed files.
 0 blocking. 0 advisory.
