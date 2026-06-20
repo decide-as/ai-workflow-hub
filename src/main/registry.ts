@@ -6,10 +6,12 @@ import type { Registry } from "../../shared/types";
 
 const EMPTY: Registry = { workflows: [], clusters: [] };
 
-// electron-vite bundles the main process to out/main/index.js in both dev and
-// packaged (inside app.asar/out/main/). Two levels up is always the app root.
+// In packaged builds, the registry is placed outside the asar via extraResources
+// so it lives as a real file at process.resourcesPath/registry/workflows.yaml.
+// In dev, two levels up from out/main/ reaches the project root.
+import { app } from "electron";
 export function getBaseDir(): string {
-  return join(__dirname, "..", "..");
+  return app.isPackaged ? process.resourcesPath : join(__dirname, "..", "..");
 }
 
 export function getRegistryPath(): string {
