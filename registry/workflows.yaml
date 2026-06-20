@@ -111,8 +111,6 @@ workflows:
         description: >
           The hash-keyed master ledger of every dispositioned transaction, plus
           routed batches handed to the Expense/Travel Reimbursement generators.
-<<<<<<< HEAD
-=======
   - id: d288500b-64f0-4323-9298-030050bfe4ac
     name: Loan Agreement Generator
     summary: Lender + borrower + amount → a print-ready Norwegian loan agreement.
@@ -212,7 +210,6 @@ workflows:
         description: >
           Period-by-period interest breakdown with rate, balance, days, and interest
           amount per bimonthly period, plus total accrued interest for bookkeeping.
->>>>>>> origin/main
   - id: 145bb544-5270-4288-9afd-1284a7edcce7
     name: Voice Transcriber
     summary: Record speech → text, auto-copied to clipboard.
