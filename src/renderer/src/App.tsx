@@ -21,7 +21,6 @@ import type {
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
 import { SearchBar } from "./components/SearchBar";
-import { DescribeSearchBar } from "./components/DescribeSearchBar";
 import { EmptyState } from "./components/EmptyState";
 import { Sidebar, type SolutionType } from "./components/Sidebar";
 import { WorkflowModal } from "./components/WorkflowModal";
@@ -133,7 +132,6 @@ export default function App() {
     clusters: [],
   });
   const [query, setQuery] = useState("");
-  const [describeQuery, setDescribeQuery] = useState("");
   const [semanticScores, setSemanticScores] = useState<Record<string, number>>({});
   const [semanticSearching, setSemanticSearching] = useState(false);
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
@@ -192,27 +190,27 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (describeQuery.trim().length < 5) {
+    if (query.trim().length < 5) {
       setSemanticScores({});
       return;
     }
     const timer = setTimeout(async () => {
       setSemanticSearching(true);
       try {
-        const results = await window.api.semanticSearch(describeQuery.trim());
+        const results = await window.api.semanticSearch(query.trim());
         const scores: Record<string, number> = {};
         results.forEach((r) => {
           scores[r.id] = r.score;
         });
         setSemanticScores(scores);
       } catch (e) {
-        console.error("[describe-search]", e);
+        console.error("[semantic-search]", e);
       } finally {
         setSemanticSearching(false);
       }
     }, 350);
     return () => clearTimeout(timer);
-  }, [describeQuery]);
+  }, [query]);
 
   function filterWorkflows(workflows: Workflow[]): Workflow[] {
     let result = workflows.filter((w) => w.action !== "transcribe");
@@ -222,24 +220,29 @@ export default function App() {
     if (selectedType) {
       result = result.filter((w) => workflowSolutionType(w) === selectedType);
     }
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      result = result.filter(
-        (w) =>
-          w.name.toLowerCase().includes(q) ||
-          w.description.toLowerCase().includes(q) ||
-          w.tags.some((t) => t.toLowerCase().includes(q)),
-      );
+
+    const q = query.trim().toLowerCase();
+    const hasText = q.length > 0;
+    const isSemanticActive = q.length >= 5 && Object.keys(semanticScores).length > 0;
+
+    if (hasText || isSemanticActive) {
+      result = result.filter((w) => {
+        const textMatch =
+          hasText &&
+          (w.name.toLowerCase().includes(q) ||
+            w.description.toLowerCase().includes(q) ||
+            w.tags.some((t) => t.toLowerCase().includes(q)));
+        const semanticMatch = isSemanticActive && (semanticScores[w.id] ?? 0) >= 0.5;
+        return textMatch || semanticMatch;
+      });
     }
-    const isSemanticActive =
-      describeQuery.trim().length >= 5 &&
-      Object.keys(semanticScores).length > 0;
+
     if (isSemanticActive) {
-      result = result.filter((w) => (semanticScores[w.id] ?? 0) >= 0.5);
       result = [...result].sort(
         (a, b) => (semanticScores[b.id] ?? 0) - (semanticScores[a.id] ?? 0),
       );
     }
+
     return result;
   }
 
@@ -474,12 +477,12 @@ export default function App() {
                 <List size={14} />
               </button>
             </div>
-            <DescribeSearchBar
-              value={describeQuery}
-              onChange={setDescribeQuery}
-              isSearching={semanticSearching}
+            <SearchBar
+              value={query}
+              onChange={setQuery}
+              isSemanticLoading={semanticSearching}
+              isSemanticActive={Object.keys(semanticScores).length > 0}
             />
-            <SearchBar value={query} onChange={setQuery} />
             <button
               onClick={() => {
                 const next = theme === "dark" ? "light" : "dark";
@@ -513,7 +516,7 @@ export default function App() {
               className="text-sm mt-8 text-center"
               style={{ color: "var(--c-text-subtle)" }}
             >
-              No workflows match &ldquo;{query}&rdquo;
+              No workflows match &ldquo;{query.trim()}&rdquo;
             </p>
           ) : viewMode === "grid" ? (
             <div className="card-masonry animate-fade-in">
