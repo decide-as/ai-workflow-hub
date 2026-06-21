@@ -345,3 +345,45 @@ export interface ActivityEntry {
   success: boolean;
   error?: string;
 }
+
+// --- Machine Config (phase 1) ---
+
+export interface MachineWorkflowEntry {
+  id: string;
+  enabled: boolean;
+}
+
+export interface MachineConfig {
+  machine_id: string;
+  nickname?: string;
+  workflows: MachineWorkflowEntry[];
+  policy_source?: string; // phase 2 stub — not used in phase 1
+}
+
+export interface MachineConfigResult {
+  success: boolean;
+  config?: MachineConfig;
+  error?: string;
+}
+
+// --- Org Permissions (phase 2 stubs — no runtime behaviour in phase 1) ---
+
+export interface OrgGroup {
+  id: string;
+  name: string;
+  members: string[];
+}
+
+export interface OrgAccessRule {
+  group_id: string;
+  workflow_ids?: string[];
+  cluster_ids?: string[];
+  allow: boolean;
+}
+
+export interface OrgPolicy {
+  version: string;
+  default_deny: boolean;
+  groups: OrgGroup[];
+  rules: OrgAccessRule[];
+}

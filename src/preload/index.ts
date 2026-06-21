@@ -21,6 +21,7 @@ import type {
   LoanInterestResult,
   VoucherFolderResult,
   SemanticSearchResult,
+  MachineConfig,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -120,4 +121,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
   semanticSearch: (query: string): Promise<SemanticSearchResult[]> =>
     ipcRenderer.invoke(IPC.SEMANTIC_SEARCH, query),
+  machineConfigGet: (): Promise<MachineConfig> =>
+    ipcRenderer.invoke(IPC.MACHINE_CONFIG_GET),
+  machineConfigSet: (
+    config: MachineConfig,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke(IPC.MACHINE_CONFIG_SET, config),
+  registryGetAll: (): Promise<Registry> =>
+    ipcRenderer.invoke(IPC.GET_REGISTRY_ALL),
 });
