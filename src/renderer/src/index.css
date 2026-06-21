@@ -25,8 +25,8 @@
 
   --c-text: #f2ede8;
   --c-text-secondary: #b8a898;
-  --c-text-muted: #7a7068;
-  --c-text-subtle: #4a4440;
+  --c-text-muted: #a09080;
+  --c-text-subtle: #786e68;
 
   --c-border: rgba(169, 146, 125, 0.1);
   --c-border-hover: rgba(169, 146, 125, 0.22);
@@ -62,8 +62,8 @@
 
   --c-text: #1a1714;
   --c-text-secondary: #3d3530;
-  --c-text-muted: #6e6258;
-  --c-text-subtle: #a09088;
+  --c-text-muted: #5c5248;
+  --c-text-subtle: #6e6258;
 
   --c-border: rgba(150, 130, 110, 0.16);
   --c-border-hover: rgba(150, 130, 110, 0.3);
