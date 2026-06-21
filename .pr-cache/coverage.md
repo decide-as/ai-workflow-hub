@@ -1,15 +1,16 @@
-### Coverage Report
+### Test Results
 
-No Python coverage gate — Node.js/Electron project.
+**78/78 tests pass** across 8 test files.
 
-**Test suite:** 64 tests passed across 7 test files (vitest).
+| File | Tests |
+|------|-------|
+| `tests/machine-config.test.ts` | 14 (new) |
+| `tests/registry.test.ts` | 3 |
+| `tests/employee-gifts.test.ts` | 17 |
+| `tests/runner.test.ts` | 14 |
+| `tests/terminal.test.ts` | 11 |
+| `tests/schedule.test.ts` | 9 |
+| `tests/clustering.test.ts` | 6 |
+| `tests/cli.test.ts` | 4 |
 
-| Suite | Tests | Status |
-|---|---|---|
-| employee-gifts.test.ts | 17 | PASS |
-| registry.test.ts | 3 | PASS |
-| terminal.test.ts | 11 | PASS |
-| cli.test.ts | 4 | PASS |
-| runner.test.ts | 14 | PASS |
-| schedule.test.ts | 9 | PASS |
-| clustering.test.ts | 6 | PASS |
+No Python coverage gate — Node.js project.
