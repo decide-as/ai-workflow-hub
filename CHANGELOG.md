@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.1] - 2026-06-21
+
+### Fixed
+
+- Improve text contrast in dark and light themes to meet WCAG AA (4.5:1) — `--c-text-muted` and `--c-text-subtle` were too dim on both themes, affecting card descriptions, sidebar items, cluster badges, and section labels.
+
+## [0.26.0] - 2026-06-21
+
+### Added
+
+- Finn.no job auto-tracker script (`scripts/finn-job-tracker.py`) that runs every 15 minutes via launchd, scrapes the first 25 AI-related job listings, scores each via `claude -p` using the job-tracker evaluation framework, stores qualifying results (≥40%) in the job-tracker SQLite DB, and sends Pushover notifications for positions scoring ≥50%.
+- Deduplication log at `workflow-hub-data/job-strategy/data/auto-scraped.json` tracks all seen listings across runs, preventing re-scoring and supporting threshold changes via selective log entry removal.
+- `logs/` directory with `.gitignore` for runtime log files produced by the auto-tracker.
+
 ## [0.25.0] - 2026-06-20
 
 ### Added
