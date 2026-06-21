@@ -1,18 +1,38 @@
-## Diff Review
+### Diff Review
 
-**Scope:** Raw diff hunks + git blame | **Agents:** 3 | **Findings:** 2 above threshold (80) | **Suppressed:** 3 below threshold
+**Scope:** 4 files, 1 commit  
+**Agents:** 3 independent passes (guideline compliance, bug detection, history consistency)  
+**Threshold:** 80 confidence
 
-### Findings
+---
 
-| # | Agent | File | Lines | Confidence | Finding |
-|---|---|---|---|---|---|
-| 1 | bug | `src/main/embeddings.ts` | ~87–95 | 95 | Race condition: two concurrent IPC calls both pass `_cache?.hash === hash` null check, both embed corpus, both call `writeFileSync`. Torn JSON write possible; `_cache!` non-null assertion and `if (!_cache)` check race on same module-level variable. Fixed by adding a `_building` promise guard. |
-| 2 | bug | `src/renderer/src/App.tsx` | ~201–213 | 85 | `clearTimeout` cancels the 350ms debounce but not the in-flight IPC `await`. After effect cleanup (e.g. HMR), `setSemanticScores`/`setSemanticSearching` still fire. Theoretical in production (App never unmounts in Electron), but worth an `isCancelled` flag for correctness. |
+#### Pass 1: Guideline compliance
 
-*Both findings are MVP-acceptable given the debounce guard and Electron's single-window lifecycle. Logged as advancement blockers for Alpha.*
+- Naming follows project conventions (`readMachineConfigFromPath` matches suffix pattern). ✓
+- No comments added that just describe what the code does. ✓
+- Mock file is minimal — no over-engineering. ✓
+- `vitest.config.ts` alias placement is consistent with existing aliases in the file. ✓
 
-### Agent summaries
+No findings above threshold.
 
-- [x] **Guideline compliance** — Checked naming, import patterns, logging conventions, and typing. All findings were false positives from incomplete diff context (types and functions are defined in the full file).
-- [x] **Bug detection** — Found two real async safety issues: corpus build race (confidence 95) and stale async state (confidence 85). Both acceptable at MVP stage.
-- [x] **History consistency** — Found two real deviations fixed in this PR: hardcoded `#ef4444` → `var(--c-score)` CSS variable; inline `{ id: string; score: number }[]` return type → named `SemanticSearchResult` in shared/types.ts.
+#### Pass 2: Bug detection
+
+- The `electron` mock exports `isPackaged: false` — used by `getBaseDir()` in `registry.ts`. Correctly set. ✓
+- `readMachineConfigFromPath` called with `getMachineConfigPath()` in `readMachineConfig` — delegation is direct, no double-read risk. ✓
+- `watchMachineConfig` still calls `readMachineConfig()` (not `readMachineConfigFromPath`) on change events — correct, the watcher runs in the main process where Electron is available. ✓
+- Empty file test (`""`) triggers `JSON.parse("")` which throws `SyntaxError` — caught by the `try/catch`, returns default. Correctly covered. ✓
+
+No findings above threshold.
+
+#### Pass 3: History consistency
+
+- `tests/__mocks__/` directory follows a widely-used convention; other test files in the project don't use `__mocks__` yet, but the pattern is idiomatic for vitest/jest and consistent with the approach. ✓
+- Default export `{ app }` alongside named export `app` in the mock is slightly redundant but matches how some Electron consumers import (both forms exist in the codebase). Acceptable. Confidence: 45 — below threshold.
+
+No findings above threshold.
+
+---
+
+**Findings above threshold:** 0  
+**Advisory (below threshold):** 1 (redundant default export in mock — cosmetic, confidence 45)  
+**Resolution:** No changes required.

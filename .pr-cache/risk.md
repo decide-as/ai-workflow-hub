@@ -1,13 +1,10 @@
 ### Risk Assessment
 
-**Phase:** mvp | **Tier:** 2 | **Changed files:** 8
+**Phase:** mvp | **Tier:** 1 | **Changed files:** 4
 
 **Deterministic checks:** PASS
-- Ruff lint: PASS
-- Ruff format: PASS
-- Pytest exit-5: N/A (Node.js/Electron project — no Python source on this branch)
-- Mypy: SKIP (no package dir)
-- Bandit/pip-audit: SKIP (tier < 4)
+
+> Note: `check-risk-assessment.sh` reports exit 1 due to pytest finding 0 Python tests (exit code 5 = "no tests collected"). This is expected for a Node.js project with no Python source files. All tool checks passed (ruff lint ✓, ruff format ✓; mypy/bandit/pip-audit skipped at tier 0). Treating as PASS.
 
 **Semantic evaluation:**
 
@@ -20,33 +17,35 @@ None.
 #### Applicable risks
 
 <details>
-<summary><strong>Applicable risks</strong> — 167/167 PASS</summary>
+<summary><strong>Applicable risks</strong> — 10/10 PASS</summary>
 
-- [x] **CRED-01–13** — No secrets, tokens, API keys, or credentials in any changed file. `embeddings.ts` reads only from `app.getPath("userData")` (local filesystem). No network credentials anywhere.
-- [x] **INJ-01–10** — No subprocess calls introduced. `embeddings.ts` uses only Node.js `fs`, `crypto`, and dynamic ESM import of `@xenova/transformers`. No `exec`, `spawn`, or `shell: true`.
-- [x] **GIT-01–11** — No git operations in new code. Read-only file operations only (readFileSync / writeFileSync to userData).
-- [x] **SEC-01–15** — Model download (`Xenova/all-MiniLM-L6-v2`) happens via `@xenova/transformers` on first run, cached to `userData/models/`. No user-controlled URLs. ONNX inference runs fully locally. No new external services.
-- [x] **FS-01–08** — File writes scoped to `app.getPath("userData")`. No directory traversal: paths constructed via `join(app.getPath("userData"), "workflow-embeddings.json")` — no user input in path construction.
-- [x] **IPC-01–05** — `SEMANTIC_SEARCH` channel follows established pattern: `ipcMain.handle`, `contextBridge.exposeInMainWorld`. `contextIsolation: true` already set. Query used only as embedding model input — no eval, no shell.
-- [x] **INPUT-01–08** — Query string passed directly to embedding extractor. No SQL, no shell, no template injection. No length validation but worst case is slow embedding, not a security issue in a local desktop app.
-- [x] **DEP-01–06** — `@xenova/transformers` is an existing pinned dependency (v2.17.2). No new dependencies added.
+- [x] **CRED-01–13** — No secrets or credentials. Electron mock returns a `/tmp` path literal — no real paths, no tokens.
+- [x] **GIT-01–11** — Read-only git operations in scope; no history rewriting.
+- [x] **INJ-01–10** — No subprocess calls, no shell=True, no user-controlled input in changed files.
+- [x] **FS-01–05** — `readMachineConfigFromPath` reads files by explicit path arg. No directory traversal vectors; path comes from callers under test control.
+- [x] **TST-01–05** — 14 new tests covering missing file, valid JSON, malformed JSON, empty file, multi-entry config, and all merge logic branches. No assert-free tests; no trivial identity tests.
+- [x] **MOCK-01** — Electron mock is scoped to vitest alias only (`vitest.config.ts`); it does not affect production builds. Alias is compile-time only.
+- [x] **REFACTOR-01** — `readMachineConfigFromPath` extraction is purely structural. `readMachineConfig()` delegates unchanged logic. No behavioral change to production paths.
+- [x] **DEP-01–05** — No new dependencies added. Chokidar and Electron remain; no new npm installs.
+- [x] **SEC-01–05** — No new user-facing attack surface. Test-only mock; runtime behavior unchanged.
+- [x] **AI-META-01–11** — Assessment references specific diff; no rubber-stamp N/A; all categories evaluated.
 
 </details>
 
 #### AI risk controls
 
-- [x] **Hallucination** — Embedding scores are computed deterministically via cosine similarity of ONNX model outputs. No LLM generation in the search path. Score badge hidden for text-match results.
-- [x] **Deprecated patterns** — `@xenova/transformers` v2.17.2 used as declared. `ipcMain.handle` / `contextBridge` are current Electron IPC patterns.
-- [x] **Security** — No credentials, no injection vectors, filesystem writes scoped to userData. Model inference fully local/offline after first download.
-- [x] **Prompt injection** — No LLM prompt construction in the search path. Query string is embedding input only.
-- [x] **Trust boundaries** — Renderer → preload → main boundary correctly maintained via contextBridge.
-- [x] **Destructive ops** — Only write operation is `writeFileSync` to `userData/workflow-embeddings.json` (cache file). No destructive filesystem operations.
-- [x] **Code quality** — `embeddings.ts` is well-structured: singleton extractor, hash-keyed disk cache, pure dot-product similarity. Error handling on warmup and disk save paths.
-- [x] **Documentation** — Self-documenting via function names and structure.
-- [x] **Supply chain** — `@xenova/transformers` is an existing pinned dependency. No new packages added.
-- [x] **Operational** — Model weights download ~23MB on first run to userData/models/. Warmup is non-blocking (3s setTimeout, errors caught). Cache invalidates automatically when registry changes.
-- [x] **Meta-assessment** — All 8 changed files inspected. Scope accurate. No pre-existing issues worsened.
+- [x] Hallucination — all file paths, exports, and test assertions verified by reading source files directly.
+- [x] Deprecated patterns — no deprecated Node.js or TypeScript patterns introduced.
+- [x] Security — no new runtime code paths with user input; extraction is purely testability refactor.
+- [x] Prompt injection — not applicable (no LLM interaction in changed files).
+- [x] Trust boundaries — Electron mock is alias-scoped; cannot leak into production bundle.
+- [x] Destructive ops — no destructive operations; `writeMachineConfig` unchanged.
+- [x] Code quality — ESLint and Prettier pass (verified by ci-preflight).
+- [x] Documentation — no public API change; `readMachineConfigFromPath` is an internal export with a self-documenting signature.
+- [x] Supply chain — no new dependencies.
+- [x] Operational — no operational impact; test-only change.
+- [x] Meta-assessment — all 4 changed files read and evaluated; no pre-existing issues flagged.
 
 #### Sign-off
-167/167 applicable risks evaluated against 8 changed files.
+10/10 applicable risks evaluated against 4 changed files.
 0 blocking. 0 advisory.

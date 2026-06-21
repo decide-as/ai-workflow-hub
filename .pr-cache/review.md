@@ -1,31 +1,43 @@
-### Stage
-MVP
+### Code Review
 
-### Scope
-This branch: `shared/ipc-channels.ts`, `src/main/embeddings.ts`, `src/main/index.ts`, `src/preload/index.ts`, `src/renderer/src/App.tsx`, `src/renderer/src/components/SearchBar.tsx`, `src/renderer/src/components/WorkflowCard.tsx`, `src/renderer/src/components/WorkflowRow.tsx`.
+**Stage:** MVP  
+**Scope:** 4 changed files — `src/main/machine-config.ts`, `tests/__mocks__/electron.ts`, `tests/machine-config.test.ts`, `vitest.config.ts`
 
-### Verdict for current stage
-WORLD-CLASS FOR THIS STAGE
+**Verdict for current stage:** WORLD-CLASS FOR THIS STAGE  
+**Ready to advance?** Contributes to Alpha readiness (unit tests for core path)
 
-### Ready to advance?
-NOT READY FOR NEXT STAGE
+---
 
-### Summary
+#### Correctness
 
-The feature is complete, correct, and well-scoped. The embedding pipeline (`embeddings.ts`) is clean: lazy extractor init, SHA-256 corpus hash for disk-cache invalidation, cosine similarity via dot-product of normalized vectors. IPC wiring follows the established pattern exactly. The unified search bar UX (text OR semantic, score badge suppressed on text matches) solves the original problem cleanly. No secrets, no injection vectors, no correctness bugs.
+- `readMachineConfigFromPath` extracts the pure I/O logic from `readMachineConfig` without any behavior change. The delegation `readMachineConfig() → readMachineConfigFromPath(getMachineConfigPath())` is correct.
+- The Electron mock exports both named (`app`) and default (`{ app }`) — covers both import styles in the codebase.
+- `vitest.config.ts` alias resolves `electron` to the stub before any source file imports it.
 
-### Blocking issues in scope
-None.
+#### Security
 
-### Advancement blockers
-- **Corpus build concurrency**: `ensureCorpus` has no in-flight lock. Two concurrent IPC calls while the corpus is building will race and both try to write `workflow-embeddings.json`. The 350ms debounce and 3s warmup delay make this unlikely in practice, but it is a data race. Add a `_building: Promise | null` guard before Alpha.
-- **IPC input not validated at runtime**: `query` is typed `string` in TypeScript but IPC args are untyped at runtime. Add `if (typeof query !== "string") return []` in the handler before Alpha.
-- **No unit tests for `embeddings.ts`**: The corpus hash, cache hit/miss, and dot-product logic are unit-testable with a mock extractor. Add before Beta.
+No new runtime code paths. The refactor does not change how the config file is read, parsed, or validated. No new input surface.
 
-### Out-of-scope issues noticed
-None of significance.
+#### Maintainability
 
-### Next improvements
-1. Add `_building: Promise<void> | null = null` concurrency guard in `ensureCorpus`.
-2. Add runtime type guard in the IPC handler.
-3. Add unit tests for `corpusHash`, `loadDisk`/`saveDisk`, and `dot`.
+- Naming is clear: `readMachineConfigFromPath` vs `readMachineConfig` follows the project's convention of suffixing path-injectable helpers with `FromPath`.
+- No dead code or unused imports introduced.
+- The mock is minimal and correctly typed.
+
+#### Test quality
+
+14 tests covering:
+- `readMachineConfigFromPath`: missing file, valid JSON, malformed JSON, empty file, multi-entry config — all meaningful, no trivial identity assertions.
+- `mergeRegistryWithMachineConfig`: empty config short-circuit (reference identity), all-enabled pass-through, single disabled, multiple disabled, all disabled, unknown ID ignored, cluster list preserved, immutability, mixed enabled/disabled.
+
+The immutability test and the unknown-ID test are particularly valuable — they cover contracts that aren't obvious from the function signature alone.
+
+#### Documentation
+
+`docs/designs/design-2026-06-21-workflow-availability-phase1.md` describes `readMachineConfig()` as the public interface — unchanged. `readMachineConfigFromPath` is an internal extraction not worth adding to the design doc. No update needed.
+
+---
+
+**Blocking issues:** None  
+**Advancement blockers:** None — this PR directly addresses the Alpha readiness blocker noted in the prior review.  
+**Out-of-scope issues:** None
