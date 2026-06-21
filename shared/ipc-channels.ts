@@ -29,6 +29,7 @@ export const IPC = {
   LOAN_INTEREST_DELETE_TRANSACTION: "loan-interest-delete-transaction",
   LOAN_INTEREST_CALCULATE: "loan-interest-calculate",
   CREATE_VOUCHER_FOLDERS: "create-voucher-folders",
+  SEMANTIC_SEARCH: "semantic-search",
   MACHINE_CONFIG_GET: "machine-config:get",
   MACHINE_CONFIG_SET: "machine-config:set",
   GET_REGISTRY_ALL: "registry:get-all",

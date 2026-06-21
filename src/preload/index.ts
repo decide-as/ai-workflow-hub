@@ -20,6 +20,7 @@ import type {
   LoanTransactionDeleteResult,
   LoanInterestResult,
   VoucherFolderResult,
+  SemanticSearchResult,
   MachineConfig,
 } from "../../shared/types";
 
@@ -118,6 +119,8 @@ contextBridge.exposeInMainWorld("api", {
     outputDir: string,
   ): Promise<VoucherFolderResult> =>
     ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
+  semanticSearch: (query: string): Promise<SemanticSearchResult[]> =>
+    ipcRenderer.invoke(IPC.SEMANTIC_SEARCH, query),
   machineConfigGet: (): Promise<MachineConfig> =>
     ipcRenderer.invoke(IPC.MACHINE_CONFIG_GET),
   machineConfigSet: (

@@ -3,6 +3,11 @@ export type TriggerType = "manual" | "scheduled" | "webhook" | "event";
 export type RunStatus = "success" | "failure" | "partial" | "cancelled";
 export type Complexity = "simple" | "moderate" | "complex";
 
+export interface SemanticSearchResult {
+  id: string;
+  score: number;
+}
+
 export interface WorkflowInput {
   name: string;
   type: "string" | "number" | "boolean" | "file" | "date";
