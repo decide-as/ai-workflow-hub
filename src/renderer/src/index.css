@@ -32,6 +32,8 @@
   --c-border-hover: rgba(169, 146, 125, 0.22);
   --c-border-active: rgba(169, 146, 125, 0.38);
 
+  --c-score: #ef4444;
+
   --shadow-xs: 0 1px 3px rgba(10, 9, 8, 0.35);
   --shadow-sm: 0 2px 8px rgba(10, 9, 8, 0.45), 0 0 1px rgba(10, 9, 8, 0.25);
   --shadow-md: 0 6px 24px rgba(10, 9, 8, 0.55), 0 1px 6px rgba(10, 9, 8, 0.3);
@@ -68,6 +70,8 @@
   --c-border: rgba(150, 130, 110, 0.16);
   --c-border-hover: rgba(150, 130, 110, 0.3);
   --c-border-active: rgba(150, 130, 110, 0.5);
+
+  --c-score: #dc2626;
 
   --shadow-xs: 0 1px 3px rgba(10, 9, 8, 0.06);
   --shadow-sm: 0 2px 8px rgba(10, 9, 8, 0.09), 0 0 1px rgba(10, 9, 8, 0.04);

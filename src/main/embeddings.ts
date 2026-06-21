@@ -2,7 +2,7 @@ import { app } from "electron";
 import { join } from "path";
 import { createHash } from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import type { Workflow } from "../../shared/types";
+import type { Workflow, SemanticSearchResult } from "../../shared/types";
 
 type Extractor = (
   text: string,
@@ -123,7 +123,7 @@ export async function warmupEmbeddings(workflows: Workflow[]): Promise<void> {
 export async function semanticSearch(
   query: string,
   workflows: Workflow[],
-): Promise<{ id: string; score: number }[]> {
+): Promise<SemanticSearchResult[]> {
   await ensureCorpus(workflows);
   if (!_cache) return [];
 

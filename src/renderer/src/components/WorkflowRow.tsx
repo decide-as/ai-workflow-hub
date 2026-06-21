@@ -71,7 +71,7 @@ export function WorkflowRow({
               style={{
                 fontSize: "10px",
                 fontWeight: 600,
-                color: "#ef4444",
+                color: "var(--c-score)",
                 letterSpacing: "0.01em",
                 flexShrink: 0,
               }}

@@ -17,6 +17,7 @@ import type {
   LoanFormData,
   LoanStakeholdersResult,
   LoanGenerateResult,
+  SemanticSearchResult,
 } from "../../../shared/types";
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
@@ -121,9 +122,7 @@ declare global {
       ) => Promise<{ success: boolean; script: string; error?: string }>;
       loanGetStakeholders: () => Promise<LoanStakeholdersResult>;
       loanGenerate: (data: LoanFormData) => Promise<LoanGenerateResult>;
-      semanticSearch: (
-        query: string,
-      ) => Promise<{ id: string; score: number }[]>;
+      semanticSearch: (query: string) => Promise<SemanticSearchResult[]>;
     };
   }
 }
