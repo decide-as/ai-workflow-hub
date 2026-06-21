@@ -121,7 +121,9 @@ declare global {
       ) => Promise<{ success: boolean; script: string; error?: string }>;
       loanGetStakeholders: () => Promise<LoanStakeholdersResult>;
       loanGenerate: (data: LoanFormData) => Promise<LoanGenerateResult>;
-      semanticSearch: (query: string) => Promise<{ id: string; score: number }[]>;
+      semanticSearch: (
+        query: string,
+      ) => Promise<{ id: string; score: number }[]>;
     };
   }
 }
@@ -132,7 +134,9 @@ export default function App() {
     clusters: [],
   });
   const [query, setQuery] = useState("");
-  const [semanticScores, setSemanticScores] = useState<Record<string, number>>({});
+  const [semanticScores, setSemanticScores] = useState<Record<string, number>>(
+    {},
+  );
   const [semanticSearching, setSemanticSearching] = useState(false);
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
@@ -223,7 +227,8 @@ export default function App() {
 
     const q = query.trim().toLowerCase();
     const hasText = q.length > 0;
-    const isSemanticActive = q.length >= 5 && Object.keys(semanticScores).length > 0;
+    const isSemanticActive =
+      q.length >= 5 && Object.keys(semanticScores).length > 0;
 
     if (hasText || isSemanticActive) {
       result = result.filter((w) => {
@@ -232,7 +237,8 @@ export default function App() {
           (w.name.toLowerCase().includes(q) ||
             w.description.toLowerCase().includes(q) ||
             w.tags.some((t) => t.toLowerCase().includes(q)));
-        const semanticMatch = isSemanticActive && (semanticScores[w.id] ?? 0) >= 0.5;
+        const semanticMatch =
+          isSemanticActive && (semanticScores[w.id] ?? 0) >= 0.5;
         return textMatch || semanticMatch;
       });
     }

@@ -117,8 +117,6 @@ contextBridge.exposeInMainWorld("api", {
     outputDir: string,
   ): Promise<VoucherFolderResult> =>
     ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
-  semanticSearch: (
-    query: string,
-  ): Promise<{ id: string; score: number }[]> =>
+  semanticSearch: (query: string): Promise<{ id: string; score: number }[]> =>
     ipcRenderer.invoke(IPC.SEMANTIC_SEARCH, query),
 });

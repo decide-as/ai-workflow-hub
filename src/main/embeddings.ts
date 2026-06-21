@@ -57,7 +57,11 @@ function loadDisk(hash: string): MemCache | null {
   try {
     const d: DiskCache = JSON.parse(readFileSync(p, "utf8"));
     if (d.hash !== hash) return null;
-    return { hash: d.hash, ids: d.ids, vecs: d.embeddings.map((e) => new Float32Array(e)) };
+    return {
+      hash: d.hash,
+      ids: d.ids,
+      vecs: d.embeddings.map((e) => new Float32Array(e)),
+    };
   } catch {
     return null;
   }
@@ -91,7 +95,10 @@ async function ensureCorpus(workflows: Workflow[]): Promise<void> {
   const ids = active.map((w) => w.id);
   const vecs: Float32Array[] = [];
   for (const w of active) {
-    const out = await extractor(workflowText(w), { pooling: "mean", normalize: true });
+    const out = await extractor(workflowText(w), {
+      pooling: "mean",
+      normalize: true,
+    });
     vecs.push(new Float32Array(out.data));
   }
 
