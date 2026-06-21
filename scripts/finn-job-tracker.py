@@ -33,8 +33,6 @@ JOB_TRACKER_REPO = Path.home() / "Repositories" / "job-tracker"
 WORKFLOW_HUB_DATA = Path.home() / "Repositories" / "workflow-hub-data"
 
 DEDUP_LOG = WORKFLOW_HUB_DATA / "job-strategy" / "data" / "auto-scraped.json"
-LOG_DIR = WORKFLOW_HUB / "logs"
-LOG_FILE = LOG_DIR / "finn-job-tracker.log"
 ENV_FILE = WORKFLOW_HUB / ".env"
 
 CLAUDE_BIN = Path.home() / ".local" / "bin" / "claude"
@@ -79,14 +77,10 @@ def load_env():
 
 
 def setup_logging():
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler(LOG_FILE),
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
 
 
