@@ -55,6 +55,7 @@ import {
   calculateInterest as loanInterestCalculate,
 } from "./loanInterest";
 import { createVoucherFolders } from "./bookkeeping";
+import { warmupEmbeddings, semanticSearch } from "./embeddings";
 import { IPC } from "../../shared/ipc-channels";
 import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
 
@@ -278,11 +279,17 @@ app.whenReady().then(() => {
       createVoucherFolders(files, outputDir),
   );
 
+  ipcMain.handle(IPC.SEMANTIC_SEARCH, (_, query: string) =>
+    semanticSearch(query, getRegistry().workflows),
+  );
+
   watchRegistry(getRegistryPath(), (reg) => {
     mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
   });
 
   createWindow();
+  // Warm up the embedding model in the background so the first query is fast
+  setTimeout(() => warmupEmbeddings(getRegistry().workflows), 3000);
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

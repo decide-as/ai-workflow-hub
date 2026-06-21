@@ -29,4 +29,5 @@ export const IPC = {
   LOAN_INTEREST_DELETE_TRANSACTION: "loan-interest-delete-transaction",
   LOAN_INTEREST_CALCULATE: "loan-interest-calculate",
   CREATE_VOUCHER_FOLDERS: "create-voucher-folders",
+  SEMANTIC_SEARCH: "semantic-search",
 } as const;

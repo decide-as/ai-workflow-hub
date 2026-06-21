@@ -21,6 +21,7 @@ interface Props {
   onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
+  semanticScore?: number;
 }
 
 const MAX_SECONDS = 5 * 60;
@@ -350,6 +351,7 @@ export function WorkflowCard({
   onOpen,
   onRun,
   onClick,
+  semanticScore,
 }: Props) {
   const Icon = resolveIcon(workflow.icon, workflow.tags);
   const isTranscribe = workflow.action === "transcribe";
@@ -397,9 +399,23 @@ export function WorkflowCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <p className="card-name truncate">{workflow.name}</p>
-              {clusterName && (
-                <span className="cluster-badge">{clusterName}</span>
-              )}
+              <div className="flex items-center gap-1 shrink-0">
+                {semanticScore !== undefined && (
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      color: "#ef4444",
+                      letterSpacing: "0.01em",
+                    }}
+                  >
+                    {Math.round(semanticScore * 100)}%
+                  </span>
+                )}
+                {clusterName && (
+                  <span className="cluster-badge">{clusterName}</span>
+                )}
+              </div>
             </div>
             <p className="card-desc mt-0.5">
               {workflow.summary ?? workflow.description}

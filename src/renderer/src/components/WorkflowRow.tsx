@@ -10,6 +10,7 @@ interface Props {
   onOpen: (id: string, initialPrompt?: string) => void;
   onRun: (id: string) => void;
   onClick: (id: string) => void;
+  semanticScore?: number;
 }
 
 export function WorkflowRow({
@@ -18,6 +19,7 @@ export function WorkflowRow({
   onOpen,
   onRun,
   onClick,
+  semanticScore,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const Icon = resolveIcon(workflow.icon, workflow.tags);
@@ -64,6 +66,19 @@ export function WorkflowRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <p className="row-name truncate">{workflow.name}</p>
+          {semanticScore !== undefined && (
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                color: "#ef4444",
+                letterSpacing: "0.01em",
+                flexShrink: 0,
+              }}
+            >
+              {Math.round(semanticScore * 100)}%
+            </span>
+          )}
           {clusterName && <span className="cluster-badge">{clusterName}</span>}
           {workflow.scheduled_job && (
             <span

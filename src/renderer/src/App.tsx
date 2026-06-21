@@ -21,6 +21,7 @@ import type {
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
 import { SearchBar } from "./components/SearchBar";
+import { DescribeSearchBar } from "./components/DescribeSearchBar";
 import { EmptyState } from "./components/EmptyState";
 import { Sidebar, type SolutionType } from "./components/Sidebar";
 import { WorkflowModal } from "./components/WorkflowModal";
@@ -121,6 +122,7 @@ declare global {
       ) => Promise<{ success: boolean; script: string; error?: string }>;
       loanGetStakeholders: () => Promise<LoanStakeholdersResult>;
       loanGenerate: (data: LoanFormData) => Promise<LoanGenerateResult>;
+      semanticSearch: (query: string) => Promise<{ id: string; score: number }[]>;
     };
   }
 }
@@ -131,6 +133,9 @@ export default function App() {
     clusters: [],
   });
   const [query, setQuery] = useState("");
+  const [describeQuery, setDescribeQuery] = useState("");
+  const [semanticScores, setSemanticScores] = useState<Record<string, number>>({});
+  const [semanticSearching, setSemanticSearching] = useState(false);
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<SolutionType | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -186,6 +191,29 @@ export default function App() {
     return off;
   }, []);
 
+  useEffect(() => {
+    if (describeQuery.trim().length < 5) {
+      setSemanticScores({});
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSemanticSearching(true);
+      try {
+        const results = await window.api.semanticSearch(describeQuery.trim());
+        const scores: Record<string, number> = {};
+        results.forEach((r) => {
+          scores[r.id] = r.score;
+        });
+        setSemanticScores(scores);
+      } catch (e) {
+        console.error("[describe-search]", e);
+      } finally {
+        setSemanticSearching(false);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [describeQuery]);
+
   function filterWorkflows(workflows: Workflow[]): Workflow[] {
     let result = workflows.filter((w) => w.action !== "transcribe");
     if (selectedCluster) {
@@ -201,6 +229,15 @@ export default function App() {
           w.name.toLowerCase().includes(q) ||
           w.description.toLowerCase().includes(q) ||
           w.tags.some((t) => t.toLowerCase().includes(q)),
+      );
+    }
+    const isSemanticActive =
+      describeQuery.trim().length >= 5 &&
+      Object.keys(semanticScores).length > 0;
+    if (isSemanticActive) {
+      result = result.filter((w) => (semanticScores[w.id] ?? 0) >= 0.5);
+      result = [...result].sort(
+        (a, b) => (semanticScores[b.id] ?? 0) - (semanticScores[a.id] ?? 0),
       );
     }
     return result;
@@ -437,6 +474,11 @@ export default function App() {
                 <List size={14} />
               </button>
             </div>
+            <DescribeSearchBar
+              value={describeQuery}
+              onChange={setDescribeQuery}
+              isSearching={semanticSearching}
+            />
             <SearchBar value={query} onChange={setQuery} />
             <button
               onClick={() => {
@@ -487,6 +529,11 @@ export default function App() {
                       onOpen={handleOpen}
                       onRun={handleRun}
                       onClick={handleCardClick}
+                      semanticScore={
+                        Object.keys(semanticScores).length > 0
+                          ? semanticScores[w.id]
+                          : undefined
+                      }
                     />
                   </div>
                 );
@@ -506,6 +553,11 @@ export default function App() {
                     onOpen={handleOpen}
                     onRun={handleRun}
                     onClick={handleCardClick}
+                    semanticScore={
+                      Object.keys(semanticScores).length > 0
+                        ? semanticScores[w.id]
+                        : undefined
+                    }
                   />
                 );
               })}
