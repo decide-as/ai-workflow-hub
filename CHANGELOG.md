@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.1] - 2026-06-21
+
+### Fixed
+
+- Improve text contrast in dark and light themes to meet WCAG AA (4.5:1) — `--c-text-muted` and `--c-text-subtle` were too dim on both themes, affecting card descriptions, sidebar items, cluster badges, and section labels.
+
 ## [0.26.0] - 2026-06-21
 
 ### Added
