@@ -9,8 +9,7 @@ export function getMachineConfigPath(): string {
   return join(app.getPath("userData"), "machine-config.json");
 }
 
-export function readMachineConfig(): MachineConfig {
-  const path = getMachineConfigPath();
+export function readMachineConfigFromPath(path: string): MachineConfig {
   if (!existsSync(path)) {
     return { machine_id: hostname(), workflows: [] };
   }
@@ -20,6 +19,10 @@ export function readMachineConfig(): MachineConfig {
   } catch {
     return { machine_id: hostname(), workflows: [] };
   }
+}
+
+export function readMachineConfig(): MachineConfig {
+  return readMachineConfigFromPath(getMachineConfigPath());
 }
 
 export function writeMachineConfig(config: MachineConfig): void {

@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       "../../shared/types": resolve(__dirname, "shared/types.ts"),
       "../../../shared/types": resolve(__dirname, "shared/types.ts"),
+      electron: resolve(__dirname, "tests/__mocks__/electron.ts"),
     },
   },
 });
