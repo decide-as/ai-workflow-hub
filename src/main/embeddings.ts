@@ -9,6 +9,8 @@ type Extractor = (
   opts: { pooling: string; normalize: boolean },
 ) => Promise<{ data: Float32Array }>;
 
+const EMBEDDING_MODEL = "Xenova/paraphrase-multilingual-mpnet-base-v2";
+
 let _extractor: Extractor | null = null;
 
 async function getExtractor(): Promise<Extractor> {
@@ -17,7 +19,7 @@ async function getExtractor(): Promise<Extractor> {
   env.cacheDir = join(app.getPath("userData"), "models");
   _extractor = (await pipeline(
     "feature-extraction",
-    "Xenova/all-MiniLM-L6-v2",
+    EMBEDDING_MODEL,
   )) as Extractor;
   return _extractor;
 }
@@ -29,7 +31,10 @@ function workflowText(w: Workflow): string {
 }
 
 function corpusHash(workflows: Workflow[]): string {
-  const str = workflows.map((w) => `${w.id}:${workflowText(w)}`).join("|");
+  const str =
+    EMBEDDING_MODEL +
+    "|" +
+    workflows.map((w) => `${w.id}:${workflowText(w)}`).join("|");
   return createHash("sha256").update(str).digest("hex").slice(0, 16);
 }
 
