@@ -20,6 +20,7 @@ import type {
   LoanTransactionDeleteResult,
   LoanInterestResult,
   VoucherFolderResult,
+  MachineConfig,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -117,4 +118,12 @@ contextBridge.exposeInMainWorld("api", {
     outputDir: string,
   ): Promise<VoucherFolderResult> =>
     ipcRenderer.invoke(IPC.CREATE_VOUCHER_FOLDERS, files, outputDir),
+  machineConfigGet: (): Promise<MachineConfig> =>
+    ipcRenderer.invoke(IPC.MACHINE_CONFIG_GET),
+  machineConfigSet: (
+    config: MachineConfig,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke(IPC.MACHINE_CONFIG_SET, config),
+  registryGetAll: (): Promise<Registry> =>
+    ipcRenderer.invoke(IPC.GET_REGISTRY_ALL),
 });

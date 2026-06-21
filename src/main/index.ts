@@ -21,7 +21,13 @@ import {
   watchRegistry,
   getRegistryPath,
   getBaseDir,
+  mergeRegistryWithMachineConfig,
 } from "./registry";
+import {
+  readMachineConfig,
+  writeMachineConfig,
+  watchMachineConfig,
+} from "./machine-config";
 import { openInTerminal } from "./terminal";
 import { pickFolder, runScript } from "./runner";
 import {
@@ -56,7 +62,12 @@ import {
 } from "./loanInterest";
 import { createVoucherFolders } from "./bookkeeping";
 import { IPC } from "../../shared/ipc-channels";
-import type { RunResult, ScheduleStatus, Workflow } from "../../shared/types";
+import type {
+  RunResult,
+  ScheduleStatus,
+  Workflow,
+  MachineConfig,
+} from "../../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -96,7 +107,22 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window),
   );
 
-  ipcMain.handle(IPC.GET_REGISTRY, () => getRegistry());
+  ipcMain.handle(IPC.GET_REGISTRY, () =>
+    mergeRegistryWithMachineConfig(getRegistry(), readMachineConfig()),
+  );
+  ipcMain.handle(IPC.GET_REGISTRY_ALL, () => getRegistry());
+  ipcMain.handle(IPC.MACHINE_CONFIG_GET, () => readMachineConfig());
+  ipcMain.handle(
+    IPC.MACHINE_CONFIG_SET,
+    (_event, config: MachineConfig): { success: boolean; error?: string } => {
+      try {
+        writeMachineConfig(config);
+        return { success: true };
+      } catch (err) {
+        return { success: false, error: String(err) };
+      }
+    },
+  );
   ipcMain.handle(IPC.OPEN_WORKFLOW, (_, id: string, initialPrompt?: string) => {
     const reg = getRegistry();
     const workflow = reg.workflows.find((w) => w.id === id);
@@ -279,7 +305,16 @@ app.whenReady().then(() => {
   );
 
   watchRegistry(getRegistryPath(), (reg) => {
-    mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, reg);
+    const merged = mergeRegistryWithMachineConfig(reg, readMachineConfig());
+    mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, merged);
+  });
+
+  watchMachineConfig(() => {
+    const merged = mergeRegistryWithMachineConfig(
+      getRegistry(),
+      readMachineConfig(),
+    );
+    mainWindow?.webContents.send(IPC.REGISTRY_UPDATED, merged);
   });
 
   createWindow();

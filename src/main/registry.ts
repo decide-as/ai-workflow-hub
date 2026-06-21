@@ -3,7 +3,7 @@ import { join } from "path";
 import { app } from "electron";
 import yaml from "js-yaml";
 import chokidar from "chokidar";
-import type { Registry } from "../../shared/types";
+import type { Registry, MachineConfig } from "../../shared/types";
 
 const EMPTY: Registry = { workflows: [], clusters: [] };
 
@@ -51,4 +51,18 @@ export function watchRegistry(
         // silently ignore parse errors during live reload
       }
     });
+}
+
+export function mergeRegistryWithMachineConfig(
+  registry: Registry,
+  config: MachineConfig,
+): Registry {
+  const disabled = new Set(
+    config.workflows.filter((e) => !e.enabled).map((e) => e.id),
+  );
+  if (disabled.size === 0) return registry;
+  return {
+    ...registry,
+    workflows: registry.workflows.filter((w) => !disabled.has(w.id)),
+  };
 }

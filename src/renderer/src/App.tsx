@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutGrid, List, Sun, Moon } from "lucide-react";
+import { LayoutGrid, List, Sun, Moon, Settings } from "lucide-react";
 import type {
   Registry,
   Workflow,
@@ -17,6 +17,7 @@ import type {
   LoanFormData,
   LoanStakeholdersResult,
   LoanGenerateResult,
+  MachineConfig,
 } from "../../../shared/types";
 import { WorkflowCard } from "./components/WorkflowCard";
 import { WorkflowRow } from "./components/WorkflowRow";
@@ -36,6 +37,7 @@ import { CalendarModal } from "./components/CalendarModal";
 import { LoanModal } from "./components/LoanModal";
 import { LoanInterestModal } from "./components/LoanInterestModal";
 import { EmployeeGiftsModal } from "./components/EmployeeGiftsModal";
+import { SettingsModal } from "./components/SettingsModal";
 
 // Seed each runner option's UI state from its defaults.
 // Optional options start enabled when they have a non-zero default (e.g. min_age_days=7).
@@ -121,6 +123,11 @@ declare global {
       ) => Promise<{ success: boolean; script: string; error?: string }>;
       loanGetStakeholders: () => Promise<LoanStakeholdersResult>;
       loanGenerate: (data: LoanFormData) => Promise<LoanGenerateResult>;
+      machineConfigGet: () => Promise<MachineConfig>;
+      machineConfigSet: (
+        config: MachineConfig,
+      ) => Promise<{ success: boolean; error?: string }>;
+      registryGetAll: () => Promise<Registry>;
     };
   }
 }
@@ -157,6 +164,7 @@ export default function App() {
   const [employeeGiftsWorkflow, setEmployeeGiftsWorkflow] =
     useState<Workflow | null>(null);
   const [runState, setRunState] = useState<RunState | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -439,6 +447,14 @@ export default function App() {
             </div>
             <SearchBar value={query} onChange={setQuery} />
             <button
+              onClick={() => setSettingsOpen(true)}
+              title="Settings"
+              className="view-toggle-btn"
+              style={{ borderRadius: "var(--radius-sm)", padding: "5px 8px" }}
+            >
+              <Settings size={14} />
+            </button>
+            <button
               onClick={() => {
                 const next = theme === "dark" ? "light" : "dark";
                 localStorage.setItem("theme", next);
@@ -578,6 +594,8 @@ export default function App() {
           onClose={() => setRunState(null)}
         />
       )}
+
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }
