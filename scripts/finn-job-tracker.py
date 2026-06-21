@@ -8,9 +8,9 @@ stores qualifying results in the job-tracker SQLite DB, and sends Pushover
 notifications for high-scoring positions.
 
 Thresholds:
-  score < 50%   → skip entirely (recorded in dedup log only)
-  score >= 50%  → store in job-tracker DB + write output files
-  score >= 60%  → also send Pushover notification
+  score < 40%   → skip entirely (recorded in dedup log only)
+  score >= 40%  → store in job-tracker DB + write output files
+  score >= 50%  → also send Pushover notification
 """
 
 import json
@@ -48,8 +48,8 @@ FINN_SEARCH_URL = (
     "&q=ai"
     "&sort=PUBLISHED_DESC"
 )
-SCORE_STORE_THRESHOLD = 50
-SCORE_NOTIFY_THRESHOLD = 60
+SCORE_STORE_THRESHOLD = 40
+SCORE_NOTIFY_THRESHOLD = 50
 PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"
 HTTP_HEADERS = {
     "User-Agent": (
