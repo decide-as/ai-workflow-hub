@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.1] - 2026-06-21
+
+### Changed
+
+- Switch semantic search embedding model from `all-MiniLM-L6-v2` (384-dim) to `paraphrase-multilingual-mpnet-base-v2` (768-dim) for richer representations and multilingual support; existing embedding caches are automatically invalidated via model-name-aware corpus hash
+
 ## [0.28.0] - 2026-06-21
 
 ### Added
