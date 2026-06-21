@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Settings, Monitor, Pencil, Check } from "lucide-react";
-import type { MachineConfig, Registry, Workflow } from "../../../../shared/types";
+import type {
+  MachineConfig,
+  Registry,
+  Workflow,
+} from "../../../../shared/types";
 
 interface Props {
   onClose: () => void;
@@ -74,7 +78,10 @@ export function SettingsModal({ onClose }: Props) {
   async function commitNickname() {
     if (!config) return;
     setEditingNickname(false);
-    await writeConfig({ ...config, nickname: nicknameInput.trim() || undefined });
+    await writeConfig({
+      ...config,
+      nickname: nicknameInput.trim() || undefined,
+    });
   }
 
   function clusterName(clusterId: string | null): string {
@@ -82,24 +89,67 @@ export function SettingsModal({ onClose }: Props) {
     return allClusters.find((c) => c.id === clusterId)?.name ?? "";
   }
 
-  const displayName =
-    config?.nickname || config?.machine_id || "This machine";
+  const displayName = config?.nickname || config?.machine_id || "This machine";
+
+  // Group workflows by cluster name, preserving cluster order
+  const grouped: { name: string; workflows: typeof allWorkflows }[] = [];
+  for (const w of allWorkflows) {
+    const name = clusterName(w.cluster_id) || "Other";
+    const existing = grouped.find((g) => g.name === name);
+    if (existing) existing.workflows.push(w);
+    else grouped.push({ name, workflows: [w] });
+  }
 
   return (
     <div
-      className="modal-overlay animate-fade-in"
+      className="animate-fade-in"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
+        className="modal-overlay"
+        style={{ position: "absolute", inset: 0 }}
+        onClick={onClose}
+      />
+      <div
         className="modal-panel"
-        style={{ maxWidth: 520, width: "100%", maxHeight: "80vh", display: "flex", flexDirection: "column" }}
+        style={{
+          maxWidth: 480,
+          width: "100%",
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          zIndex: 1,
+        }}
       >
         {/* Header */}
-        <div className="modal-header" style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 20px 14px" }}>
-          <Settings size={15} style={{ color: "var(--c-accent)", flexShrink: 0 }} />
-          <span className="modal-title" style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>
+        <div
+          className="modal-header"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "18px 20px 14px",
+          }}
+        >
+          <Settings
+            size={15}
+            style={{ color: "var(--c-accent)", flexShrink: 0 }}
+          />
+          <span
+            className="modal-title"
+            style={{ flex: 1, fontSize: 14, fontWeight: 600 }}
+          >
             Settings
           </span>
           <button className="modal-close" onClick={onClose} title="Close">
@@ -118,7 +168,10 @@ export function SettingsModal({ onClose }: Props) {
                 marginBottom: 4,
               }}
             >
-              <Monitor size={13} style={{ color: "var(--c-text-subtle)", flexShrink: 0 }} />
+              <Monitor
+                size={13}
+                style={{ color: "var(--c-text-subtle)", flexShrink: 0 }}
+              />
               {editingNickname ? (
                 <input
                   ref={nicknameRef}
@@ -138,7 +191,13 @@ export function SettingsModal({ onClose }: Props) {
                 />
               ) : (
                 <>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "var(--c-text)" }}>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "var(--c-text)",
+                    }}
+                  >
                     {displayName}
                   </span>
                   <button
@@ -176,7 +235,13 @@ export function SettingsModal({ onClose }: Props) {
               )}
             </div>
             {config?.machine_id && (
-              <p style={{ fontSize: 11, color: "var(--c-text-subtle)", marginLeft: 21 }}>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "var(--c-text-subtle)",
+                  marginLeft: 21,
+                }}
+              >
                 {config.machine_id}
               </p>
             )}
@@ -198,7 +263,13 @@ export function SettingsModal({ onClose }: Props) {
             </h3>
 
             {saveError && (
-              <p style={{ fontSize: 12, color: "rgba(220,100,100,0.9)", marginBottom: 8 }}>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "rgba(220,100,100,0.9)",
+                  marginBottom: 8,
+                }}
+              >
                 {saveError}
               </p>
             )}
@@ -208,44 +279,70 @@ export function SettingsModal({ onClose }: Props) {
                 No workflows registered.
               </p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {allWorkflows.map((w) => {
-                  const enabled = isEnabled(w.id);
-                  const cluster = clusterName(w.cluster_id);
-                  return (
-                    <label
-                      key={w.id}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                {grouped.map((group) => (
+                  <div key={group.name}>
+                    <p
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "7px 10px",
-                        borderRadius: "var(--radius-sm)",
-                        cursor: "pointer",
-                        background: enabled ? "transparent" : "var(--c-surface-alt, rgba(0,0,0,0.08))",
-                        opacity: enabled ? 1 : 0.6,
-                        transition: "background 0.1s, opacity 0.1s",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: "var(--c-text-subtle)",
+                        marginBottom: 4,
+                        paddingLeft: 2,
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={enabled}
-                        onChange={() => handleToggle(w.id)}
-                        style={{ flexShrink: 0, accentColor: "var(--c-accent)" }}
-                      />
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, color: "var(--c-text)", display: "block" }}>
-                          {w.name}
-                        </span>
-                        {cluster && (
-                          <span style={{ fontSize: 11, color: "var(--c-text-subtle)" }}>
-                            {cluster}
-                          </span>
-                        )}
-                      </span>
-                    </label>
-                  );
-                })}
+                      {group.name}
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0,
+                      }}
+                    >
+                      {group.workflows.map((w) => {
+                        const enabled = isEnabled(w.id);
+                        return (
+                          <label
+                            key={w.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              padding: "3px 6px",
+                              borderRadius: "var(--radius-sm)",
+                              cursor: "pointer",
+                              background: enabled
+                                ? "transparent"
+                                : "var(--c-surface-alt, rgba(0,0,0,0.08))",
+                              opacity: enabled ? 1 : 0.5,
+                              transition: "background 0.1s, opacity 0.1s",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={enabled}
+                              onChange={() => handleToggle(w.id)}
+                              style={{
+                                flexShrink: 0,
+                                accentColor: "var(--c-accent)",
+                              }}
+                            />
+                            <span
+                              style={{ fontSize: 13, color: "var(--c-text)" }}
+                            >
+                              {w.name}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>
