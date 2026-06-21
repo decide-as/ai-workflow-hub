@@ -165,6 +165,10 @@ def extract_all_listings(html: str) -> dict[str, dict]:
     - title: text after hidden <span> in the <a job-card-link> element
     - company: text inside the first <strong> after the title link
     - published: ISO datetime from the <time dateTime="..."> element
+
+    Skips cards marked "Betalt plassering" (paid placements) — these are
+    pinned sponsored listings that never age off the search page and would
+    re-appear as new on every run.
     """
     result = {}
     for m in re.finditer(
@@ -176,6 +180,9 @@ def extract_all_listings(html: str) -> dict[str, dict]:
         if finn_id in result:
             continue
         window = html[m.start() : m.start() + 1200]
+
+        if "Betalt plassering" in window:
+            continue
 
         title_m = re.search(r"</span>(.*?)</a>", window, re.DOTALL)
         title = re.sub(r"<[^>]+>", "", title_m.group(1)).strip() if title_m else None
