@@ -524,6 +524,12 @@ export default function App() {
                 const cluster = showWorkspaceBadges
                   ? clusterForWorkflow(w)
                   : null;
+                const q = query.trim().toLowerCase();
+                const isTextMatch =
+                  q.length > 0 &&
+                  (w.name.toLowerCase().includes(q) ||
+                    w.description.toLowerCase().includes(q) ||
+                    w.tags.some((t) => t.toLowerCase().includes(q)));
                 return (
                   <div key={w.id} className="card-masonry-item">
                     <WorkflowCard
@@ -533,7 +539,7 @@ export default function App() {
                       onRun={handleRun}
                       onClick={handleCardClick}
                       semanticScore={
-                        Object.keys(semanticScores).length > 0
+                        !isTextMatch && Object.keys(semanticScores).length > 0
                           ? semanticScores[w.id]
                           : undefined
                       }
@@ -548,6 +554,12 @@ export default function App() {
                 const cluster = showWorkspaceBadges
                   ? clusterForWorkflow(w)
                   : null;
+                const q = query.trim().toLowerCase();
+                const isTextMatch =
+                  q.length > 0 &&
+                  (w.name.toLowerCase().includes(q) ||
+                    w.description.toLowerCase().includes(q) ||
+                    w.tags.some((t) => t.toLowerCase().includes(q)));
                 return (
                   <WorkflowRow
                     key={w.id}
@@ -557,7 +569,7 @@ export default function App() {
                     onRun={handleRun}
                     onClick={handleCardClick}
                     semanticScore={
-                      Object.keys(semanticScores).length > 0
+                      !isTextMatch && Object.keys(semanticScores).length > 0
                         ? semanticScores[w.id]
                         : undefined
                     }
