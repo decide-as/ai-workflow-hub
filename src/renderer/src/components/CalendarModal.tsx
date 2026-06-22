@@ -32,7 +32,7 @@ function todayString(): string {
 
 export function CalendarModal({ workflow, onClose }: Props) {
   const [text, setText] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [phase, setPhase] = useState<Phase>("input");
   const [script, setScript] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -62,7 +62,8 @@ export function CalendarModal({ workflow, onClose }: Props) {
           const blob = item.getAsFile();
           if (!blob) continue;
           const reader = new FileReader();
-          reader.onload = () => setImage(reader.result as string);
+          reader.onload = () =>
+            setImages((prev) => [...prev, reader.result as string]);
           reader.readAsDataURL(blob);
           return;
         }
@@ -75,7 +76,7 @@ export function CalendarModal({ workflow, onClose }: Props) {
   async function handlePasteButton() {
     const dataUrl = await window.api.readClipboardImage();
     if (dataUrl) {
-      setImage(dataUrl);
+      setImages((prev) => [...prev, dataUrl]);
     } else {
       try {
         const clipText = await navigator.clipboard.readText();
@@ -122,14 +123,14 @@ export function CalendarModal({ workflow, onClose }: Props) {
   }
 
   async function handleGenerate() {
-    if (!text.trim() && !image) {
+    if (!text.trim() && images.length === 0) {
       setErrorMsg("Add some text or paste a screenshot first.");
       return;
     }
     setPhase("generating");
     setErrorMsg("");
     const today = todayString();
-    const result = await window.api.generateCalendarScript(text, image, today);
+    const result = await window.api.generateCalendarScript(text, images, today);
     if (!result.success) {
       setErrorMsg(result.error ?? "Unknown error");
       setPhase("error");
@@ -158,10 +159,11 @@ export function CalendarModal({ workflow, onClose }: Props) {
     setScript("");
     setErrorMsg("");
     setRunOutput("");
+    setImages([]);
   }
 
   const canGenerate =
-    (text.trim().length > 0 || image !== null) && phase === "input";
+    (text.trim().length > 0 || images.length > 0) && phase === "input";
   const color = workflow.color ?? "#34d399";
 
   return (
@@ -296,37 +298,44 @@ export function CalendarModal({ workflow, onClose }: Props) {
                 </span>
               </div>
 
-              {/* Image preview */}
-              {image && (
-                <div
-                  className="relative rounded-lg overflow-hidden"
-                  style={{
-                    border: "1px solid var(--c-border)",
-                    background: "var(--c-surface-inset)",
-                  }}
-                >
-                  <img
-                    src={image}
-                    alt="Pasted screenshot"
-                    className="w-full max-h-48 object-contain"
-                  />
-                  <button
-                    onClick={() => setImage(null)}
-                    className="btn absolute top-2 right-2 p-1"
-                    style={{
-                      background: "var(--c-surface-raised)",
-                      color: "var(--c-text-muted)",
-                    }}
-                    title="Remove image"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--c-text)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "var(--c-text-muted)";
-                    }}
-                  >
-                    <ImageOff size={13} />
-                  </button>
+              {/* Image previews */}
+              {images.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {images.map((src, i) => (
+                    <div
+                      key={i}
+                      className="relative rounded-lg overflow-hidden"
+                      style={{
+                        border: "1px solid var(--c-border)",
+                        background: "var(--c-surface-inset)",
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt={`Screenshot ${i + 1}`}
+                        className="w-full max-h-48 object-contain"
+                      />
+                      <button
+                        onClick={() =>
+                          setImages((prev) => prev.filter((_, j) => j !== i))
+                        }
+                        className="btn absolute top-2 right-2 p-1"
+                        style={{
+                          background: "var(--c-surface-raised)",
+                          color: "var(--c-text-muted)",
+                        }}
+                        title="Remove image"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = "var(--c-text)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = "var(--c-text-muted)";
+                        }}
+                      >
+                        <ImageOff size={13} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
