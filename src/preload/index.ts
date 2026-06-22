@@ -90,7 +90,12 @@ contextBridge.exposeInMainWorld("api", {
     imageDataUrls: string[],
     today: string,
   ): Promise<{ success: boolean; script: string; error?: string }> =>
-    ipcRenderer.invoke(IPC.GENERATE_CALENDAR_SCRIPT, text, imageDataUrls, today),
+    ipcRenderer.invoke(
+      IPC.GENERATE_CALENDAR_SCRIPT,
+      text,
+      imageDataUrls,
+      today,
+    ),
   loanGetStakeholders: (): Promise<LoanStakeholdersResult> =>
     ipcRenderer.invoke(IPC.LOAN_GET_STAKEHOLDERS),
   loanGenerate: (data: LoanFormData): Promise<LoanGenerateResult> =>
