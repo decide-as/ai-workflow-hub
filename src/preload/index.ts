@@ -24,6 +24,7 @@ import type {
   MachineConfig,
   VisionResult,
   VisionCheckResult,
+  ClusterResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -135,4 +136,9 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.VISION_CHECK),
   visionAnalyze: (imagePath: string): Promise<VisionResult> =>
     ipcRenderer.invoke(IPC.VISION_ANALYZE, imagePath),
+  visionCluster: (
+    images: VisionResult[],
+    opts?: { maxClusters?: number },
+  ): Promise<ClusterResult> =>
+    ipcRenderer.invoke(IPC.VISION_CLUSTER, images, opts),
 });

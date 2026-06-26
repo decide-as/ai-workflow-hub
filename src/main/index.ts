@@ -63,12 +63,14 @@ import {
 import { createVoucherFolders } from "./bookkeeping";
 import { warmupEmbeddings, semanticSearch } from "./embeddings";
 import { analyzeImage, checkOllamaAvailable } from "./vision";
+import { clusterImages } from "./image-clustering";
 import { IPC } from "../../shared/ipc-channels";
 import type {
   RunResult,
   ScheduleStatus,
   Workflow,
   MachineConfig,
+  VisionResult,
 } from "../../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
@@ -314,6 +316,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.VISION_ANALYZE, (_, imagePath: string) =>
     analyzeImage(imagePath),
+  );
+
+  ipcMain.handle(
+    IPC.VISION_CLUSTER,
+    (_, images: VisionResult[], opts?: { maxClusters?: number }) =>
+      clusterImages(images, opts),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

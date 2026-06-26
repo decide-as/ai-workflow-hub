@@ -35,4 +35,5 @@ export const IPC = {
   GET_REGISTRY_ALL: "registry:get-all",
   VISION_ANALYZE: "vision:analyze",
   VISION_CHECK: "vision:check",
+  VISION_CLUSTER: "vision:cluster",
 } as const;

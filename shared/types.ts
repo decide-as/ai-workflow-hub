@@ -383,6 +383,22 @@ export interface VisionCheckResult {
   error?: string;
 }
 
+// --- Image Clustering ---
+
+export interface ImageCluster {
+  label: string;
+  keywords: string[];
+  imagePaths: string[];
+  centroidIndex: number;
+}
+
+export interface ClusterResult {
+  clusters: ImageCluster[];
+  model: string;
+  k: number;
+  silhouetteScore: number;
+}
+
 // --- Org Permissions (phase 2 stubs — no runtime behaviour in phase 1) ---
 
 export interface OrgGroup {
