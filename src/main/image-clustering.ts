@@ -1,25 +1,140 @@
 import { app } from "electron";
 import { join } from "path";
-import type { VisionResult, ImageCluster, ClusterResult } from "../../shared/types";
+import type {
+  VisionResult,
+  ImageCluster,
+  ClusterResult,
+} from "../../shared/types";
 
 const EMBEDDING_MODEL = "Xenova/paraphrase-multilingual-mpnet-base-v2";
 
 const EN_STOPWORDS = new Set([
-  "a","an","the","and","or","but","in","on","at","to","for","of","with",
-  "by","from","is","are","was","were","be","been","being","have","has",
-  "had","do","does","did","will","would","could","should","may","might",
-  "this","that","these","those","it","its","as","into","than","then",
-  "when","where","which","who","what","how","not","no","so","if","up",
-  "out","about","an","i","we","you","they","he","she","image","shows",
-  "showing","show","displaying","displays","display","using","used","use",
-  "multiple","several","including","includes","include","also","while",
-  "screenshot","screen","window","page","view","appears","appear",
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "but",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "of",
+  "with",
+  "by",
+  "from",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "being",
+  "have",
+  "has",
+  "had",
+  "do",
+  "does",
+  "did",
+  "will",
+  "would",
+  "could",
+  "should",
+  "may",
+  "might",
+  "this",
+  "that",
+  "these",
+  "those",
+  "it",
+  "its",
+  "as",
+  "into",
+  "than",
+  "then",
+  "when",
+  "where",
+  "which",
+  "who",
+  "what",
+  "how",
+  "not",
+  "no",
+  "so",
+  "if",
+  "up",
+  "out",
+  "about",
+  "an",
+  "i",
+  "we",
+  "you",
+  "they",
+  "he",
+  "she",
+  "image",
+  "shows",
+  "showing",
+  "show",
+  "displaying",
+  "displays",
+  "display",
+  "using",
+  "used",
+  "use",
+  "multiple",
+  "several",
+  "including",
+  "includes",
+  "include",
+  "also",
+  "while",
+  "screenshot",
+  "screen",
+  "window",
+  "page",
+  "view",
+  "appears",
+  "appear",
 ]);
 
 const NO_STOPWORDS = new Set([
-  "og","er","i","på","til","av","for","med","som","en","et","ei","de",
-  "det","den","ikke","har","jeg","vi","du","han","hun","de","seg","sin",
-  "sitt","sine","å","om","ved","fra","over","under","etter","før",
+  "og",
+  "er",
+  "i",
+  "på",
+  "til",
+  "av",
+  "for",
+  "med",
+  "som",
+  "en",
+  "et",
+  "ei",
+  "de",
+  "det",
+  "den",
+  "ikke",
+  "har",
+  "jeg",
+  "vi",
+  "du",
+  "han",
+  "hun",
+  "de",
+  "seg",
+  "sin",
+  "sitt",
+  "sine",
+  "å",
+  "om",
+  "ved",
+  "fra",
+  "over",
+  "under",
+  "etter",
+  "før",
 ]);
 
 type Extractor = (
@@ -33,7 +148,10 @@ async function getExtractor(): Promise<Extractor> {
   if (_extractor) return _extractor;
   const { pipeline, env } = await import("@xenova/transformers");
   env.cacheDir = join(app.getPath("userData"), "models");
-  _extractor = (await pipeline("feature-extraction", EMBEDDING_MODEL)) as Extractor;
+  _extractor = (await pipeline(
+    "feature-extraction",
+    EMBEDDING_MODEL,
+  )) as Extractor;
   return _extractor;
 }
 
@@ -71,11 +189,15 @@ function detectOutliers(
   const outliers = new Set<number>();
   const k = centroids.length;
   for (let c = 0; c < k; c++) {
-    const idxs = assignments.map((a, i) => (a === c ? i : -1)).filter((i) => i >= 0);
+    const idxs = assignments
+      .map((a, i) => (a === c ? i : -1))
+      .filter((i) => i >= 0);
     if (idxs.length < 3) continue;
     const dists = idxs.map((i) => cosineDistance(vecs[i], centroids[c]));
     const mean = dists.reduce((a, b) => a + b, 0) / dists.length;
-    const std = Math.sqrt(dists.reduce((s, d) => s + (d - mean) ** 2, 0) / dists.length);
+    const std = Math.sqrt(
+      dists.reduce((s, d) => s + (d - mean) ** 2, 0) / dists.length,
+    );
     const threshold = mean + OUTLIER_SIGMA * std;
     idxs.forEach((imgIdx, pos) => {
       if (dists[pos] > threshold) outliers.add(imgIdx);
@@ -96,7 +218,10 @@ function kMeansPlusPlus(vecs: Float32Array[], k: number): Float32Array[] {
     let r = Math.random() * total;
     for (let i = 0; i < n; i++) {
       r -= dists[i];
-      if (r <= 0) { seeds.push(vecs[i]); break; }
+      if (r <= 0) {
+        seeds.push(vecs[i]);
+        break;
+      }
     }
     if (seeds.length < k) seeds.push(vecs[n - seeds.length]);
   }
@@ -110,10 +235,14 @@ function kMeans(vecs: Float32Array[], k: number): number[] {
   for (let iter = 0; iter < 100; iter++) {
     // assign
     const next = vecs.map((v) => {
-      let best = 0, bestD = Infinity;
+      let best = 0,
+        bestD = Infinity;
       for (let c = 0; c < k; c++) {
         const d = cosineDistance(v, centroids[c]);
-        if (d < bestD) { bestD = d; best = c; }
+        if (d < bestD) {
+          bestD = d;
+          best = c;
+        }
       }
       return best;
     });
@@ -125,28 +254,38 @@ function kMeans(vecs: Float32Array[], k: number): number[] {
     // recompute centroids
     const groups: Float32Array[][] = Array.from({ length: k }, () => []);
     assignments.forEach((c, i) => groups[c].push(vecs[i]));
-    centroids = groups.map((g, ci) => g.length > 0 ? centroid(g) : centroids[ci]);
+    centroids = groups.map((g, ci) =>
+      g.length > 0 ? centroid(g) : centroids[ci],
+    );
   }
 
   return assignments;
 }
 
-function silhouetteScore(vecs: Float32Array[], assignments: number[], k: number): number {
+function silhouetteScore(
+  vecs: Float32Array[],
+  assignments: number[],
+  k: number,
+): number {
   const n = vecs.length;
   let total = 0;
   for (let i = 0; i < n; i++) {
     const ci = assignments[i];
     const sameCluster = vecs.filter((_, j) => j !== i && assignments[j] === ci);
-    const a = sameCluster.length > 0
-      ? sameCluster.reduce((s, v) => s + cosineDistance(vecs[i], v), 0) / sameCluster.length
-      : 0;
+    const a =
+      sameCluster.length > 0
+        ? sameCluster.reduce((s, v) => s + cosineDistance(vecs[i], v), 0) /
+          sameCluster.length
+        : 0;
 
     let b = Infinity;
     for (let c = 0; c < k; c++) {
       if (c === ci) continue;
       const otherCluster = vecs.filter((_, j) => assignments[j] === c);
       if (otherCluster.length === 0) continue;
-      const meanD = otherCluster.reduce((s, v) => s + cosineDistance(vecs[i], v), 0) / otherCluster.length;
+      const meanD =
+        otherCluster.reduce((s, v) => s + cosineDistance(vecs[i], v), 0) /
+        otherCluster.length;
       if (meanD < b) b = meanD;
     }
 
@@ -161,10 +300,15 @@ function tokenize(text: string): string[] {
     .toLowerCase()
     .replace(/[^a-zæøåé\s-]/g, " ")
     .split(/\s+/)
-    .filter((t) => t.length > 2 && !EN_STOPWORDS.has(t) && !NO_STOPWORDS.has(t));
+    .filter(
+      (t) => t.length > 2 && !EN_STOPWORDS.has(t) && !NO_STOPWORDS.has(t),
+    );
 }
 
-function tfidfLabel(memberTexts: string[], allClusterTexts: string[][]): string {
+function tfidfLabel(
+  memberTexts: string[],
+  allClusterTexts: string[][],
+): string {
   const clusterTokens = memberTexts.flatMap(tokenize);
   const tf = new Map<string, number>();
   for (const t of clusterTokens) tf.set(t, (tf.get(t) ?? 0) + 1);
@@ -199,12 +343,14 @@ export async function clusterImages(
   if (images.length < 4) {
     const topKw = images.flatMap((v) => v.keywords).slice(0, 5);
     return {
-      clusters: [{
-        label: images[0]?.keywords[0] ?? "images",
-        keywords: [...new Set(topKw)].slice(0, 5),
-        imagePaths: images.map((v) => v.imagePath),
-        centroidIndex: 0,
-      }],
+      clusters: [
+        {
+          label: images[0]?.keywords[0] ?? "images",
+          keywords: [...new Set(topKw)].slice(0, 5),
+          imagePaths: images.map((v) => v.imagePath),
+          centroidIndex: 0,
+        },
+      ],
       misc: [],
       model: EMBEDDING_MODEL,
       k: 1,
@@ -215,7 +361,10 @@ export async function clusterImages(
   const extractor = await getExtractor();
   const vecs: Float32Array[] = [];
   for (const img of images) {
-    const out = await extractor(imageText(img), { pooling: "mean", normalize: true });
+    const out = await extractor(imageText(img), {
+      pooling: "mean",
+      normalize: true,
+    });
     vecs.push(new Float32Array(out.data));
   }
 
@@ -235,7 +384,9 @@ export async function clusterImages(
       // Recompute centroids for outlier detection
       const g: Float32Array[][] = Array.from({ length: k }, () => []);
       assignments.forEach((c, i) => g[c].push(vecs[i]));
-      bestCentroids = g.map((members, ci) => members.length > 0 ? centroid(members) : bestCentroids[ci] ?? vecs[0]);
+      bestCentroids = g.map((members, ci) =>
+        members.length > 0 ? centroid(members) : (bestCentroids[ci] ?? vecs[0]),
+      );
     }
   }
 
@@ -259,7 +410,9 @@ export async function clusterImages(
   }
   const allMiscIdxs = [...miscIdxs, ...dissolvedIdxs];
 
-  const allClusterTexts = finalGroups.map((idxs) => idxs.map((i) => imageText(images[i])));
+  const allClusterTexts = finalGroups.map((idxs) =>
+    idxs.map((i) => imageText(images[i])),
+  );
 
   const clusters: ImageCluster[] = finalGroups.map((idxs) => {
     const memberTexts = idxs.map((i) => imageText(images[i]));
@@ -277,10 +430,14 @@ export async function clusterImages(
     // Closest-to-centroid representative
     const memberVecs = idxs.map((i) => vecs[i]);
     const c = centroid(memberVecs);
-    let bestPos = 0, bestD = Infinity;
+    let bestPos = 0,
+      bestD = Infinity;
     memberVecs.forEach((v, pos) => {
       const d = cosineDistance(v, c);
-      if (d < bestD) { bestD = d; bestPos = pos; }
+      if (d < bestD) {
+        bestD = d;
+        bestPos = pos;
+      }
     });
 
     return {
@@ -293,5 +450,11 @@ export async function clusterImages(
 
   const misc = allMiscIdxs.map((i) => images[i].imagePath);
 
-  return { clusters, misc, model: EMBEDDING_MODEL, k: finalGroups.length, silhouetteScore: bestScore };
+  return {
+    clusters,
+    misc,
+    model: EMBEDDING_MODEL,
+    k: finalGroups.length,
+    silhouetteScore: bestScore,
+  };
 }

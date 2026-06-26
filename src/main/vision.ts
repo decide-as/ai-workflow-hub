@@ -40,8 +40,15 @@ export async function checkOllamaAvailable(): Promise<{
   error?: string;
 }> {
   try {
-    const res = await fetch(`${OLLAMA_BASE}/api/tags`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return { running: false, modelReady: false, error: "Ollama not responding" };
+    const res = await fetch(`${OLLAMA_BASE}/api/tags`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok)
+      return {
+        running: false,
+        modelReady: false,
+        error: "Ollama not responding",
+      };
     const data = (await res.json()) as { models: Array<{ name: string }> };
     const modelReady = data.models.some((m) => m.name.startsWith("qwen3-vl"));
     return {
@@ -58,9 +65,16 @@ export async function checkOllamaAvailable(): Promise<{
   }
 }
 
-function notReadyError(check: { running: boolean; modelReady: boolean; pullCommand?: string; error?: string }): Error {
+function notReadyError(check: {
+  running: boolean;
+  modelReady: boolean;
+  pullCommand?: string;
+  error?: string;
+}): Error {
   if (!check.running) {
-    return new Error(check.error ?? "Ollama is not running. Start it with: ollama serve");
+    return new Error(
+      check.error ?? "Ollama is not running. Start it with: ollama serve",
+    );
   }
   return new Error(
     `Model not downloaded. Run once in a terminal: ${check.pullCommand ?? `ollama pull ${MODEL}`}`,
@@ -103,7 +117,10 @@ export async function analyzeImage(imagePath: string): Promise<VisionResult> {
   const raw = data.response.trim();
 
   // Strip markdown code fences if the model adds them
-  const json = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  const json = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
 
   let parsed: { description: string; keywords: string[] };
   try {

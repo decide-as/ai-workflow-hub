@@ -9,16 +9,29 @@ import {
   Play,
   Eye,
 } from "lucide-react";
-import type { OrganizerPlan, OrganizerProgress } from "../../../../shared/types";
+import type {
+  OrganizerPlan,
+  OrganizerProgress,
+} from "../../../../shared/types";
 
-type Phase = "idle" | "scanning" | "restructure-warning" | "confirm" | "applying" | "done" | "error";
+type Phase =
+  | "idle"
+  | "scanning"
+  | "restructure-warning"
+  | "confirm"
+  | "applying"
+  | "done"
+  | "error";
 
 export function ImageOrganizerControls() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [dryRun, setDryRun] = useState(false);
   const [progress, setProgress] = useState<OrganizerProgress | null>(null);
   const [plan, setPlan] = useState<OrganizerPlan | null>(null);
-  const [result, setResult] = useState<{ moved: number; logPath: string } | null>(null);
+  const [result, setResult] = useState<{
+    moved: number;
+    logPath: string;
+  } | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const unsubRef = useRef<(() => void) | null>(null);
 
@@ -86,9 +99,21 @@ export function ImageOrganizerControls() {
         : `Analyzing ${progress.current}/${progress.total}: ${progress.currentFile}`
       : "Starting…";
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <Loader2 size={11} className="animate-spin shrink-0" style={{ color: "var(--c-text-muted)" }} />
-        <span className="text-[11px] truncate" style={{ color: "var(--c-text-muted)" }}>{label}</span>
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Loader2
+          size={11}
+          className="animate-spin shrink-0"
+          style={{ color: "var(--c-text-muted)" }}
+        />
+        <span
+          className="text-[11px] truncate"
+          style={{ color: "var(--c-text-muted)" }}
+        >
+          {label}
+        </span>
       </div>
     );
   }
@@ -96,15 +121,25 @@ export function ImageOrganizerControls() {
   // — restructure warning —
   if (phase === "restructure-warning" && plan) {
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
         <AlertTriangle size={11} className="shrink-0 text-amber-400" />
         <span className="text-[11px] text-amber-400 flex-1 truncate">
           {plan.restructured.length} files would move clusters
         </span>
-        <button onClick={() => setPhase("confirm")} className="btn btn-sm shrink-0">
+        <button
+          onClick={() => setPhase("confirm")}
+          className="btn btn-sm shrink-0"
+        >
           Review
         </button>
-        <button onClick={reset} className="btn btn-sm w-7 h-7 p-0 shrink-0" title="Cancel">
+        <button
+          onClick={reset}
+          className="btn btn-sm w-7 h-7 p-0 shrink-0"
+          title="Cancel"
+        >
           <XCircle size={11} />
         </button>
       </div>
@@ -114,9 +149,16 @@ export function ImageOrganizerControls() {
   // — confirm plan —
   if (phase === "confirm" && plan) {
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <span className="text-[11px] flex-1 truncate" style={{ color: "var(--c-text-muted)" }}>
-          {plan.moves.length} files → {plan.clusters.length} folders{plan.miscCount > 0 ? ` + ${plan.miscCount} misc` : ""}
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span
+          className="text-[11px] flex-1 truncate"
+          style={{ color: "var(--c-text-muted)" }}
+        >
+          {plan.moves.length} files → {plan.clusters.length} folders
+          {plan.miscCount > 0 ? ` + ${plan.miscCount} misc` : ""}
         </span>
         <button
           onClick={() => handleApply(true)}
@@ -141,8 +183,15 @@ export function ImageOrganizerControls() {
   // — applying —
   if (phase === "applying") {
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <Loader2 size={11} className="animate-spin shrink-0" style={{ color: "var(--c-text-muted)" }} />
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Loader2
+          size={11}
+          className="animate-spin shrink-0"
+          style={{ color: "var(--c-text-muted)" }}
+        />
         <span className="text-[11px]" style={{ color: "var(--c-text-muted)" }}>
           {dryRun ? "Logging plan…" : "Moving files…"}
         </span>
@@ -153,7 +202,10 @@ export function ImageOrganizerControls() {
   // — done —
   if (phase === "done" && result) {
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
         <CheckCircle2 size={11} className="shrink-0 text-emerald-400" />
         <span className="text-[11px] text-emerald-400 flex-1 truncate">
           {result.moved} files {dryRun ? "logged" : "moved"}
@@ -162,7 +214,11 @@ export function ImageOrganizerControls() {
           <FolderOpen size={11} />
           Log
         </button>
-        <button onClick={reset} className="btn btn-sm w-7 h-7 p-0 shrink-0" title="Run again">
+        <button
+          onClick={reset}
+          className="btn btn-sm w-7 h-7 p-0 shrink-0"
+          title="Run again"
+        >
           <RotateCcw size={11} />
         </button>
       </div>
@@ -172,9 +228,14 @@ export function ImageOrganizerControls() {
   // — error —
   if (phase === "error") {
     return (
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
         <XCircle size={11} className="shrink-0 text-red-400" />
-        <span className="text-[11px] text-red-400 flex-1 truncate">{errorMsg}</span>
+        <span className="text-[11px] text-red-400 flex-1 truncate">
+          {errorMsg}
+        </span>
         <button onClick={reset} className="btn btn-sm shrink-0">
           <RotateCcw size={11} />
           Retry
@@ -185,8 +246,14 @@ export function ImageOrganizerControls() {
 
   // — idle —
   return (
-    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-      <label className="flex items-center gap-1 cursor-pointer shrink-0" title="Dry run — log only">
+    <div
+      className="flex items-center gap-1.5"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <label
+        className="flex items-center gap-1 cursor-pointer shrink-0"
+        title="Dry run — log only"
+      >
         <input
           type="checkbox"
           className="sr-only"
@@ -206,7 +273,10 @@ export function ImageOrganizerControls() {
         </span>
       </label>
       <button
-        onClick={(e) => { e.stopPropagation(); handlePickAndScan(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePickAndScan();
+        }}
         className="btn btn-sm flex-1"
       >
         <FolderOpen size={11} />

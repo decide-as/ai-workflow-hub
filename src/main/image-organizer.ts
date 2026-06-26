@@ -40,7 +40,11 @@ function loadState(folder: string): StoredState | null {
 }
 
 function saveState(folder: string, state: StoredState): void {
-  writeFileSync(join(folder, STATE_FILE), JSON.stringify(state, null, 2), "utf8");
+  writeFileSync(
+    join(folder, STATE_FILE),
+    JSON.stringify(state, null, 2),
+    "utf8",
+  );
 }
 
 function appendLog(folder: string, line: string): void {
@@ -71,14 +75,20 @@ export async function scanAndPlan(
 ): Promise<OrganizerPlan> {
   const allImages = scanImages(sourceFolder);
   const state = loadState(sourceFolder);
-  const cachedResults: Record<string, VisionResult> = state?.analyzedImages ?? {};
+  const cachedResults: Record<string, VisionResult> =
+    state?.analyzedImages ?? {};
 
   const newImages = allImages.filter((p) => !cachedResults[p]);
   const total = newImages.length;
 
   // Analyze new images one by one, reporting progress
   for (let i = 0; i < newImages.length; i++) {
-    onProgress({ current: i + 1, total, currentFile: basename(newImages[i]), phase: "analyzing" });
+    onProgress({
+      current: i + 1,
+      total,
+      currentFile: basename(newImages[i]),
+      phase: "analyzing",
+    });
     const result = await analyzeImage(newImages[i]);
     cachedResults[newImages[i]] = result;
   }
@@ -98,7 +108,11 @@ export async function scanAndPlan(
     for (const imagePath of cluster.imagePaths) {
       if (!allRootImages.has(imagePath)) continue;
       const destPath = safeDestPath(destDir, basename(imagePath));
-      moves.push({ sourcePath: imagePath, destPath, clusterLabel: cluster.label });
+      moves.push({
+        sourcePath: imagePath,
+        destPath,
+        clusterLabel: cluster.label,
+      });
     }
   }
 
@@ -119,7 +133,11 @@ export async function scanAndPlan(
     for (const move of moves) {
       const old = oldPathToCluster[move.sourcePath];
       if (old && old !== move.clusterLabel) {
-        restructured.push({ sourcePath: move.sourcePath, oldCluster: old, newCluster: move.clusterLabel });
+        restructured.push({
+          sourcePath: move.sourcePath,
+          oldCluster: old,
+          newCluster: move.clusterLabel,
+        });
       }
     }
   }
@@ -127,7 +145,10 @@ export async function scanAndPlan(
   // Persist updated analysis cache
   const updatedState: StoredState = {
     version: 1,
-    clusters: clusters.map((c) => ({ label: c.label, imagePaths: c.imagePaths })),
+    clusters: clusters.map((c) => ({
+      label: c.label,
+      imagePaths: c.imagePaths,
+    })),
     analyzedImages: cachedResults,
   };
   saveState(sourceFolder, updatedState);
@@ -135,7 +156,10 @@ export async function scanAndPlan(
   return {
     sourceFolder,
     moves,
-    clusters: clusters.map((c) => ({ label: c.label, count: c.imagePaths.length })),
+    clusters: clusters.map((c) => ({
+      label: c.label,
+      count: c.imagePaths.length,
+    })),
     miscCount: misc.length,
     restructured,
     newImageCount: newImages.length,
@@ -143,7 +167,10 @@ export async function scanAndPlan(
   };
 }
 
-export function applyPlan(plan: OrganizerPlan, dryRun: boolean): OrganizerResult {
+export function applyPlan(
+  plan: OrganizerPlan,
+  dryRun: boolean,
+): OrganizerResult {
   const ts = new Date().toISOString();
   const logPath = join(plan.sourceFolder, LOG_FILE);
   const tag = dryRun ? "DRY-RUN" : "MOVE";
@@ -172,11 +199,18 @@ export function applyPlan(plan: OrganizerPlan, dryRun: boolean): OrganizerResult
     }
   }
 
-  appendLog(plan.sourceFolder, `--- ${moved} files ${dryRun ? "would be moved" : "moved"}, ${errors.length} errors ---`);
+  appendLog(
+    plan.sourceFolder,
+    `--- ${moved} files ${dryRun ? "would be moved" : "moved"}, ${errors.length} errors ---`,
+  );
 
   return { dryRun, moved, logPath, errors };
 }
 
 function sanitizeLabel(label: string): string {
-  return label.replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").toLowerCase().slice(0, 40);
+  return label
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .slice(0, 40);
 }

@@ -332,8 +332,9 @@ app.whenReady().then(() => {
     }),
   );
 
-  ipcMain.handle(IPC.ORGANIZER_APPLY, (_, plan: OrganizerPlan, dryRun: boolean) =>
-    applyPlan(plan, dryRun),
+  ipcMain.handle(
+    IPC.ORGANIZER_APPLY,
+    (_, plan: OrganizerPlan, dryRun: boolean) => applyPlan(plan, dryRun),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {
