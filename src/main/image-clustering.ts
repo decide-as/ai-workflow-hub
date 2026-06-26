@@ -261,7 +261,7 @@ export async function clusterImages(
 
   const allClusterTexts = finalGroups.map((idxs) => idxs.map((i) => imageText(images[i])));
 
-  const clusters: ImageCluster[] = finalGroups.map((idxs, ci) => {
+  const clusters: ImageCluster[] = finalGroups.map((idxs) => {
     const memberTexts = idxs.map((i) => imageText(images[i]));
     const label = tfidfLabel(memberTexts, allClusterTexts);
 
