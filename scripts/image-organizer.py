@@ -5,7 +5,11 @@ v3 clustering: 768-dim dense embeddings (paraphrase-multilingual-mpnet-base-v2)
 Run with lanserbart venv: /Users/christianbraathen/Repositories/lanserbart/.venv/bin/python3
 """
 
-import json, math, shutil, random, re, urllib.request
+import json
+import shutil
+import random
+import re
+import urllib.request
 from pathlib import Path
 from datetime import datetime
 
