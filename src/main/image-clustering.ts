@@ -55,9 +55,33 @@ function centroid(vecs: Float32Array[]): Float32Array {
   const dim = vecs[0].length;
   const c = new Float32Array(dim);
   for (const v of vecs) for (let i = 0; i < dim; i++) c[i] += v[i];
-  const norm = Math.sqrt(vecs.reduce((s, v) => s + dot(v, v), 0) / vecs.length);
-  for (let i = 0; i < dim; i++) c[i] = c[i] / vecs.length / (norm || 1);
+  const n = Math.sqrt(c.reduce((s, x) => s + x * x, 0));
+  for (let i = 0; i < dim; i++) c[i] = c[i] / (n || 1);
   return c;
+}
+
+const MIN_CLUSTER_SIZE = 5;
+const OUTLIER_SIGMA = 1.5;
+
+function detectOutliers(
+  vecs: Float32Array[],
+  assignments: number[],
+  centroids: Float32Array[],
+): Set<number> {
+  const outliers = new Set<number>();
+  const k = centroids.length;
+  for (let c = 0; c < k; c++) {
+    const idxs = assignments.map((a, i) => (a === c ? i : -1)).filter((i) => i >= 0);
+    if (idxs.length < 3) continue;
+    const dists = idxs.map((i) => cosineDistance(vecs[i], centroids[c]));
+    const mean = dists.reduce((a, b) => a + b, 0) / dists.length;
+    const std = Math.sqrt(dists.reduce((s, d) => s + (d - mean) ** 2, 0) / dists.length);
+    const threshold = mean + OUTLIER_SIGMA * std;
+    idxs.forEach((imgIdx, pos) => {
+      if (dists[pos] > threshold) outliers.add(imgIdx);
+    });
+  }
+  return outliers;
 }
 
 // k-means++ initialisation: pick seeds weighted by distance to existing seeds
@@ -181,6 +205,7 @@ export async function clusterImages(
         imagePaths: images.map((v) => v.imagePath),
         centroidIndex: 0,
       }],
+      misc: [],
       model: EMBEDDING_MODEL,
       k: 1,
       silhouetteScore: 1,
@@ -197,6 +222,7 @@ export async function clusterImages(
   // Try each K and pick the one with the best silhouette score
   let bestK = 2;
   let bestAssignments = kMeans(vecs, 2);
+  let bestCentroids = kMeansPlusPlus(vecs, 2);
   let bestScore = silhouetteScore(vecs, bestAssignments, 2);
 
   for (let k = 3; k <= maxK; k++) {
@@ -206,20 +232,39 @@ export async function clusterImages(
       bestScore = score;
       bestK = k;
       bestAssignments = assignments;
+      // Recompute centroids for outlier detection
+      const g: Float32Array[][] = Array.from({ length: k }, () => []);
+      assignments.forEach((c, i) => g[c].push(vecs[i]));
+      bestCentroids = g.map((members, ci) => members.length > 0 ? centroid(members) : bestCentroids[ci] ?? vecs[0]);
     }
   }
 
-  // Build cluster groups
+  // Outlier detection → misc
+  const outlierIdxs = detectOutliers(vecs, bestAssignments, bestCentroids);
+
+  // Build cluster groups, excluding outliers
   const groups: number[][] = Array.from({ length: bestK }, () => []);
-  bestAssignments.forEach((c, i) => groups[c].push(i));
+  const miscIdxs: number[] = [];
+  bestAssignments.forEach((c, i) => {
+    if (outlierIdxs.has(i)) miscIdxs.push(i);
+    else groups[c].push(i);
+  });
 
-  const allClusterTexts = groups.map((idxs) => idxs.map((i) => imageText(images[i])));
+  // Dissolve small clusters into misc
+  const finalGroups: number[][] = [];
+  const dissolvedIdxs: number[] = [];
+  for (const idxs of groups) {
+    if (idxs.length < MIN_CLUSTER_SIZE) dissolvedIdxs.push(...idxs);
+    else finalGroups.push(idxs);
+  }
+  const allMiscIdxs = [...miscIdxs, ...dissolvedIdxs];
 
-  const clusters: ImageCluster[] = groups.map((idxs, ci) => {
+  const allClusterTexts = finalGroups.map((idxs) => idxs.map((i) => imageText(images[i])));
+
+  const clusters: ImageCluster[] = finalGroups.map((idxs, ci) => {
     const memberTexts = idxs.map((i) => imageText(images[i]));
     const label = tfidfLabel(memberTexts, allClusterTexts);
 
-    // Top keywords: frequency-ranked across members
     const kwFreq = new Map<string, number>();
     for (const i of idxs)
       for (const kw of images[i].keywords)
@@ -229,25 +274,24 @@ export async function clusterImages(
       .slice(0, 5)
       .map(([k]) => k);
 
+    // Closest-to-centroid representative
+    const memberVecs = idxs.map((i) => vecs[i]);
+    const c = centroid(memberVecs);
+    let bestPos = 0, bestD = Infinity;
+    memberVecs.forEach((v, pos) => {
+      const d = cosineDistance(v, c);
+      if (d < bestD) { bestD = d; bestPos = pos; }
+    });
+
     return {
       label,
       keywords,
       imagePaths: idxs.map((i) => images[i].imagePath),
-      centroidIndex: ci,
+      centroidIndex: bestPos,
     };
   });
 
-  // Replace centroidIndex with actual closest-to-centroid image index
-  groups.forEach((idxs, ci) => {
-    const memberVecs = idxs.map((i) => vecs[i]);
-    const c = centroid(memberVecs);
-    let best = 0, bestD = Infinity;
-    idxs.forEach((imageIdx, pos) => {
-      const d = cosineDistance(vecs[imageIdx], c);
-      if (d < bestD) { bestD = d; best = pos; }
-    });
-    clusters[ci].centroidIndex = best;
-  });
+  const misc = allMiscIdxs.map((i) => images[i].imagePath);
 
-  return { clusters, model: EMBEDDING_MODEL, k: bestK, silhouetteScore: bestScore };
+  return { clusters, misc, model: EMBEDDING_MODEL, k: finalGroups.length, silhouetteScore: bestScore };
 }

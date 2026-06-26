@@ -396,6 +396,7 @@ export interface ImageCluster {
 
 export interface ClusterResult {
   clusters: ImageCluster[];
+  misc: string[];
   model: string;
   k: number;
   silhouetteScore: number;
