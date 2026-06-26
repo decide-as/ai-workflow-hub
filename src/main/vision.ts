@@ -36,6 +36,7 @@ function mimeType(imagePath: string): string {
 export async function checkOllamaAvailable(): Promise<{
   running: boolean;
   modelReady: boolean;
+  pullCommand?: string;
   error?: string;
 }> {
   try {
@@ -43,13 +44,33 @@ export async function checkOllamaAvailable(): Promise<{
     if (!res.ok) return { running: false, modelReady: false, error: "Ollama not responding" };
     const data = (await res.json()) as { models: Array<{ name: string }> };
     const modelReady = data.models.some((m) => m.name.startsWith("qwen3-vl"));
-    return { running: true, modelReady };
-  } catch (e) {
-    return { running: false, modelReady: false, error: String(e) };
+    return {
+      running: true,
+      modelReady,
+      pullCommand: modelReady ? undefined : `ollama pull ${MODEL}`,
+    };
+  } catch {
+    return {
+      running: false,
+      modelReady: false,
+      error: "Ollama is not running. Start it with: ollama serve",
+    };
   }
 }
 
+function notReadyError(check: { running: boolean; modelReady: boolean; pullCommand?: string; error?: string }): Error {
+  if (!check.running) {
+    return new Error(check.error ?? "Ollama is not running. Start it with: ollama serve");
+  }
+  return new Error(
+    `Model not downloaded. Run once in a terminal: ${check.pullCommand ?? `ollama pull ${MODEL}`}`,
+  );
+}
+
 export async function analyzeImage(imagePath: string): Promise<VisionResult> {
+  const check = await checkOllamaAvailable();
+  if (!check.running || !check.modelReady) throw notReadyError(check);
+
   const base64 = toBase64(imagePath);
 
   const body = {

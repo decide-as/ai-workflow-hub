@@ -379,6 +379,7 @@ export interface VisionResult {
 export interface VisionCheckResult {
   running: boolean;
   modelReady: boolean;
+  pullCommand?: string;
   error?: string;
 }
 
