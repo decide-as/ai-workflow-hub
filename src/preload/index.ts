@@ -25,6 +25,9 @@ import type {
   VisionResult,
   VisionCheckResult,
   ClusterResult,
+  OrganizerPlan,
+  OrganizerResult,
+  OrganizerProgress,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -141,4 +144,13 @@ contextBridge.exposeInMainWorld("api", {
     opts?: { maxClusters?: number },
   ): Promise<ClusterResult> =>
     ipcRenderer.invoke(IPC.VISION_CLUSTER, images, opts),
+  organizerScan: (sourceFolder: string): Promise<OrganizerPlan> =>
+    ipcRenderer.invoke(IPC.ORGANIZER_SCAN, sourceFolder),
+  organizerApply: (plan: OrganizerPlan, dryRun: boolean): Promise<OrganizerResult> =>
+    ipcRenderer.invoke(IPC.ORGANIZER_APPLY, plan, dryRun),
+  onOrganizerProgress: (cb: (p: OrganizerProgress) => void): (() => void) => {
+    const handler = (_: unknown, p: OrganizerProgress) => cb(p);
+    ipcRenderer.on(IPC.ORGANIZER_PROGRESS, handler);
+    return () => ipcRenderer.removeListener(IPC.ORGANIZER_PROGRESS, handler);
+  },
 });

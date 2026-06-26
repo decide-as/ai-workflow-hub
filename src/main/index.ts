@@ -64,6 +64,7 @@ import { createVoucherFolders } from "./bookkeeping";
 import { warmupEmbeddings, semanticSearch } from "./embeddings";
 import { analyzeImage, checkOllamaAvailable } from "./vision";
 import { clusterImages } from "./image-clustering";
+import { scanAndPlan, applyPlan } from "./image-organizer";
 import { IPC } from "../../shared/ipc-channels";
 import type {
   RunResult,
@@ -71,6 +72,7 @@ import type {
   Workflow,
   MachineConfig,
   VisionResult,
+  OrganizerPlan,
 } from "../../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
@@ -322,6 +324,16 @@ app.whenReady().then(() => {
     IPC.VISION_CLUSTER,
     (_, images: VisionResult[], opts?: { maxClusters?: number }) =>
       clusterImages(images, opts),
+  );
+
+  ipcMain.handle(IPC.ORGANIZER_SCAN, (_, sourceFolder: string) =>
+    scanAndPlan(sourceFolder, (progress) => {
+      mainWindow?.webContents.send(IPC.ORGANIZER_PROGRESS, progress);
+    }),
+  );
+
+  ipcMain.handle(IPC.ORGANIZER_APPLY, (_, plan: OrganizerPlan, dryRun: boolean) =>
+    applyPlan(plan, dryRun),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

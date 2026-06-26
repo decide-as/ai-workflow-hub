@@ -36,4 +36,7 @@ export const IPC = {
   VISION_ANALYZE: "vision:analyze",
   VISION_CHECK: "vision:check",
   VISION_CLUSTER: "vision:cluster",
+  ORGANIZER_SCAN: "organizer:scan",
+  ORGANIZER_APPLY: "organizer:apply",
+  ORGANIZER_PROGRESS: "organizer:progress",
 } as const;

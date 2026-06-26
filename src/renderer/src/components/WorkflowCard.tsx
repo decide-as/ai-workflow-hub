@@ -14,6 +14,7 @@ import {
 import type { Workflow } from "../../../../shared/types";
 import { resolveIcon } from "../lib/icons";
 import { BookkeepingControls } from "./BookkeepingControls";
+import { ImageOrganizerControls } from "./ImageOrganizerControls";
 
 interface Props {
   workflow: Workflow;
@@ -428,6 +429,8 @@ export function WorkflowCard({
           <ReadingListFooter onClick={() => onClick(workflow.id)} />
         ) : workflow.action === "bookkeeping" ? (
           <BookkeepingControls workflow={workflow} />
+        ) : workflow.action === "image-organizer" ? (
+          <ImageOrganizerControls />
         ) : (
           <div className="flex items-center">
             <div className="flex-1" />

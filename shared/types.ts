@@ -30,8 +30,9 @@ export interface WorkflowOutput {
 //   'reading-list'   — in-card controls to import from Reminders or paste a URL; stored in SQLite.
 //   'calendar'       — modal with text, voice, and screenshot inputs that generates and runs AppleScript.
 //   'loan'           — structured form modal that generates a Norwegian loan agreement PDF.
-//   'bookkeeping'    — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
-//   'employee-gifts' — modal to document employee gifts and calculate Norwegian tax-free/taxable split.
+//   'bookkeeping'       — drag-and-drop bank statements → Claude extracts transactions → creates voucher folders.
+//   'employee-gifts'    — modal to document employee gifts and calculate Norwegian tax-free/taxable split.
+//   'image-organizer'   — pick a folder of images → vision analysis → auto-cluster → move into labelled subfolders.
 export type WorkflowAction =
   | "claude"
   | "run"
@@ -42,7 +43,8 @@ export type WorkflowAction =
   | "loan"
   | "loan-interest"
   | "bookkeeping"
-  | "employee-gifts";
+  | "employee-gifts"
+  | "image-organizer";
 
 export interface LoanStakeholder {
   name: string;
@@ -397,6 +399,43 @@ export interface ClusterResult {
   model: string;
   k: number;
   silhouetteScore: number;
+}
+
+// --- Image Organizer ---
+
+export interface OrganizerMove {
+  sourcePath: string;
+  destPath: string;
+  clusterLabel: string;
+}
+
+export interface OrganizerRestructureItem {
+  sourcePath: string;
+  oldCluster: string;
+  newCluster: string;
+}
+
+export interface OrganizerPlan {
+  sourceFolder: string;
+  moves: OrganizerMove[];
+  clusters: Array<{ label: string; count: number }>;
+  restructured: OrganizerRestructureItem[];
+  newImageCount: number;
+  totalImageCount: number;
+}
+
+export interface OrganizerResult {
+  dryRun: boolean;
+  moved: number;
+  logPath: string;
+  errors: string[];
+}
+
+export interface OrganizerProgress {
+  current: number;
+  total: number;
+  currentFile: string;
+  phase: "analyzing" | "clustering";
 }
 
 // --- Org Permissions (phase 2 stubs — no runtime behaviour in phase 1) ---
