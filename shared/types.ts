@@ -420,6 +420,7 @@ export interface OrganizerPlan {
   sourceFolder: string;
   moves: OrganizerMove[];
   clusters: Array<{ label: string; count: number }>;
+  miscCount: number;
   restructured: OrganizerRestructureItem[];
   newImageCount: number;
   totalImageCount: number;

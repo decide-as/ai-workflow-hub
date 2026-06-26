@@ -116,7 +116,7 @@ export function ImageOrganizerControls() {
     return (
       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
         <span className="text-[11px] flex-1 truncate" style={{ color: "var(--c-text-muted)" }}>
-          {plan.moves.length} files → {plan.clusters.length} folders
+          {plan.moves.length} files → {plan.clusters.length} folders{plan.miscCount > 0 ? ` + ${plan.miscCount} misc` : ""}
         </span>
         <button
           onClick={() => handleApply(true)}

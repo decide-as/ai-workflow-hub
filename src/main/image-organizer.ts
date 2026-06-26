@@ -87,23 +87,26 @@ export async function scanAndPlan(
 
   // Cluster all images
   const allResults = allImages.map((p) => cachedResults[p]).filter(Boolean);
-  const { clusters } = await clusterImages(allResults);
+  const { clusters, misc } = await clusterImages(allResults);
 
-  // Build moves list
+  // Build moves list — cluster images go to labelled subfolders, misc to misc/
   const moves: OrganizerMove[] = [];
+  const allRootImages = new Set(allImages);
+
   for (const cluster of clusters) {
     const destDir = join(sourceFolder, sanitizeLabel(cluster.label));
     for (const imagePath of cluster.imagePaths) {
-      // Only plan moves for images currently in the source folder root
-      if (imagePath.startsWith(sourceFolder) && basename(imagePath) === imagePath.slice(sourceFolder.length + 1)) {
-        const destPath = safeDestPath(destDir, basename(imagePath));
-        moves.push({ sourcePath: imagePath, destPath, clusterLabel: cluster.label });
-      } else if (!imagePath.includes(join(sourceFolder, "/"))) {
-        // image is in root
-        const destPath = safeDestPath(destDir, basename(imagePath));
-        moves.push({ sourcePath: imagePath, destPath, clusterLabel: cluster.label });
-      }
+      if (!allRootImages.has(imagePath)) continue;
+      const destPath = safeDestPath(destDir, basename(imagePath));
+      moves.push({ sourcePath: imagePath, destPath, clusterLabel: cluster.label });
     }
+  }
+
+  const miscDir = join(sourceFolder, "misc");
+  for (const imagePath of misc) {
+    if (!allRootImages.has(imagePath)) continue;
+    const destPath = safeDestPath(miscDir, basename(imagePath));
+    moves.push({ sourcePath: imagePath, destPath, clusterLabel: "misc" });
   }
 
   // Detect restructuring — files that would move to a different cluster than before
@@ -121,7 +124,7 @@ export async function scanAndPlan(
     }
   }
 
-  // Persist updated analysis cache (clusters saved only on apply)
+  // Persist updated analysis cache
   const updatedState: StoredState = {
     version: 1,
     clusters: clusters.map((c) => ({ label: c.label, imagePaths: c.imagePaths })),
@@ -133,6 +136,7 @@ export async function scanAndPlan(
     sourceFolder,
     moves,
     clusters: clusters.map((c) => ({ label: c.label, count: c.imagePaths.length })),
+    miscCount: misc.length,
     restructured,
     newImageCount: newImages.length,
     totalImageCount: allImages.length,
