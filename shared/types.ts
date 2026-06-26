@@ -366,6 +366,22 @@ export interface MachineConfigResult {
   error?: string;
 }
 
+// --- Vision / Image Analysis ---
+
+export interface VisionResult {
+  description: string;
+  keywords: string[];
+  model: string;
+  imagePath: string;
+  mimeType: string;
+}
+
+export interface VisionCheckResult {
+  running: boolean;
+  modelReady: boolean;
+  error?: string;
+}
+
 // --- Org Permissions (phase 2 stubs — no runtime behaviour in phase 1) ---
 
 export interface OrgGroup {

@@ -62,6 +62,7 @@ import {
 } from "./loanInterest";
 import { createVoucherFolders } from "./bookkeeping";
 import { warmupEmbeddings, semanticSearch } from "./embeddings";
+import { analyzeImage, checkOllamaAvailable } from "./vision";
 import { IPC } from "../../shared/ipc-channels";
 import type {
   RunResult,
@@ -307,6 +308,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.SEMANTIC_SEARCH, (_, query: string) =>
     semanticSearch(query, getRegistry().workflows),
+  );
+
+  ipcMain.handle(IPC.VISION_CHECK, () => checkOllamaAvailable());
+
+  ipcMain.handle(IPC.VISION_ANALYZE, (_, imagePath: string) =>
+    analyzeImage(imagePath),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

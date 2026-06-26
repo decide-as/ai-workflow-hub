@@ -22,6 +22,8 @@ import type {
   VoucherFolderResult,
   SemanticSearchResult,
   MachineConfig,
+  VisionResult,
+  VisionCheckResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -129,4 +131,8 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.MACHINE_CONFIG_SET, config),
   registryGetAll: (): Promise<Registry> =>
     ipcRenderer.invoke(IPC.GET_REGISTRY_ALL),
+  visionCheck: (): Promise<VisionCheckResult> =>
+    ipcRenderer.invoke(IPC.VISION_CHECK),
+  visionAnalyze: (imagePath: string): Promise<VisionResult> =>
+    ipcRenderer.invoke(IPC.VISION_ANALYZE, imagePath),
 });
