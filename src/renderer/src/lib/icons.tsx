@@ -25,6 +25,7 @@ import {
   Percent,
   Gift,
   Briefcase,
+  FolderSearch,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +56,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Percent,
   Gift,
   Briefcase,
+  FolderSearch,
 };
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {

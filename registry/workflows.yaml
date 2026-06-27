@@ -608,6 +608,38 @@ workflows:
           On-screen summary showing tax-free portion, taxable income, total given
           this year, and remaining annual allowance for the employee.
 
+  - id: 73edf2a4-25cb-4595-8bb7-c99af67f2112
+    name: Image File Organizer
+    summary: Pick a folder of images → AI clusters them → moves into labelled subfolders.
+    description: >
+      Drop a folder full of screenshots or photos onto this workflow. It runs each image
+      through a local vision model (Ollama qwen3-vl:8b) to produce a description and
+      keywords, then clusters them using local embeddings — no data leaves your machine.
+      The result is a set of labelled subfolders created inside your source folder.
+      Supports dry-run mode (logs proposed moves without touching files) and detects
+      when new images would shift the cluster structure, asking before reorganising.
+    tags: [files, images, organizer, ai, local, screenshots, clustering]
+    repo_path: ""
+    color: "#8b5cf6"
+    icon: FolderSearch
+    cluster_id: files
+    added: "2026-06-26"
+    updated: "2026-06-26"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    action: image-organizer
+    inputs: []
+    outputs:
+      - name: organized_folder
+        type: text
+        description: Labelled subfolders created inside the source folder, each containing thematically grouped images
+      - name: log
+        type: file
+        description: .organizer-log.txt inside the source folder listing every move (or proposed move in dry-run mode)
+
 clusters:
   - id: finance
     name: Finance
@@ -651,3 +683,8 @@ clusters:
     tags: [career, jobs, strategy, job-search]
     workflow_ids:
       - 91581e28-e0a6-4e16-950d-194c6488e2f1
+  - id: files
+    name: File Management
+    tags: [files, organizer, images, automation]
+    workflow_ids:
+      - 73edf2a4-25cb-4595-8bb7-c99af67f2112

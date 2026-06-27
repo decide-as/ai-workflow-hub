@@ -33,4 +33,10 @@ export const IPC = {
   MACHINE_CONFIG_GET: "machine-config:get",
   MACHINE_CONFIG_SET: "machine-config:set",
   GET_REGISTRY_ALL: "registry:get-all",
+  VISION_ANALYZE: "vision:analyze",
+  VISION_CHECK: "vision:check",
+  VISION_CLUSTER: "vision:cluster",
+  ORGANIZER_SCAN: "organizer:scan",
+  ORGANIZER_APPLY: "organizer:apply",
+  ORGANIZER_PROGRESS: "organizer:progress",
 } as const;

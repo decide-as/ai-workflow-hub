@@ -62,12 +62,17 @@ import {
 } from "./loanInterest";
 import { createVoucherFolders } from "./bookkeeping";
 import { warmupEmbeddings, semanticSearch } from "./embeddings";
+import { analyzeImage, checkOllamaAvailable } from "./vision";
+import { clusterImages } from "./image-clustering";
+import { scanAndPlan, applyPlan } from "./image-organizer";
 import { IPC } from "../../shared/ipc-channels";
 import type {
   RunResult,
   ScheduleStatus,
   Workflow,
   MachineConfig,
+  VisionResult,
+  OrganizerPlan,
 } from "../../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
@@ -307,6 +312,29 @@ app.whenReady().then(() => {
 
   ipcMain.handle(IPC.SEMANTIC_SEARCH, (_, query: string) =>
     semanticSearch(query, getRegistry().workflows),
+  );
+
+  ipcMain.handle(IPC.VISION_CHECK, () => checkOllamaAvailable());
+
+  ipcMain.handle(IPC.VISION_ANALYZE, (_, imagePath: string) =>
+    analyzeImage(imagePath),
+  );
+
+  ipcMain.handle(
+    IPC.VISION_CLUSTER,
+    (_, images: VisionResult[], opts?: { maxClusters?: number }) =>
+      clusterImages(images, opts),
+  );
+
+  ipcMain.handle(IPC.ORGANIZER_SCAN, (_, sourceFolder: string) =>
+    scanAndPlan(sourceFolder, (progress) => {
+      mainWindow?.webContents.send(IPC.ORGANIZER_PROGRESS, progress);
+    }),
+  );
+
+  ipcMain.handle(
+    IPC.ORGANIZER_APPLY,
+    (_, plan: OrganizerPlan, dryRun: boolean) => applyPlan(plan, dryRun),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

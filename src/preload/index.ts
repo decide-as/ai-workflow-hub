@@ -22,6 +22,12 @@ import type {
   VoucherFolderResult,
   SemanticSearchResult,
   MachineConfig,
+  VisionResult,
+  VisionCheckResult,
+  ClusterResult,
+  OrganizerPlan,
+  OrganizerResult,
+  OrganizerProgress,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -129,4 +135,25 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IPC.MACHINE_CONFIG_SET, config),
   registryGetAll: (): Promise<Registry> =>
     ipcRenderer.invoke(IPC.GET_REGISTRY_ALL),
+  visionCheck: (): Promise<VisionCheckResult> =>
+    ipcRenderer.invoke(IPC.VISION_CHECK),
+  visionAnalyze: (imagePath: string): Promise<VisionResult> =>
+    ipcRenderer.invoke(IPC.VISION_ANALYZE, imagePath),
+  visionCluster: (
+    images: VisionResult[],
+    opts?: { maxClusters?: number },
+  ): Promise<ClusterResult> =>
+    ipcRenderer.invoke(IPC.VISION_CLUSTER, images, opts),
+  organizerScan: (sourceFolder: string): Promise<OrganizerPlan> =>
+    ipcRenderer.invoke(IPC.ORGANIZER_SCAN, sourceFolder),
+  organizerApply: (
+    plan: OrganizerPlan,
+    dryRun: boolean,
+  ): Promise<OrganizerResult> =>
+    ipcRenderer.invoke(IPC.ORGANIZER_APPLY, plan, dryRun),
+  onOrganizerProgress: (cb: (p: OrganizerProgress) => void): (() => void) => {
+    const handler = (_: unknown, p: OrganizerProgress) => cb(p);
+    ipcRenderer.on(IPC.ORGANIZER_PROGRESS, handler);
+    return () => ipcRenderer.removeListener(IPC.ORGANIZER_PROGRESS, handler);
+  },
 });
