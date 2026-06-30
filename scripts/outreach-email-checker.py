@@ -17,6 +17,7 @@ Required environment variables (read from .env in the project root):
 import imaplib
 import email
 import email.header
+import email.utils
 import sqlite3
 import os
 import sys
@@ -128,48 +129,55 @@ def run() -> int:
         return 1
 
     try:
-        imap.select(imap_folder)
+        typ, _ = imap.select(imap_folder)
+        if typ != "OK":
+            log.error(
+                "Failed to select folder %r (server returned %s)", imap_folder, typ
+            )
+            return 1
+
         _, data = imap.search(None, "UNSEEN")
         uids = data[0].split() if data and data[0] else []
         log.info("Found %d unseen message(s) in %s", len(uids), imap_folder)
 
         conn = sqlite3.connect(db_path)
         logged = 0
+        try:
+            for raw_uid in uids:
+                uid_str = raw_uid.decode()
+                _, msg_data = imap.fetch(raw_uid, "(RFC822.HEADER)")
+                if not msg_data or not msg_data[0]:
+                    continue
 
-        for raw_uid in uids:
-            uid_str = raw_uid.decode()
-            _, msg_data = imap.fetch(raw_uid, "(RFC822.HEADER)")
-            if not msg_data or not msg_data[0]:
-                continue
+                msg = email.message_from_bytes(msg_data[0][1])
+                from_addr = extract_from_address(msg)
+                subject = decode_header_value(msg.get("Subject", ""))
 
-            msg = email.message_from_bytes(msg_data[0][1])
-            from_addr = extract_from_address(msg)
-            subject = decode_header_value(msg.get("Subject", ""))
+                lead_id = find_contacted_lead(conn, from_addr)
+                if lead_id is None:
+                    log.debug("No contacted lead for <%s> — skipping", from_addr)
+                    imap.store(raw_uid, "+FLAGS", "\\Seen")
+                    continue
 
-            lead_id = find_contacted_lead(conn, from_addr)
-            if lead_id is None:
-                log.debug("No contacted lead for <%s> — skipping", from_addr)
+                if already_logged(conn, lead_id, uid_str):
+                    log.debug(
+                        "UID %s already logged for lead %d — skipping", uid_str, lead_id
+                    )
+                    imap.store(raw_uid, "+FLAGS", "\\Seen")
+                    continue
+
+                log_reply(conn, lead_id, subject, uid_str)
                 imap.store(raw_uid, "+FLAGS", "\\Seen")
-                continue
-
-            if already_logged(conn, lead_id, uid_str):
-                log.debug(
-                    "UID %s already logged for lead %d — skipping", uid_str, lead_id
+                log.info(
+                    "Logged reply from <%s> (lead_id=%d) — subject: %s",
+                    from_addr,
+                    lead_id,
+                    subject,
                 )
-                imap.store(raw_uid, "+FLAGS", "\\Seen")
-                continue
+                logged += 1
+        finally:
+            conn.close()
 
-            log_reply(conn, lead_id, subject, uid_str)
-            imap.store(raw_uid, "+FLAGS", "\\Seen")
-            log.info(
-                "Logged reply from <%s> (lead_id=%d) — subject: %s",
-                from_addr,
-                lead_id,
-                subject,
-            )
-            logged += 1
-
-        conn.close()
         log.info("Done — %d new reply interaction(s) logged", logged)
         return 0
 
