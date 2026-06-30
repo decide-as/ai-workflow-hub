@@ -111,7 +111,7 @@ Return ONLY a single bash code block with the complete osascript command. No exp
 
 export async function generateCalendarScript(
   userText: string,
-  imageDataUrl: string | null,
+  imageDataUrls: string[],
   today: string,
 ): Promise<{ success: boolean; script: string; error?: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -132,8 +132,8 @@ export async function generateCalendarScript(
 
   const userContent: ContentBlock[] = [];
 
-  if (imageDataUrl) {
-    const [header, data] = imageDataUrl.split(",");
+  for (const dataUrl of imageDataUrls) {
+    const [header, data] = dataUrl.split(",");
     const mediaType = header.replace("data:", "").replace(";base64", "");
     userContent.push({
       type: "image",
@@ -143,7 +143,7 @@ export async function generateCalendarScript(
 
   userContent.push({
     type: "text",
-    text: `TODAY is ${today}.\n\n${userText || "(no additional text — please create events from the image above)"}`,
+    text: `TODAY is ${today}.\n\n${userText || "(no additional text — please create events from the image(s) above)"}`,
   });
 
   const body = {
