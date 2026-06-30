@@ -15,6 +15,7 @@ dist:
 
 install-app: dist
 	@echo "Installing Workflow Hub to /Applications..."
+	@rm -rf "/Applications/Workflow Hub.app"
 	@cp -r "dist/mac-arm64/Workflow Hub.app" "/Applications/Workflow Hub.app"
 	@echo "Installed: $$(defaults read /Applications/Workflow\ Hub.app/Contents/Info CFBundleShortVersionString)"
 
