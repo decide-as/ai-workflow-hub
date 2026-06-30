@@ -358,8 +358,7 @@ export function LoanInterestModal({ workflow, onClose }: Props) {
                                   setEditForm((f) => ({
                                     ...f,
                                     type: e.target.value as
-                                      | "loan"
-                                      | "repayment",
+                                      "loan" | "repayment",
                                   }))
                                 }
                                 className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-100 focus:outline-none"
