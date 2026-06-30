@@ -8,7 +8,10 @@
  * All monetary amounts are in øre (1/100 NOK). 1000 NOK = 100000 øre.
  */
 
-import type { FikenCreatePurchaseArgs, FikenCreateResult } from "../../shared/types";
+import type {
+  FikenCreatePurchaseArgs,
+  FikenCreateResult,
+} from "../../shared/types";
 
 const FIKEN_BASE = "https://api.fiken.no/api/v2";
 
@@ -49,7 +52,8 @@ export async function createPurchase(
       })),
     };
     if (args.paid && args.paymentDate) body.paymentDate = args.paymentDate;
-    if (args.paid && args.paymentAccount) body.paymentAccount = args.paymentAccount;
+    if (args.paid && args.paymentAccount)
+      body.paymentAccount = args.paymentAccount;
 
     const res = await fetch(`${FIKEN_BASE}/companies/${slug}/purchases`, {
       method: "POST",

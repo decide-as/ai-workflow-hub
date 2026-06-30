@@ -22,11 +22,7 @@ function destFromOutput(output: string, fallback: string): string {
 }
 
 export type RunPhase =
-  | "configure"
-  | "running"
-  | "preview"
-  | "applying"
-  | "done";
+  "configure" | "running" | "preview" | "applying" | "done";
 
 export interface RunState {
   workflow: Workflow;

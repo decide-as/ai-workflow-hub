@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { X, FileText, Loader2, Calendar, ChevronDown, ExternalLink } from "lucide-react";
+import {
+  X,
+  FileText,
+  Loader2,
+  Calendar,
+  ChevronDown,
+  ExternalLink,
+} from "lucide-react";
 import type { LoanStakeholder, Workflow } from "../../../../shared/types";
 
 interface Props {
@@ -8,7 +15,6 @@ interface Props {
 }
 
 type Phase = "loading" | "form" | "generating" | "done" | "error";
-
 
 const OTHER = "__other__";
 
@@ -428,9 +434,7 @@ export function LoanModal({ workflow, onClose }: Props) {
                     }}
                   />
                 </div>
-                <span className="text-[11px]">
-                  Send transaction to Fiken
-                </span>
+                <span className="text-[11px]">Send transaction to Fiken</span>
               </label>
 
               <div className="flex items-center justify-end gap-2">

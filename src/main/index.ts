@@ -339,8 +339,9 @@ app.whenReady().then(() => {
     (_, plan: OrganizerPlan, dryRun: boolean) => applyPlan(plan, dryRun),
   );
 
-  ipcMain.handle(IPC.FIKEN_CREATE_PURCHASE, (_, args: FikenCreatePurchaseArgs) =>
-    fikenCreatePurchase(args),
+  ipcMain.handle(
+    IPC.FIKEN_CREATE_PURCHASE,
+    (_, args: FikenCreatePurchaseArgs) => fikenCreatePurchase(args),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

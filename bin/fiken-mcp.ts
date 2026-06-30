@@ -107,10 +107,10 @@ server.tool(
     });
     if (date_from) params.set("date", date_from);
     if (date_to) params.append("date", date_to);
-    const data = await fikenGet(
-      `/companies/${slug()}/purchases?${params}`,
-    );
-    return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    const data = await fikenGet(`/companies/${slug()}/purchases?${params}`);
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+    };
   },
 );
 
@@ -126,7 +126,9 @@ server.tool(
     const data = await fikenGet(
       `/companies/${slug()}/purchases/${purchase_id}`,
     );
-    return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+    };
   },
 );
 
@@ -163,8 +165,13 @@ server.tool(
       .describe(
         "cash_purchase = paid immediately; credit_purchase = payable to supplier",
       ),
-    description: z.string().describe("Purchase description / identifier shown in Fiken"),
-    currency: z.string().default("NOK").describe("ISO currency code, default NOK"),
+    description: z
+      .string()
+      .describe("Purchase description / identifier shown in Fiken"),
+    currency: z
+      .string()
+      .default("NOK")
+      .describe("ISO currency code, default NOK"),
     paid: z.boolean().describe("Whether the purchase has been paid"),
     payment_date: z
       .string()
@@ -177,9 +184,21 @@ server.tool(
       .describe(
         'Fiken account reference in format "accountCode:bankAccountId" (e.g. "1920:10001"). Required when paid=true. Get the bankAccountId from Fiken settings.',
       ),
-    lines: z.array(PurchaseLineSchema).min(1).describe("Line items for the purchase"),
+    lines: z
+      .array(PurchaseLineSchema)
+      .min(1)
+      .describe("Line items for the purchase"),
   },
-  async ({ date, kind, description, currency, paid, payment_date, payment_account, lines }) => {
+  async ({
+    date,
+    kind,
+    description,
+    currency,
+    paid,
+    payment_date,
+    payment_account,
+    lines,
+  }) => {
     const body: Record<string, unknown> = {
       date,
       kind,
@@ -217,7 +236,11 @@ server.tool(
       webUrl: purchaseId ? purchaseWebUrl(purchaseId) : null,
       apiUrl: location || null,
     };
-    return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    return {
+      content: [
+        { type: "text" as const, text: JSON.stringify(result, null, 2) },
+      ],
+    };
   },
 );
 
@@ -227,19 +250,31 @@ server.tool(
   "add_purchase_attachment",
   "Attach a file (receipt, PDF) to an existing Fiken purchase. The file_path must be an absolute path on the local filesystem.",
   {
-    purchase_id: z.number().int().positive().describe("Fiken purchase ID to attach to"),
+    purchase_id: z
+      .number()
+      .int()
+      .positive()
+      .describe("Fiken purchase ID to attach to"),
     file_path: z
       .string()
-      .describe("Absolute path to the file to attach (receipt, Excel, PDF, image)"),
+      .describe(
+        "Absolute path to the file to attach (receipt, Excel, PDF, image)",
+      ),
     filename: z
       .string()
       .optional()
-      .describe("Override filename shown in Fiken (defaults to the actual file name)"),
-    description: z.string().optional().describe("Optional description for the attachment"),
+      .describe(
+        "Override filename shown in Fiken (defaults to the actual file name)",
+      ),
+    description: z
+      .string()
+      .optional()
+      .describe("Optional description for the attachment"),
   },
   async ({ purchase_id, file_path, filename, description }) => {
     const fileBuffer = readFileSync(file_path);
-    const effectiveName = filename ?? file_path.split("/").pop() ?? "attachment";
+    const effectiveName =
+      filename ?? file_path.split("/").pop() ?? "attachment";
 
     const form = new FormData();
     form.append("file", fileBuffer, {
