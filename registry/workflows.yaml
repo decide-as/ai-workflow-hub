@@ -640,6 +640,149 @@ workflows:
         type: file
         description: .organizer-log.txt inside the source folder listing every move (or proposed move in dry-run mode)
 
+  - id: 04850163-8927-4e9f-a650-7b886c75d855
+    name: Lead Builder
+    summary: Research cold outreach leads → add to the shared database with a treatment group tag.
+    description: >
+      Open a Claude session in the cold-outreach data folder and build your lead list.
+      Provide a target audience or company description and Claude will research contacts,
+      fill in name, email, company, source, and notes, then INSERT each lead into the
+      SQLite database with a treatment group label (e.g. value-first, demo-ask, case-study).
+      Treatment group templates live in templates/ for easy editing.
+    tags: [outreach, sales, leads, crm, prospecting]
+    repo_path: /Users/christianbraathen/Repositories/workflow-hub-data/cold-outreach
+    color: "#6366f1"
+    icon: Users
+    cluster_id: outreach
+    added: "2026-06-27"
+    updated: "2026-06-27"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: target
+        type: string
+        description: Description of the target audience, company type, or specific company to research
+        required: false
+        example: "SaaS founders in Oslo with 10-50 employees"
+      - name: treatment_group
+        type: string
+        description: The outreach treatment group to assign to new leads (must match a template in templates/)
+        required: false
+        example: "value-first"
+    outputs:
+      - name: leads_added
+        type: text
+        description: >
+          New rows inserted into leads table in outreach.db with name, email, company,
+          source, treatment_group, and status = new.
+
+  - id: 3df80b39-7f11-4078-aed1-0e285248ff11
+    name: Email Sender
+    summary: Draft and send outreach emails to leads using treatment group templates.
+    description: >
+      Open a Claude session to draft personalised cold outreach emails. Claude reads
+      uncontacted leads (status = new) from the database and the matching treatment
+      group template, drafts a message, and opens macOS Mail for review before
+      sending. After sending, Claude records the email in emails_sent and updates
+      the lead status to contacted.
+    tags: [outreach, sales, email, crm]
+    repo_path: /Users/christianbraathen/Repositories/workflow-hub-data/cold-outreach
+    color: "#0ea5e9"
+    icon: Mail
+    cluster_id: outreach
+    added: "2026-06-27"
+    updated: "2026-06-27"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: treatment_group
+        type: string
+        description: Filter to leads in this treatment group (leave blank to see all new leads)
+        required: false
+        example: "case-study"
+      - name: count
+        type: number
+        description: Maximum number of leads to contact in this session (defaults to 5)
+        required: false
+        example: "3"
+    outputs:
+      - name: emails_sent_record
+        type: text
+        description: >
+          Rows inserted into emails_sent table and leads updated to status = contacted.
+
+  - id: 4bb72e9c-8c4b-424f-a3a9-22a34fe89d5f
+    name: Outreach CRM
+    summary: View contact history and log follow-up interactions across all leads.
+    description: >
+      Open a Claude session to review your outreach pipeline. Claude queries the
+      database for recent activity, surfaces leads that need follow-up (contacted
+      but no reply), and lets you log new interactions — notes, calls, or meetings —
+      directly into the interactions table. Filter by name, company, status, or
+      treatment group.
+    tags: [outreach, sales, crm, follow-up, pipeline]
+    repo_path: /Users/christianbraathen/Repositories/workflow-hub-data/cold-outreach
+    color: "#10b981"
+    icon: ClipboardList
+    cluster_id: outreach
+    added: "2026-06-27"
+    updated: "2026-06-27"
+    status: active
+    trigger_type: manual
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    inputs:
+      - name: contact_or_company
+        type: string
+        description: Filter the session to a specific contact or company (leave blank for full pipeline view)
+        required: false
+        example: "Acme Corp"
+    outputs:
+      - name: interaction_log
+        type: text
+        description: >
+          New rows in interactions table and any status changes to leads, logged
+          during the session.
+
+  - id: 4a9a32a1-209b-4a2f-82ba-d79cadcc6829
+    name: Email Inbox Checker
+    summary: Scheduled scan of your inbox → detects replies from leads and logs them to the CRM.
+    description: >
+      A scheduled Python script that polls your IMAP inbox for unseen messages,
+      matches the From address against leads with status = contacted, and inserts
+      a reply interaction into the database. Credentials are read from .env (never
+      committed). Idempotent — replaying it will not create duplicate entries.
+      Runs on a cron/launchd schedule configured outside the app.
+    tags: [outreach, sales, email, crm, scheduled, imap]
+    repo_path: /Users/christianbraathen/Repositories/workflow-hub-data/cold-outreach
+    color: "#f59e0b"
+    icon: Inbox
+    cluster_id: outreach
+    added: "2026-06-27"
+    updated: "2026-06-27"
+    status: active
+    trigger_type: scheduled
+    complexity: moderate
+    version: "0.1.0"
+    owner: Christian Braathen — christian@decide.as
+    runner:
+      script: scripts/outreach-email-checker-wrapper.sh
+      interpreter: bash
+    inputs: []
+    outputs:
+      - name: reply_interactions
+        type: text
+        description: >
+          Rows inserted into interactions (type = reply) and leads updated to
+          status = replied for each matched inbound message.
+
 clusters:
   - id: finance
     name: Finance
@@ -688,3 +831,11 @@ clusters:
     tags: [files, organizer, images, automation]
     workflow_ids:
       - 73edf2a4-25cb-4595-8bb7-c99af67f2112
+  - id: outreach
+    name: Outreach
+    tags: [outreach, sales, crm, leads, email, prospecting, follow-up, imap, scheduled]
+    workflow_ids:
+      - 04850163-8927-4e9f-a650-7b886c75d855
+      - 3df80b39-7f11-4078-aed1-0e285248ff11
+      - 4bb72e9c-8c4b-424f-a3a9-22a34fe89d5f
+      - 4a9a32a1-209b-4a2f-82ba-d79cadcc6829
