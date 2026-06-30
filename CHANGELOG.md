@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.31.0] - 2026-06-30
+
+### Added
+
+- Fiken MCP server (`bin/fiken-mcp.ts`) exposing `list_purchases`, `get_purchase`, `create_purchase`, and `add_purchase_attachment` tools for Claude workflow sessions.
+- Fiken integration in Travel Reimbursement and Expense Reimbursement workflows — optional step to post directly to Fiken bookkeeping with receipt attachments after generating the Excel report.
+- Loan Agreement workflow now optionally posts the loan transaction to Fiken (account 1500, `cash_purchase`, `paid=false`) and opens the created entry URL on success.
+- "Send transaction to Fiken" toggle in the Loan Agreement modal with "View in Fiken" link shown on success.
+
 ## [0.30.1] - 2026-06-30
 
 ### Added
