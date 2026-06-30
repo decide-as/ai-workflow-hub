@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.0] - 2026-06-30
+
+### Added
+
+- Cold outreach system: four integrated workflows sharing a single SQLite database in `workflow-hub-data/cold-outreach/`
+  - **Cold Outreach Lead Builder** — research and build a list of leads with treatment group tags (value-first, demo-ask, case-study)
+  - **Email Sender** — draft and send outreach emails from leads in the database via macOS Mail
+  - **Outreach CRM** — view contacts and log follow-up interactions per lead
+  - **Email Inbox Checker** (scheduled) — IMAP poller that detects replies from contacted leads and logs them back to the CRM with idempotency via UID markers
+- New `outreach` cluster in `registry/workflows.yaml` grouping all four workflows
+- SQLite schema (`cold-outreach/schema.sql`) with `leads`, `interactions`, and `treatment_group_log` tables, CHECK constraints, and indexes
+- Three treatment group markdown templates (`value-first.md`, `demo-ask.md`, `case-study.md`) for Claude session access
+- `Inbox` icon registered in `src/renderer/src/lib/icons.tsx`
+
+## [0.29.1] - 2026-06-30
+
+### Changed
+
+- Create Calendar Event now supports multiple screenshots — each paste (Cmd+V or button) appends a new image rather than replacing the previous one; each preview has its own remove button.
+
 ## [0.29.0] - 2026-06-27
 
 ### Added

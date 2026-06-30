@@ -26,6 +26,7 @@ import {
   Gift,
   Briefcase,
   FolderSearch,
+  Inbox,
   type LucideIcon,
 } from "lucide-react";
 
@@ -57,6 +58,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Gift,
   Briefcase,
   FolderSearch,
+  Inbox,
 };
 
 const TAG_DEFAULTS: Record<string, LucideIcon> = {
