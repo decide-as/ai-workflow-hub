@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, FileText, Loader2, Calendar, ChevronDown } from "lucide-react";
+import { X, FileText, Loader2, Calendar, ChevronDown, ExternalLink } from "lucide-react";
 import type { LoanStakeholder, Workflow } from "../../../../shared/types";
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
 }
 
 type Phase = "loading" | "form" | "generating" | "done" | "error";
+
 
 const OTHER = "__other__";
 
@@ -69,6 +70,8 @@ export function LoanModal({ workflow, onClose }: Props) {
   const [date, setDate] = useState(todayIso());
   const [location, setLocation] = useState("Oslo");
   const [errorMsg, setErrorMsg] = useState("");
+  const [sendToFiken, setSendToFiken] = useState(false);
+  const [fikenUrl, setFikenUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -103,12 +106,15 @@ export function LoanModal({ workflow, onClose }: Props) {
     if (!canSubmit) return;
     setPhase("generating");
     setErrorMsg("");
+    setFikenUrl(null);
+
     const result = await window.api.loanGenerate({
       givingStakeholder: giving,
       receivingStakeholder: receiving,
       amount: Number(amount),
       date,
       location,
+      sendToFiken,
       customGiving:
         giving === OTHER
           ? { name: customLenderName, account: "", type: "person" }
@@ -122,7 +128,9 @@ export function LoanModal({ workflow, onClose }: Props) {
             }
           : undefined,
     });
+
     if (result.success) {
+      if (result.fikenUrl) setFikenUrl(result.fikenUrl);
       setPhase("done");
     } else {
       setErrorMsg(result.error ?? "Ukjent feil");
@@ -397,6 +405,34 @@ export function LoanModal({ workflow, onClose }: Props) {
 
               <div className="divider" />
 
+              {/* Fiken toggle */}
+              <label
+                className="flex items-center gap-2.5 cursor-pointer select-none"
+                style={{ color: "var(--c-text-muted)" }}
+              >
+                <div
+                  className="relative w-8 h-4 rounded-full transition-colors"
+                  style={{
+                    backgroundColor: sendToFiken
+                      ? color
+                      : "rgba(169,146,125,0.2)",
+                  }}
+                  onClick={() => setSendToFiken((v) => !v)}
+                >
+                  <div
+                    className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform"
+                    style={{
+                      transform: sendToFiken
+                        ? "translateX(18px)"
+                        : "translateX(2px)",
+                    }}
+                  />
+                </div>
+                <span className="text-[11px]">
+                  Send transaction to Fiken
+                </span>
+              </label>
+
               <div className="flex items-center justify-end gap-2">
                 <button onClick={onClose} className="btn btn-ghost btn-sm">
                   Cancel
@@ -458,6 +494,20 @@ export function LoanModal({ workflow, onClose }: Props) {
               >
                 Saved to workflow-hub-data/loan-agreement/data/
               </p>
+              {fikenUrl && (
+                <a
+                  href={fikenUrl}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.open(fikenUrl, "_blank");
+                  }}
+                  className="flex items-center gap-1.5 text-xs mt-2 underline underline-offset-2"
+                  style={{ color: color }}
+                >
+                  <ExternalLink size={11} />
+                  View in Fiken
+                </a>
+              )}
               <div className="mt-4">
                 <button onClick={onClose} className="btn btn-ghost btn-sm">
                   Close

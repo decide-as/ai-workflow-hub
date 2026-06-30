@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fiken": {
+      "command": "/Users/christianbraathen/Repositories/workflow-hub/node_modules/.bin/tsx",
+      "args": ["/Users/christianbraathen/Repositories/workflow-hub/bin/fiken-mcp.ts"]
+    }
+  }
+}

@@ -54,6 +54,7 @@ import {
   generateCalendarScript,
 } from "./calendar";
 import { getLoanStakeholders, generateLoanAgreement } from "./loan";
+import { createPurchase as fikenCreatePurchase } from "./fiken";
 import {
   getTransactions as loanInterestGetTransactions,
   saveTransaction as loanInterestSaveTransaction,
@@ -73,6 +74,7 @@ import type {
   MachineConfig,
   VisionResult,
   OrganizerPlan,
+  FikenCreatePurchaseArgs,
 } from "../../shared/types";
 
 let mainWindow: BrowserWindow | null = null;
@@ -335,6 +337,10 @@ app.whenReady().then(() => {
   ipcMain.handle(
     IPC.ORGANIZER_APPLY,
     (_, plan: OrganizerPlan, dryRun: boolean) => applyPlan(plan, dryRun),
+  );
+
+  ipcMain.handle(IPC.FIKEN_CREATE_PURCHASE, (_, args: FikenCreatePurchaseArgs) =>
+    fikenCreatePurchase(args),
   );
 
   watchRegistry(getRegistryPath(), (reg) => {

@@ -28,6 +28,8 @@ import type {
   OrganizerPlan,
   OrganizerResult,
   OrganizerProgress,
+  FikenCreatePurchaseArgs,
+  FikenCreateResult,
 } from "../../shared/types";
 
 contextBridge.exposeInMainWorld("api", {
@@ -156,4 +158,6 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.on(IPC.ORGANIZER_PROGRESS, handler);
     return () => ipcRenderer.removeListener(IPC.ORGANIZER_PROGRESS, handler);
   },
+  fikenCreatePurchase: (args: FikenCreatePurchaseArgs): Promise<FikenCreateResult> =>
+    ipcRenderer.invoke(IPC.FIKEN_CREATE_PURCHASE, args),
 });
