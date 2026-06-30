@@ -37,6 +37,7 @@ Read these rules in full before doing anything. They are authoritative.
 intake → extract transactions → classify (category, currency, VAT) →
 travel dates → allowance (if standardsatser) → markup + bookkeeping summary →
 order + assign 0# → rename attachments to 0# → generate Excel
+→ [optional] post to Fiken
 ```
 
 Never skip the validations in the rules. When a receipt is ambiguous (amount,
@@ -48,3 +49,37 @@ with the tax authorities.
 A single Excel workbook in `data/<trip-slug>/output/`, built from
 `templates/travel-expense-report.xlsx`, plus the attachments renamed to their
 final `0#` numbers. See `06-output-excel.md`.
+
+## Optional: Post to Fiken for bookkeeping
+
+After generating the Excel and renaming the attachments, ask the user:
+
+> **"Send this directly to Fiken for bookkeeping?"**
+
+If the user says **yes**:
+
+1. **Study past purchases first.** Call `list_purchases` (sort `date desc`,
+   page 0) and then `get_purchase` on 2–3 recent travel-expense entries to
+   understand which account codes and VAT types this company uses. Stick to the
+   same patterns.
+
+2. **Create the purchase.** Call `create_purchase` with:
+   - `date`: last day of the trip (or the claim date)
+   - `kind`: `"cash_purchase"` (employee paid out of pocket)
+   - `description`: e.g. `"Reiseutlegg – <trip-name> – <employee-name>"`
+   - `paid`: `false` (the company owes the employee; mark paid in Fiken after
+     the bank transfer)
+   - `lines`: one line per expense category from the bookkeeping summary,
+     with `net_price_cents` in øre (NOK × 100), the correct `vat_type`, and
+     the account code from step 1.
+
+3. **Attach the receipts.** For each renamed file in
+   `data/<trip-slug>/output/`, call `add_purchase_attachment` with the
+   absolute path. Attach the Excel workbook last.
+
+4. **Open the Fiken URL** returned by `create_purchase` in the browser:
+   use the `webUrl` field from the response. Report this URL to the user.
+
+If `create_purchase` or any attachment call fails, show the error and let the
+user decide whether to retry or finish in Fiken manually. Never lose the
+already-generated Excel over a Fiken failure.

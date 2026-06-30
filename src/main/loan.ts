@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
 import { join, dirname } from "path";
 import { tmpdir } from "os";
 import { getBaseDir } from "./registry";
+import { createPurchase } from "./fiken";
 import type {
   LoanStakeholder,
   LoanFormData,
@@ -272,6 +273,34 @@ export async function generateLoanAgreement(
 
     await htmlToPdf(html, pdfPath);
     shell.showItemInFolder(pdfPath);
+
+    if (data.sendToFiken) {
+      const amountCents = Math.round(data.amount * 100);
+      const fiken = await createPurchase({
+        date: data.date,
+        kind: "cash_purchase",
+        description: `Lån til ${receiving.name} — ${toNorwegianDate(data.date)}`,
+        currency: "NOK",
+        paid: false,
+        lines: [
+          {
+            description: `Lån fra ${giving.name} til ${receiving.name}`,
+            netPriceCents: amountCents,
+            vatType: "NONE",
+            account: "1500",
+          },
+        ],
+      });
+      if (fiken.success) {
+        return { success: true, fikenUrl: fiken.webUrl };
+      }
+      // PDF was generated successfully — report the Fiken error non-fatally
+      return {
+        success: true,
+        fikenUrl: undefined,
+        error: `PDF OK, men Fiken feilet: ${fiken.error}`,
+      };
+    }
 
     return { success: true };
   } catch (err) {

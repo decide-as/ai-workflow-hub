@@ -61,6 +61,7 @@ export interface LoanFormData {
   location: string;
   customGiving?: LoanStakeholder;
   customReceiving?: LoanStakeholder;
+  sendToFiken?: boolean;
 }
 
 export interface LoanStakeholdersResult {
@@ -72,6 +73,37 @@ export interface LoanStakeholdersResult {
 
 export interface LoanGenerateResult {
   success: boolean;
+  error?: string;
+  fikenUrl?: string;
+}
+
+// ── Fiken API ─────────────────────────────────────────────────────────────────
+
+export interface FikenPurchaseLine {
+  description: string;
+  /** Net price in øre (1/100 NOK). 1000 NOK = 100000. */
+  netPriceCents: number;
+  vatType: "HIGH" | "MEDIUM" | "LOW" | "NONE" | "EXEMPT";
+  /** Norwegian chart-of-accounts code, e.g. "7140", "1500". */
+  account: string;
+}
+
+export interface FikenCreatePurchaseArgs {
+  date: string;
+  kind: "cash_purchase" | "credit_purchase";
+  description: string;
+  currency?: string;
+  paid: boolean;
+  paymentDate?: string;
+  /** Format: "accountCode:bankAccountId", e.g. "1920:10001" */
+  paymentAccount?: string;
+  lines: FikenPurchaseLine[];
+}
+
+export interface FikenCreateResult {
+  success: boolean;
+  purchaseId?: number;
+  webUrl?: string;
   error?: string;
 }
 

@@ -1,6 +1,7 @@
 {
   "model": "sonnet",
   "effortLevel": "medium",
+  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Read",

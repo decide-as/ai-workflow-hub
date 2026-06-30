@@ -39,4 +39,5 @@ export const IPC = {
   ORGANIZER_SCAN: "organizer:scan",
   ORGANIZER_APPLY: "organizer:apply",
   ORGANIZER_PROGRESS: "organizer:progress",
+  FIKEN_CREATE_PURCHASE: "fiken:create-purchase",
 } as const;
