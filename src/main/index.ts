@@ -283,8 +283,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle(
     IPC.GENERATE_CALENDAR_SCRIPT,
-    (_, text: string, imageDataUrl: string | null, today: string) =>
-      generateCalendarScript(text, imageDataUrl, today),
+    (_, text: string, imageDataUrls: string[], today: string) =>
+      generateCalendarScript(text, imageDataUrls, today),
   );
 
   ipcMain.handle(IPC.LOAN_GET_STAKEHOLDERS, () => getLoanStakeholders());
